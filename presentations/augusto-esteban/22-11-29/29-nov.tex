@@ -1,0 +1,275 @@
+\documentclass[10pt]{beamer}
+%\documentclass[10pt,handout]{beamer}
+\usepackage[spanish]{babel}
+% % \usepackage[backend=biber, style=authoryear-icomp]{biblatex}
+\resetcounteronoverlays{exx}
+\usepackage{mdframed}
+\usepackage{tikz}
+\usepackage{blindtext}
+\usepackage{tipa}
+% \usepackage{cgloss4e}
+% \usepackage{gb4e}
+% \usepackage{qtree}
+\usepackage{cancel}
+\usepackage{wrapfig}
+\usepackage{soul}
+\usepackage{enumerate}
+\usepackage{longtable}
+\graphicspath{ {../img/} } % declaramos donde estan las imagenes
+\usepackage[labelformat=simple]{subcaption} % para varias imagenes juntas
+\renewcommand\thesubfigure{(\alph{subfigure})}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts} % simbolos como el I de matriz identidad
+\usepackage{bm}
+\usepackage{graphicx} % paquete para ver imagenes
+\usepackage{setspace}
+\usepackage[T1]{fontenc}
+\usepackage{parskip}
+\usepackage{color}
+\usepackage{framed}
+\usetheme{Copenhagen}
+\definecolor{frenchblue}{rgb}{0.0, 0.45, 0.73} % ESTE!!!!
+\definecolor{myblue1}{RGB}{35,119,189}
+\definecolor{myblue2}{RGB}{95,179,238}
+\definecolor{myblue3}{RGB}{129,168,207}
+\definecolor{myblue4}{RGB}{26,89,142}
+
+\setbeamercolor{block body}{bg=frenchblue!50}
+\setbeamercolor*{structure}{fg=frenchblue,bg=blue}
+\setbeamertemplate{frametitle}[default][center]
+\setlength{\parskip}{12pt}
+\useoutertheme{infolines} % me comia mucho espacio de la otra fgorma
+\makeatother
+\setbeamertemplate{footline}
+{
+  \leavevmode%
+  \hbox{%
+  \begin{beamercolorbox}[wd=.3\paperwidth,ht=2.25ex,dp=1ex,center]{author in head/foot}%
+    \usebeamerfont{author in head/foot}\insertshortauthor
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.6\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
+    \usebeamerfont{title in head/foot}\insertshorttitle
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.1\paperwidth,ht=2.25ex,dp=1ex,center]{date in head/foot}%
+    \insertframenumber{} / \inserttotalframenumber\hspace*{1ex}
+  \end{beamercolorbox}}%
+  \vskip0pt%
+}
+\newcommand{\floor}[1]{\lfloor #1 \rfloor}
+
+\makeatletter
+\setbeamertemplate{navigation symbols}{}
+%\setbeameroption{show notes}
+\setbeameroption{hide notes}
+
+
+\usepackage{hyperref}
+
+\title[Reporte quincenal]{Reporte quincenal}
+\author[Matias Mazzanti]{Matias Mazzanti}
+
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\frametitle{CKKS: repaso}
+Sea $z\in \mathbb{C}^{N/2}$, codificarlo en un polinomio  $m(X)\in \mathcal{R} = \mathbb{Z}[X]/(X^N+1)$
+utilizando el encaje canónico.
+\pause
+
+$ \mathbb{C}^{N/2} \to \mathcal{R} =\mathbb{Z}[X]/(X^N+1)$.
+\pause
+
+Sea $N$, múltiplo de 2, $M=2N$ y el
+ \textbf{polinomio cíclico} $\Phi_M(X)= X^N+1$.
+\pause
+
+Donde sus \textbf{raíces} de la unidad son: $\xi_M=(e^{2i\pi/M})^k$, $k\in \mathbb{Z}<M$ y coprimos de $M$.
+\pause
+
+Dada la codificación, decodificamos evaluando $m(X)$ con las raices de la unidad.
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\frametitle{CKKS: repaso}
+Para la codificación primero expandimos nuestro vector $\in  \mathbb{C}^{N/2}$ a $ \mathbb{C}^{N}$
+agregando sus complejos conjugados.
+\pause
+
+Luego projectamos a la base del encaje canónico y a su vez redondeamos los coeficientes.
+(isomorfismo entre el vector y el polinomio.)
+\pause
+
+Por que se usan polinomios? \pause permite encriptar un vector de multiples valores en un único cifrado
+y tiene mejor rendimiento para operar (DFT).
+
+\pause
+Ademas, vimos que se multiplica a $z$ por un factor $\bigtriangleup>0$  para evitar
+que el redondeo elimine alguno de los números significativos.
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\frametitle{CKKS: continuación}
+CKKS utiliza los problemas dificiles de \textit{Ring-Learning With Errors} (RLWE).
+\pause
+
+Con esto se genera la clave publica $p$ y secreta $s$:
+
+$p = (b,a) = (-a.s+e,a)$
+
+Donde a,e y s $\in Z_q[X]/(X_N+1)$.
+\pause
+
+$a$ esta muestreado uniformemente y $e$ es un pequeño error polinomial.
+\pause
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{CKKS: encriptación}
+Sea $\mu\in Z_q[X]/(X_N+1)$ (mensaje codificado)
+\pause
+
+La encriptación usando $p = (b,a) = (-a.s+e,a)$ viene dada por
+\begin{align*}
+ Encrypt(\mu,p) =  c = (\mu,0)+p = (\mu+b,a) =(\mu -a.s+e,a) = (c_0,c_1)
+\end{align*}
+\pause
+
+La decriptación de $c$ usando $sk = (1, s)$ viene dada por
+\begin{align*}
+ Decrypt(c,sk)= c*sk =  c_0+c_1.s = \mu-a.s+e+a.s = \mu+e \approx \mu
+\end{align*}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+\frametitle{CKKS: suma}
+Sean dos mensajes $\mu$ y $\mu'$ encriptados como $c$ y $c'$ respectivamente.
+
+\begin{align*}
+\action<+->  { CAdd(c,c') &= c_{add} = c + c' = (c_0,c_1) + (c'_0, c'_1) }\\
+           \action<+->  {   &= ((c_0+c_0') , (c_1+c_1')) =(c_{add,0}, c_{add,1})}
+\end{align*}
+\pause
+
+Al desencriptarlo:
+\begin{align*}
+  \action<+->  { Decrypt(c_{add},sk) &= c_{add}*sk =  c_{add,0}+ c_{add,1}.s = (c_0+c'_0) + (c'_1 + c'_1).s }\\
+  \action<+->  {                &= (c_0+c_1.s) +  (c'_0+c'_1.s) =  Decrypt(c,s)+Decrypt(c',s)}\\
+  \action<+-> {                &= (\mu +e) + (\mu'+ e) = \mu + \mu'+ 2e = \approx \mu + \mu'}
+\end{align*}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+\frametitle{CKKS: Multiplicación cifrado-plano}
+Sea $\mu$ un mensaje encriptado y $\mu'$ un dato codificado (sin necesidad de encritarlo)
+
+\begin{align*}
+ CMult(\mu,\mu')=  c_{mult} =  \mu.\mu'= (c_0,c_1) . \mu' =  (c_0.\mu',c_1.\mu')
+\end{align*}
+\pause
+
+Al desencriptarlo:
+
+\begin{align*}
+  \action<+-> { DecryptMult(c_{mult},sk) &= c_0.\mu'+c_1.\mu'.s =  \mu'.(c_0,c_1.s)} \\
+    \action<+-> { &= \mu'.(\mu+e) = \mu'.\mu + \mu'.e \approx \mu'.\mu}
+\end{align*}
+
+\action<+-> { Vemos que definimos una nueva función para desencriptar la multiplicación. Porque?}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+\frametitle{CKKS: Multiplicación cifrado-cifrado}
+Sean dos mensajes $\mu$ y $\mu'$ encriptados como $c$ y $c'$ respectivamente.
+
+Recordamos que $Decrypt(c,sk)=c0+c1.s$\pause
+
+Lo que queremos:
+\begin{align*}
+\action<+-> { DecryptMult(CMult(c,c'),sk)&=Decrypt(c,sk).Decrypt(c',s)} \\
+\action<+-> {                           &=(c_0+c_1.s).(c'_0+c'_1.s)}\\
+\action<+-> {                           &=c_0.c'_0+(c_0.c'_1+c'_0.c_1).s+c_1.c'_1.s^2}\\
+\action<+-> {                           &=d_0+d_1.s+d_2.s^2}
+\end{align*}
+\action<+-> {  con $ d_0=c_0.c'_0$, $d_1=(c_0.c'_1+c'_0.c_1)$, $d_2=c_1.c'_1$}
+\pause
+
+  La desencriptación de la multiplicación de dos cifrados es un polinomio de orden dos
+  evaluado en la llave secreta $s$.
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+\frametitle{CKKS: Multiplicación cifrado-cifrado}
+Entonces tenemos definimos:
+\begin{align*}
+  \action<+-> {   &CMult(c,c')=c_{mult}=(d_0,d_1,d_2)=(c_0.c'_0,c_0.c'_1+c'_0.c_1,c_1.c'_1)} \\
+  \action<+-> {   &DecryptMult(c_{mult},s)=d_0+d_1.s+d_2.s^2}
+\end{align*}
+\pause
+
+Esto no es de utilidad.
+Por cada operación de estas, el cifrado aumenta el grado del polinomio!
+\pause
+
+La multiplicación de dos cifrados queda representado como la suma de 3 polinomios.
+
+Si volvemos a multiplicar nos quedara en 5, luego 9, y siguiendo con crecimiento exponencial.
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+  \frametitle{CKKS: Relinealización}
+Tenemos $CMult(c,c')=(d_0,d_1,d_2)$.
+
+El truco es computar de otra forma el termino cuadratico $d_2.s^2$ de forma que la
+desencriptación luego me quede lineal.
+\pause
+
+Es decir, quiero encontrar dos polinomios $ (d'_0,d'_1)=c_{mult} = (d_0, d_1, d_2)$ tal que:
+\begin{align*}
+  Decrypt((d'_0,d'_1),s)&=d'_0+d'_1.s=d_0+d_1.s+d_2.s^2\\
+ &=Decrypt(c,s).Decrypt(c',s)
+\end{align*}
+
+Y aplicaremos la relinealización luego de cada multiplicación.
+
+Para ello nos generaremos una clave de evaluación (proxima reunion).
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+  \frametitle{CKKS: próxima}
+
+\begin{itemize}
+  \item Definir la función de relinealizar.
+  \item Rescaleo: Maneja el crecimiento del ruido debido a multiplicar el factor de escaleo de la codificación $\bigtriangleup$ por si mismo.
+    \pause
+  \item Utilización del teorema chino del remante para optimizar el rescaleo (computos con
+    polinomeos muy grandes).
+\end{itemize}
+\pause
+
+Queda pendiente:
+\begin{itemize}
+  \item Utilización de DFT en la codificación en OpenFHE.
+  \item Ajustar la implementar en Python (No me funciona la multiplicación).
+    \pause
+  \item Entender la primer variante de Bootstrapping en CKKS.
+\end{itemize}
+
+
+\end{frame}
+
+
+\end{document}
+

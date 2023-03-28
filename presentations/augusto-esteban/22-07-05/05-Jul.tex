@@ -1,0 +1,273 @@
+\documentclass[10pt]{beamer}
+%\documentclass[10pt,handout]{beamer}
+\usepackage[spanish]{babel}
+% % \usepackage[backend=biber, style=authoryear-icomp]{biblatex}
+\resetcounteronoverlays{exx}
+\usepackage{mdframed}
+\usepackage{tikz}
+\usepackage{blindtext}
+\usepackage{tipa}
+% \usepackage{cgloss4e}
+% \usepackage{gb4e}
+% \usepackage{qtree}
+\usepackage{cancel}
+\usepackage{wrapfig}
+\usepackage{soul}
+\usepackage{enumerate}
+\usepackage{longtable}
+\graphicspath{ {../img/} } % declaramos donde estan las imagenes
+\usepackage[labelformat=simple]{subcaption} % para varias imagenes juntas
+\renewcommand\thesubfigure{(\alph{subfigure})}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts} % simbolos como el I de matriz identidad
+\usepackage{bm}
+\usepackage{graphicx} % paquete para ver imagenes
+\usepackage{setspace}
+\usepackage[T1]{fontenc}
+\usepackage{parskip}
+\usepackage{color}
+\usepackage{framed}
+
+\usetheme{Copenhagen}
+\definecolor{frenchblue}{rgb}{0.0, 0.45, 0.73} % ESTE!!!!
+\definecolor{myblue1}{RGB}{35,119,189}
+\definecolor{myblue2}{RGB}{95,179,238}
+\definecolor{myblue3}{RGB}{129,168,207}
+\definecolor{myblue4}{RGB}{26,89,142}
+
+\setbeamercolor{block body}{bg=frenchblue!50}
+\setbeamercolor*{structure}{fg=frenchblue,bg=blue}
+\setbeamertemplate{frametitle}[default][center]
+\setlength{\parskip}{12pt}
+\useoutertheme{infolines} % me comia mucho espacio de la otra fgorma
+\makeatother
+\setbeamertemplate{footline}
+{
+  \leavevmode%
+  \hbox{%
+  \begin{beamercolorbox}[wd=.3\paperwidth,ht=2.25ex,dp=1ex,center]{author in head/foot}%
+    \usebeamerfont{author in head/foot}\insertshortauthor
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.6\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
+    \usebeamerfont{title in head/foot}\insertshorttitle
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.1\paperwidth,ht=2.25ex,dp=1ex,center]{date in head/foot}%
+    \insertframenumber{} / \inserttotalframenumber\hspace*{1ex}
+  \end{beamercolorbox}}%
+  \vskip0pt%
+}
+\makeatletter
+\setbeamertemplate{navigation symbols}{}
+%\setbeameroption{show notes}
+\setbeameroption{hide notes}
+
+
+\usepackage{hyperref}
+
+\title[Reporte quincenal]{Reporte quincenal}
+\author[Matias Mazzanti]{Matias Mazzanti}
+
+
+\institute{UBA-IBM(?)}
+\date{05 de julio de 2022}
+
+\titlegraphic{\includegraphics[,height=2cm,keepaspectratio]{../logo.pdf}     }
+
+\begin{document}
+
+\begin{frame}
+
+\maketitle
+
+\end{frame}
+
+
+\section{Organización}
+\begin{frame}
+\frametitle{Roadmap}
+ \begin{mdframed}[backgroundcolor=frenchblue!20]
+  \textbf{Idea:} Iniciar 2023 sin ''burocracia'' (materias obligatorias) y con una buena base.
+ \end{mdframed}
+
+  \textbf{Julio}:  Final materia algoritmos y estructura de datos II (a confirmar).
+
+  \textbf{Agosto}: 3/08 Final materia base de datos.
+
+  \textbf{2do Cuatrimestre 2022} $\rightarrow$ dos partes: académica + papers.
+
+
+\textbf{Verano 2023} $\rightarrow$ Cerrar gaps.
+
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\frametitle{Roadmap Académico}
+
+  \textbf{2do Cuatrimestre 2022} $\rightarrow$ Parte académica (ideas)
+
+
+\begin{itemize}\itemsep-1em
+  \item Curso \textbf{Criptografía} MIT: 24 clases $\times$ 1.2h. (De forma relajada)
+  \item Curso presencial \textbf{Arquitecturas}: Orga2, 2 veces por semana 5h (''Oyente'').
+  \item Lógica y computabilidad (\textbf{obligatorio}-plan doctoral), 2 veces por semana 3h (confirmar).
+  \item Preparación para escuela de verano Barca (si se confirma).
+\end{itemize}
+
+
+  \textbf{Verano 2023} $\rightarrow$ Parte académica (ideas)
+
+\begin{itemize}\itemsep-1em
+  \item Final Lógica.
+  \item Comunicaciones/Redes - Superficial.
+  \item Sistemas Operativos - Superficial.
+  \item Curso Algebra Online (solo si veo que se requiere)
+\end{itemize}
+
+
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\frametitle{Roadmap}
+
+
+    \textbf{Express:} Libro HE and aplications (springer)
+  \vspace{0.3cm}
+  Ver con que intensidad.
+
+ \begin{itemize}
+    \item RSA'78 $\rightarrow$ RSD'78
+    \item GM'82
+    \item El-Gamal'85
+    \item Pallier'99
+    \item BGN'05
+  \end{itemize}
+  \vspace{0.3cm}
+
+\centering 2 a 3 semanas.
+
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\frametitle{Roadmap}
+  \textbf{Papers/temas:} En orden 1 o 2  por reunion?
+
+  \vspace{0.3cm}
+  \begin{columns}
+    \column{0.5\textwidth}
+\begin{itemize}
+  \vspace{0.3cm}\item FHE using Lattices[2009-Gentry].
+  \vspace{0.3cm}\item Learning With Errors (LWE)[2009-Regev].
+  \vspace{0.3cm}\item Ring-LWE[2013-Lyu-Peikert-Regev].
+  \vspace{0.3cm}\item RGSW[2013-Gentry-Sahai-Waters]
+  \vspace{0.3cm}\item Boostraping with polynomial error [2014-Alperin-Sheriff].
+\end{itemize}
+
+    \column{0.5\textwidth}
+\begin{itemize}
+  \vspace{0.3cm}\item Fast Boostraping [2016-Chillotti-Gama-etc].
+  \vspace{0.3cm}\item CKKS [2017].
+  \vspace{0.3cm}\item Number Theory Transform (NTT).
+  \vspace{0.3cm}\item Cryptosystems: FHEW[2015-Ducas-Micciancio] y TFHE[2018-Chilliotti-Gama-etc].
+\end{itemize}
+
+  \end{columns}
+
+    \vspace{0.5cm}
+
+    \centering
+    \textbf{2 a 3 meses}
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\frametitle{Roadmap}
+  \textbf{Siguiente paso} $\rightarrow$ Verano?
+
+  Papers/temas: Arquitecturas y mas (queda por definir)
+\begin{itemize}
+    \item CPU-GPU-FHE[2020-Morshed-AlAziz-Mohammed].
+    \item Papers recomendados en mail.
+    \item Investigar más al respecto de arquitecturas.
+\end{itemize}
+
+
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Paper}
+\begin{frame}
+\frametitle{FHE...}
+  Esquema de encriptacion clave publica: $\varepsilon$
+
+  Texto plano $\pi \in P$, texto cifrado $\psi \in \zeta$, $C$ circuitos, $\lambda$ parámetro de seguridad.
+  \vspace{0.3cm}
+
+\begin{columns}
+  \column{0.5\textwidth}
+     \textbf{KeyGen}$_\varepsilon(\lambda) \rightarrow (sk,pk)$
+
+  \vspace{0.3cm}
+  \textbf{Encrypt}$_\varepsilon(pk, \pi) \rightarrow \psi$
+
+  \vspace{0.3cm}
+  \textbf{Decrypt}$_\varepsilon(sk, \psi) \rightarrow \pi$
+
+  \vspace{0.3cm}
+  \textbf{Evaluate}$_\varepsilon(pk, C, \Psi) \rightarrow$ \textbf{Encrpyt}$_\varepsilon(pk, C(\pi_1,...\pi_t))$
+
+  \vspace{0.3cm}
+  $\Psi = <\psi_1,...,\psi_t>$
+
+  \column{0.5\textwidth}
+      FHE: Cualquier circuitos.
+
+  \vspace{0.3cm}
+  Privacidad:  Estadísticamente indistinguibles
+  \vspace{0.3cm}
+
+  \textbf{Encrpyt}$_\varepsilon(pk, C(\pi_1,...\pi_t)) \approx  \textbf{Evaluate}_\varepsilon(pk, C, \Psi)$
+
+
+\end{columns}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Paper}
+\begin{frame}
+\frametitle{Gentry...}
+
+  Empezando por el ''principio''  $\rightarrow$ \textbf{FHE Using Ideal Lattices} 2009 (y su tesis)
+
+  Hasta entonces:
+  \begin{itemize}
+    \item  $\psi$ crecía exponencialmente con la profundidad multiplicativa (y aveces con la suma) del circuito.
+    \item O solo aceptaban un conjunto de circuitos.
+  \end{itemize}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Lo siguiente}
+\begin{frame}
+\frametitle{}
+
+
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
+

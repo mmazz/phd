@@ -1,0 +1,431 @@
+\documentclass[12pt, oneside]{article}
+\usepackage{amsmath, amsthm, amssymb, calrsfs, wasysym, verbatim,  color, graphics, geometry}
+\usepackage{hyperref}
+\geometry{tmargin=.75in, bmargin=.75in, lmargin=.75in, rmargin = .75in}
+\usepackage[colorinlistoftodos,color=cyan]{todonotes}
+\newcommand{\Hc}{\mathcal{H}}
+\newcommand{\Rc}{\mathcal{R}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Cdot}{\boldsymbol{\cdot}}
+
+\newtheorem{thm}{Theorem}
+\newtheorem{defn}{Definition}
+\newtheorem{conv}{Convention}
+\newtheorem{rem}{Remark}
+\newtheorem{lem}{Lemma}
+\newtheorem{cor}{Corollary}
+
+
+\title{Resume: }
+\author{Matias Mazzanti}
+\date{}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\vspace{.25in}
+\section{Comentarios}
+\begin{itemize}
+  \item Redes: Tanenbaum-Computer Network. La intro
+  \item Arquitectura: Onur, Digital Design and Computer Architecture y Computer Architecture - ETH Zürich
+\end{itemize}
+
+Para la parte de CKKS:
+\begin{itemize}
+  \item https://blog.openmined.org/ckks-explained-part-1-simple-encoding-and-decoding/
+  \item BFV: https://blog.openmined.org/build-an-homomorphic-encryption-scheme-from-scratch-with-python/
+\end{itemize}
+\section{Intro Matematica}
+Una buena fuente de info puede ser la tesis de Yao Chen: Applying Fully Homomorphic
+Encryption: Practices and Problems.
+
+\subsection{Campos finitos o campos de Galois}
+Para que algo sea un campo, tiene que ser conmutativo en la multiplicacion (y creo que en la suma),
+cada elemento tiene que tener su inverso multiplicativo y ...
+Entonces los numeros reales son un campo.
+Encambio los numeros enteros no, ya que no siempre el inverso multiplicativo de un entero
+es un entero.
+Con esto aparece la nocion de campos finitos, la cual achica un poco el espacio para
+permitir que esta propiedad valga y se pueda considerar un campo.
+
+Basicamente se achica el espacio tomando modulo de un numero primo o potencia de un
+numero primo.
+Es decir en vez the tomar los enteros $\Z$, tomamos los enteros pero modulo $q$,
+es decir $\Z_q$.
+La condicion de q es para que todo elemento dentro de este espacio tengo inverso multiplicativo.
+Si por ejemplo tomo $q=6$, que no cumple, voy a ver que 2 no tiene inverso multiplicativo.
+Ya que cuando hago $2*n$ mod 6, donde $0 < n < q$, nunca da 1.
+
+\subsection{Multiplicacion de polinomios}
+Nos interesa el caso en el cual esta con modulo $q \in \Z$ y los algoritmos para hacerlo.
+
+En el caso de modulo de un entero, simplemente significa que ese polinomio tiene coeficientes
+menores a q-1 y mayores a 0.
+En general para FHE, esto cambia y hace que los coeficientes esten en (-q/2,q/2]
+
+\todo[inline]{Ir llenando a medida que se necesita, es un tema muy grande.}
+\paragraph{Aritmetica modular}
+La aritmética modular puede ser construida matemáticamente mediante la relación de
+congruencia entre enteros, que es compatible con las operaciones en el anillo de enteros:
+suma y multiplicación.
+En general en criptografia se usa como modulo un numero primo.
+\todo{por que?}
+Para un determinado módulo n, ésta se define de la siguiente manera:
+
+a y b se encuentran en la misma ''clase de congruencia'' módulo n, si ambos dejan
+el mismo resto si los dividimos entre n, o, equivalentemente, si a - b es un multiplo de n.
+\begin{align*}
+a\equiv b (mod n)
+\end{align*}
+Los parentesis del modulo hacen referencia a que se aplica a toda la ecuacion y no
+solo al lado derecho.
+Si no tengo los parentesis es la operacion modulo, que seria un a determinado tal que
+es el remanente al dividir b con n.
+
+La relacion de congruencia tambien se puede escribir de la siguiente forma
+
+\begin{align*}
+  a = kn + b
+\end{align*}
+Lo que significa que
+\begin{align*}
+  &a = pn + r \\
+  &b = qn + r
+\end{align*}
+Donde $0\leq r <n$ es el remanente comun.
+Y si definimos $k=p-q$ llegamos a la ecuacion anterior.
+%paper: 1988 Fast Fourier Transformation Based on Number Theoretic Transforms. doi:10.1016/0016-0032(88)90031-2 
+\subsection{DFT}
+Esto parece ser la clave de todo.
+
+
+La idea general parece ser que todo el tema del anillo y demas se conoce
+como un campo finito o campo de Galois.
+Una forma de hacer multiplicaciones  de polinomios o de numeros muy grandes es
+con la convolcion que se puede implementar con DFT (o algo asi...).
+La version de DFT para este tipo de campos se conoce como NTT.
+
+
+%Para NTT: http://www.apfloat.org/ntt.html
+Falta entender como usan Number theoretic transform (NTT) y chinese remainder
+theorem (CRT) en todo esto.
+Que es la otra clave.
+
+\paragraph{Number theoretic transforms (NTT)}:
+NTT es basicamente una transformada de fourier discreta (DFT).
+Una vez que un par de polinomios son transformados al dominio de ''frecuencia'',
+su producto puede ser calculado simplemente en orden O(n) haciendo producto de elemento
+a elemento, y si resultado se conviernte de vuelta con la transformacion inversa.
+De esta forma el costo dominante de la multiplicacion polinomial viene por el costo
+de la traformacion desde y hacia el dominio de frecuencia.
+NTT tiene una complejidad de O(nlogn).
+Hay muchos algoritmos de NTT, y segun el paper ''A note on the implementation of the Number
+Theoretic Transform'' de ''Michael Scott'',  una buena estrategia es usar
+el algoritmo de \textit{Cooley Tukey butterfly} para el caso de la transformacion
+y cambiar al algoritmo de \textit{Gentleman-Sade butterfly} para la transformacion
+inversa.
+En general se usa modulo primo $q=1 mod 2n$ de forma que exista la 2n-esima raiz de
+la unidad.
+Donde $n$ es el grado del polinomio.
+
+%Para CRT: http://www.dragonwins.com/domains/getteched/crypto/chinese_remainder_theorem.htm
+%https://crypto.stanford.edu/pbc/notes/numbertheory/crt.html
+%http://www.apfloat.org/crt.html
+\paragraph{Chinese Remainder Theorem (CRT)}
+CRT resuelve el problema de como encontrar x que es congruente a diferentes valores y modulos.
+\todo{Por que esto es importante?}
+Viene por algo de tener un modulo o polinomio muy grande (chequear) y dividirlo en
+subproblemas y resolverlos tipo divde and conquer.
+
+Es una forma de representar enteros muy grandes con pocos bits.
+Represento el valor $N$ dando el valor mas grande posible $T$, con diferentes modulos $M_i$
+coprimos y sus respectivos residuos $R_i$.
+Donde $T=(M_1)(M_2)...(M_n)$.
+Es decir hay que resolver
+\begin{align*}
+  &N \equiv R_1 (mod M_1) \\
+  & N \equiv R_2 (mod M_2) \\
+  & \hspace{0.5cm}... \\
+  &N \equiv R_n (mod M_n)
+\end{align*}
+
+CRT te dice que pare resolverlo calculas (en el caso $n=3$):
+\begin{align*}
+  N = f(R_1,R_2,R_3) =  (I_1M_2M_3R_1 + M_1I_2M_3R_2 + M_1M_2I_3R_3) mod T
+\end{align*}
+Donde $I_i$ es el modulo $M_i$ inverso multiplicativo de $T/M_i$ (el producto
+de todos los modulos a excepcion de $M_i$).
+
+Es decir se calcula $I_1$ de la siguiente forma:
+\begin{align*}
+  I_1M_2M_3 \equiv 1 (mod M_1)
+\end{align*}
+Se reemplazan los $M_i$ y se calcula.
+De la misma manera se calculan las demas $I_i$ y se reemplaza con CRT y se calcula N.
+
+Creo que en esta representacion tambien se puede sumar y multiplicar.
+
+
+Frase de stackoverflow: CRT-based representation is the internal representation
+for some of the Number-Theoretic Transform (NTT) based algorithms for multiplication
+\subsection{Extras}
+\paragraph{Maximo comun divisor}: MCD
+
+Mayor numero entero que divide a dos o mas numeros enteros sin dejar residuo.
+
+Una forma de calcular es agarrar a los numeros y descomponerlos en factores primos de cada uno.
+Voy dividiendo cada numero por numeros primos hasta llegar a 1.
+Luego el MCD entre esos numeros es multiplicar por los numeros primos en comun, incluyendo
+la cantidad de apariciones de cada uno.
+
+\vspace{0.3cm}
+\paragraph{CoPrimo}:
+Dos numeros a y b, son coprimos si no tienen ningun factor primo en comun.
+Se dice tambien que a es primo de b o que a es coprimo de b.
+Es decir si no tienen otro divisor comun mas que 1 y -1.
+Esto es igual a decir que su MCD entre los dos es igual a 1.
+Para ser coprimos no hacen falta que sean ellos mismos numeros primos.
+
+\textbf{Identidad de Bezout}: Si a y b son primos entre si (coprimos), entonces existen dos enteros x e y tal
+que a*x+b*y=1.
+\vspace{0.3cm}
+
+\paragraph{Matriz de Vandermonde}:
+Una matriz $V$ que para todo indice se cumple $V_{ij}=x_i^{j-1}$
+El determinante del cuadrado de esta matriz se lo denomina \textbf{polinomio de Vandermonde}.
+Esta esta dada por:
+\begin{equation*}
+  det(V) = \prod_{1\leq i < j \leq n}(x_j-x_i)
+\end{equation*}
+El cual no es cero solo si todos los $x_i$ son distintos.
+
+\vspace{0.3cm}
+\paragraph{Congruencia (teoria de numeros)}:
+Si dos numeros a y b tienen el mismo resto al dividirlos por un numero natural
+m distinto de cero, llamado modulo.
+Se expresa de la siguiente forma:
+\begin{equation*}
+a \equiv b \text{ (mod } m)
+\end{equation*}
+a es congruente con b modulo m.
+Esto lleva a la siguiente propiedad:
+\begin{equation*}
+  a = b + km
+\end{equation*}
+para algun $k\in \Z$
+
+
+\vspace{0.3cm}
+\paragraph{Modulo}:
+
+\vspace{0.3cm}
+\paragraph{Raiz enesima de la unidad}:
+Cualquiera de los numeros compejos que satisfacen la ecuacion:
+\begin{equation*}
+  z^n=1
+\end{equation*}
+donde n es un entero mayor a 1.
+Para cada n, las n diferentes raices n-esimas de la unidada son:
+\begin{equation*}
+  e^{2\pi ik/n} \text{ donde } k=0,1,2,...,n-1
+\end{equation*}
+Entre las raices enesimas de la unidad siempre esta el 1, y el numero -1 solo
+esta cuando n es par y los numeros i e -i cuando n es multiplo de cuatro.
+Las raices enesimas de la unidad no reales se presentan en pares de conjugados.
+
+\vspace{0.3cm}
+\paragraph{Raices primitivas}:
+
+\subsection{Lattices}
+
+Full rank: dada una matriz de $m x n$
+\begin{itemize}
+  \item $m<n$: es Full rank si las $m$ filas son linealmente independientes.
+  \item $m>n$: es Full rank si las $n$ columnas son linealmente independientes.
+  \item $m=n$: es Full rank si las columnas o filas (si son unas son las otras) son
+    linealmente independientes.
+\end{itemize}
+
+Polinomio monico:
+es un polinomio de variable única (es decir, un polinomio de una sola variable)
+en el que el coeficiente principal (el coeficiente distinto de cero del grado más alto) es igual a 1.
+
+\paragraph{Chinese Remainder Theorem On integer modulo n}
+Si $n=pq$  donde $1<p,q$ y $p$ es coprimo de $q$, entonces $\Z_n$ puede ser descompuesto como
+\begin{equation*}
+  \Z_n \cong \Z_p\times \Z_q
+\end{equation*}
+Esta descomposicion es un isomorfismo: $\psi:\Z_n\to\Z_p\times\Z_q$.
+Esto tiene como implicacion que dado $a,b \in\Z_n$ podemos encontrar $(a_p,a_q),(b_p,b_q)\in\Z_p\times\Z_q$
+y asi tener
+\begin{align}
+  \psi(a+b)&=\psi(a)+\psi(b)\\
+  \psi(a.b)&=\psi(a).\psi(b)
+\end{align}
+Esto es de uso ya que en general $n$ es muy grande y es mas eficiente
+computar con la descomposicion (que se puede descomponer multiples veces).
+Este teorema tambien vale para anillos polinomiales.
+
+\paragraph{Raices primitivas}
+En matemática, las raíces n-ésimas de la unidad, o números de de Moivre,
+son todos los números complejos que dan 1 cuando son elevados a una potencia dada n.
+Se puede demostrar que están localizados en el círculo unitario del plano complejo y
+que en ese plano forman los vértices de un polígono regular de n lados con un vértice
+sobre el punto 1 de dicho plano, siempre que $n>2$.
+
+\paragraph{Polinomio ciclotimico}
+Se denomina polinomio ciclotómico de orden n y se denota como $\phi_n$ al
+polinomio monico cuyas raíces son todas las raíces primitivas de orden n de la unidad,
+es decir, que verifican zn = 1, donde z es un número complejo.
+Se llama raíz enésima de la unidad a cualquiera de los números complejos que
+satisfacen:
+\begin{align*}
+  z^{n}=1
+\end{align*}
+donde $n\in\N$, $n>1$.
+
+Para cada $n$, las $n$ diferentes raíces n-ésimas de la unidad son:
+\begin{align*}
+  e^{2\pi ik/n}
+\end{align*}
+ donde $k=0,1,2,\dots ,n-1$.
+
+ Las raíces primitivas son de la forma $w_r$, con $0 \leq r < n$, r coprimo con n, y $\omega =e^{\frac {2i\pi }{n}}$
+\begin{align*}
+ \Phi _{n}=\prod _{{}_{r}}(X-\omega ^{r})
+\end{align*}
+ \paragraph{Función $\varphi$ de Euler}
+ La función $\varphi$ de Euler (también llamada función indicatriz de Euler o función totiente)
+ es una función importante en teoría de números.
+ Si n es un número entero positivo,  entonces $\varphi(n)$ se define como la
+ cantidad de enteros positivos $k$ menores a n y
+ coprimos con a, es decir, formalmente se puede definir como:
+ \begin{align*}
+ \varphi(n)=|\{k\in \mathbb {N} |k\leq n\land \mathrm {mcd} (k,n)=1\}
+ \end{align*}
+ donde $|·|$ significa la cardinalidad del conjunto descrito.
+ mcd es el maximo comun divisor y al ser igual a 1 quiere decir que son primos.
+
+La función $\varphi$ es importante principalmente porque proporciona el tamaño del
+grupo multiplicativo de enteros módulo n.
+Más precisamente, $\varphi (n)$ es el orden del grupo de unidades del anillo
+$\mathbb {Z} /n\mathbb {Z}$.
+
+\subsection{Transformada de Fourier Discreta}
+DFT se utiliza mucho en FHE.
+
+\paragraph{Convolucion} %
+\href{https://betterexplained.com/articles/intuitive-convolution/}{Convolution Intuition}
+
+La convolución de $f$ y $g$, se denota $f*g$,.
+Se define como la integral del producto de ambas
+funciones después de desplazar una de ellas una distancia $t$.
+\begin{align*}
+(f*g)(t)\ {\stackrel {\mathrm {.} }{=}}\int _{-\infty }^{\infty }f(\eta )g(t-\eta )d\eta
+\end{align*}
+Cuando se multiplican dos polinomios, los coeficientes del producto están dados
+por la convolución de las sucesiones originales de coeficientes, en el sentido dado
+aquí (usando extensiones con ceros como se ha mencionado).
+
+\subsection{Teoria de anillos}
+Un anillo es un conjunto donde se puede sumar restar y multiplicar.
+En algunos casos se pude dividir.
+
+Ejemplo, los enteros $\Z$ con la suma y multiplicacion forman un anillo.
+No simpre se puede dividir ya que si hago 1/2 el resultado ya no es un entero.
+
+$\Z[x]$ es el conjutno de polinomios donde sus coefficientes son enteros.
+Es una extension de $\Z$ en el sentido que permitimos que todos los enteros
+mas un simbolo extra x, donde podemos multiplicar y sumar ($x^2, 2x^3$ etc).
+
+Otro de interes es  $\Z/n\Z$. Los enteros mod n.
+Son una clase equivalente de los enteros con la relacion de equivalencia de congruencia
+modulo n.
+Es exactamente el grupo ciclico de orden n.
+
+Por ulitmo otro de interes es $\R[x]/(x^2+1)$.
+Es tomar el anillo polinomial $\R[x]$ y hacer modulo por el polinomio $(x^2+1)$,
+esto significa que ese polinomio se ponga a cero.
+Ejemplo
+\begin{equation*}
+  (x+1)^2 = x^2 + 2x + 1 = 2x + (x^2 + 1) = 2x + 0 = 2x
+\end{equation*}
+Otra forma de pensarlo es que $x^2 = -1$
+
+continuar con Ring Theory (Math 113) Summer 2016, James Mclvor, Berkeley.
+
+\section{CKKS}
+Info sacada de:
+Notes on Lattices, Homomorphic Encryption, and CKKS
+Vir Pathak
+February 2022.
+https://arxiv.org/pdf/2205.03511.pdf
+\subsection{Codificacion}
+Sea $M$ una potencia de 2.
+
+El $M$-esimo polinomio ciclotomco $\Phi(X)$ de grado $N=\Phi(M)=M/2$.
+
+Las raices de unidad $\xi=e^{2\pi i/M}$.
+
+Se define el anillo $\Rc=\Z[X]/(\Phi_M(x))=\Z[X]/(X^M+1)$.
+
+Definimo al encaje canonico $\sigma: \Rc\to\C^N$ como
+$\sigma(m)=(m(\xi),...,m(\xi^j),...,m(\xi^{M-1}))$, donde j corre sobre todos los
+numeros dentro de $\Z^*_M$.
+Se puede ver que $\sigma(m)\in\C^N$ ya que $|\Z^*_M|=\Phi(M)=N$.
+
+Nuestro mensaje es un vector complejo $\in\C^{N/2}$ y nuestro espacio de textoplano
+es $\in\Rc$.
+Gracias a esto podemos encriptar multiples mensajes en un unico texto cifrado.
+
+Como cada $N$-esima raiz dela unidad es la compleja conjugada de otra
+$N$-esima raiz de la unidad, sabemos que la imagen es:
+\begin{equation*}
+\sigma(\Rc)\subseteq\Hc=\{z\in\C^N|z_j=\overline{z_{-j}}\}
+\end{equation*}
+
+Entonces naturalmente podemos identificar cada elemento de $\sigma(\Rc)$ con $\C^{N/2}$.
+Para ello agarramos a nuestro mensaje $z\in\C^{N/2}$ y lo extendemos a $\C^N$ computando
+$\pi^{-1}(z)$ que agrega los complejos conjugados de $z$.
+
+Como $\pi^{-1}(z)\in\Hc\subset\C^N$ nos gustaria aplicar inmediatamente $\sigma^{-1}$ para obtener nuestro
+polinomio $\Rc$.
+El problema es que $\sigma(\Rc)\neq\Hc$, entonces $\pi^{-1}(z)$ podria no ser un elemento de
+$\sigma(\Rc)$.
+Para solucionar este problema usamos la tecnica denominada coordinate-wise random rounding.
+\subsubsection*{coordinate-wise random rounding}
+
+\subsection{RNS}
+% del propio paper de RNS ckks
+For an efficient implementation of polynomial arithmetic, Gentry et al. [22]
+suggested a representation of cyclotomic polynomials, called the double-CRT representation,
+based on the Chinese Remainder Theorem(CRT).
+The first CRT layer uses the Residue Number System (RNS) in order to decompose a
+polynomial into a tuple of polynomials with smaller moduli.
+The second layer converts each of small polynomials into a vector of modulo integers
+via the Number Theoretic Transform (NTT).
+In the double-CRT representation, an arbitrary polynomial is identified with a
+matrix consisting of small integers, and this enables an efficient polynomial arithmetic
+by performing component-wise modulo operations.
+\subsection{dudas}
+\begin{enumerate}
+  \item Como y por que elijo parametros como h?
+  \item El factor de escaleo es para usar valores enteros?
+  \item Por que se usan anillos?
+  \item Por que el mapeo canonico es similar al DFT?
+  \item Como se usa el teorema chino del remanente?
+  \item Eso es lo que se conoce como CKKS RNS ? (Residue Number System)
+  \item RNS: double-CRT representation of cyclotomic polynomial ring elements.
+  \item NTT: que es y su uso.
+  \item Como lleno el espacio del vector cuando mi input no es N/2?
+\end{enumerate}
+
+% https://bit-ml.github.io/blog/post/homomorphic-encryption-toy-implementation-in-python/
+\end{document}
+
