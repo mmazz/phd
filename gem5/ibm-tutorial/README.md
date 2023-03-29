@@ -29,7 +29,3 @@ course of gem5.
 
 g++-4.8  -c -o _file_.o _file_.cpp
 g++-4.8  -static -o _file_  _file_.o  path/m5threads/pthread.o
-
-
-
-

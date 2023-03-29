@@ -111,12 +111,14 @@
 %    Methods & Data Collection (1 slide)
 %    Data Presentation/Findings (3-5 slides)
 %    Conclusion (1 slide)
-%
-\begin{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[noframenumbering]
     \frametitle{Schedule}
 \begin{columns}
-    Part 1:
     \column{0.5\textwidth}
+    Part 1:
     \begin{itemize}
         \item What is HE?
         \item What is FHE?
@@ -137,6 +139,7 @@
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
 \begin{frame}
 \frametitle{What is HE?}
 
@@ -178,6 +181,7 @@ Potentially very useful for cloud computing use.
 
 \end{frame}
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -185,36 +189,28 @@ Potentially very useful for cloud computing use.
     \frametitle{FHE}
   \begin{columns}
     \column{0.5\textwidth}
-      In general, HE schemes use \texttt{Ring Learning With Errors} (RLWE) that  adds some sort of error (noise) to the encryption.
+      In general, HE schemes use \texttt{Ring Learning With Errors} (RLWE) that  adds some sort of noise (error) to the encryption.
 
 \vspace{0.3cm}
-    This error grows in each operation (particularly with multiplications).
+    This noise grows in each operation (particularly with multiplications).
 
 \vspace{0.3cm}
-      If the error is too big the decryption will not work. or undecryptable
+      If the noise is too big will be undecryptable.
     \column{0.5\textwidth}
         \begin{figure}[h!]
             \centering
             \includegraphics[scale=0.2]{multNoise.jpg}
         \end{figure}
 
-\end{columns}    Fully Homomorphic Encryption (FHE): Unlimited number of operations. In this type of schemes
+\end{columns}
+
+    Fully Homomorphic Encryption (FHE): Unlimited number of operations. In this type of schemes
     it use \texttt{Bootstrapping} that are techniques that refresh this error.
 
+    Even slower!!!
 
+    \textbf{Other problem}: Only linear operations!
 \end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-\begin{frame}
-\frametitle{Bootstrapping}
-
-Bootstrapping vs leveling
-
-o para la siguiente clase?
-\end{frame}
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -231,70 +227,323 @@ o para la siguiente clase?
         \item Operations on Boolean gates: FHEW and THFHE.
     \end{itemize}
 
+    \textbf{Paper}: BFV.
 
-    The parameters of all schemes are application-specific and desire security.
+    \textbf{Implementations}: Residue Number System (RNS) (stay with 64bits arithmetic's), and SIMD arithmetic (batching).
+
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \begin{frame}
-\frametitle{Parameters - BFV, BGV, CKKS}
+    \frametitle{BFV}
 
-Most schemes works in a Polynomial Ring domain.
-
-N will be the degree of the Polynomials (N-1).
-
-q and t will be the mod of the coefficients.
+Works in a Polynomial Ring domain.
 
 \textbf{Ring}: a set with addition, subtraction and multiplication. (and other property's, commutative, associative, etc).
 
 This operations of elements in a ring return elements in the ring $\rightarrow$ take modulus.
 
+\textbf{Parameters}: are application-specific and desire security.
+
+\begin{itemize}
+    \item $\lambda$ security level. $\sim$ $2^\lambda$ operation to decrypt with prob 1.
+    \item N will be the degree of the Polynomials (N-1).
+    \item q and t will be the mod of the coefficients.
+\end{itemize}
 
 
-
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-\begin{frame}
-\frametitle{Math notation}
-BFV, BGV and CKKS works with ciphertex  $\in \mathcal{R}_q =\mathbb{Z}_q[X]/(X^N+1)$
-
-$\mathbb{Z}[X]$ = Set of Polynomials with integer coefficients.
-
-$\mathbb{Z}_q[X]$ = Set of Polynomials with integer coefficients mod q.
-
-$\mathbb{Z}_q[X]/(X^N+1)$ = The Polynomials degree N-1.
 
 
 \end{frame}
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+% quizas menos.
 \begin{frame}
 \frametitle{BFV Primitives}
 
     Basic Primitives (simplified):
 \begin{itemize}
-    \item ParamGen($\lambda$)$\rightarrow$ Params. Security $\lambda \sim$ $2^\lambda$ operation to decrypt with prob 1.
-    \item KeyGen(Params) $\rightarrow$ SK, PK, EvalK
-    \item Encrypt(PK, m) $\rightarrow$ c
+    \item ParamGen($\lambda$)$\rightarrow$ Params.
+    \item KeyGen(Params) $\rightarrow$ SK, PK, EvalK (each is a tuple of two polynomials)
+   \item Encrypt(PK, m) $\rightarrow$ c (tuple of two polynomials)
     \item Decrypt(SK, c) $\rightarrow$ m
-    \item EvalAdd(c$_1$, c$_2$) $\rightarrow$ c$_3$
-    \item EvalMult(c$_1$, c$_2$) $\rightarrow$ c$_{mul}$
-    \item Relinerize(c$_{mul}$, EvalK) $\rightarrow$ c$_{mul}$'
+    \item EvalAdd(c$_1$, c$_2$) $\rightarrow$ c$_3$ (tuple of two polynomials)
+    \item EvalMult(c$_1$, c$_2$) $\rightarrow$ c$_{mul}$ (tuple of three polynomials)
+    \item Relinerize(c$_{mul}$, EvalK) $\rightarrow$ c$_{mul}$' (tuple of two polynomials)
 \end{itemize}
 
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+    \frametitle{Bootstrapping tradeoff}
+
+    Approach 1:
+
+    Know how many operations are needed (depth level)
+
+    Bigger scheme parameters $\approx$ bigger noise budget $\approx$ slower computation.
+
+    Approach 2:
+
+    Use Bootstrapping us needed.
+
+
+    Approach 3 (Paper):
+
+    Use the client to unencrypte an encrpyt again (refresh the noise).
+\end{frame}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% combinarla con la de los parametros.
+\begin{frame}
+\frametitle{Parameters}
+
+The parameters depends in the security level needed and amount of operations that will made.
+
+
+Some usual parameters to get the sense of what we are doing:
+
+N = 8192, 16384, 32768.
+
+q = $2^{218}$,   $2^{438}$,  $2^{881}$.
+
+t  << q.
+
+% que significa q/t
+
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% combinarla con la de los parametros.
+\begin{frame}
+\frametitle{Operations}
+
+    \textbf{Keys generations}: Sample 3 polynomials. Then two polynomail multiplication, Two additions and two modulus.
+
+    \textbf{Encryption}: Sample 3 polynomials. Then two polynomial multiplication, one scalar multiplication, three additions and two modulus.
+
+    \textbf{Decryption}: similar to Encryption.
+
+    \textbf{Multiplication + Relinerize}: Six polynomial multiplications, three additions and five modulus.
+
+   Multiplications make the noise grow a lot.
+a
+
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\frametitle{Recap}
+
+    \textbf{Rembember!} All things are high degree polynomials with huge coefficient.
+
+Each homomorphic operation is $10^3 \sim 10^6$ times slower than unencrypted.
+\pause
+
+Large footprint in memory.
+An encrypted date can occupy $10^5$ more space.
+
+\pause
+The schemes are iterative, operating many time with each data specialy Bootstrapping.
+
+
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{Research}
+
+    Usual way of increase performance:  accelerating the server part.
+\begin{itemize}\itemsep-0.7em
+   \item Accelerating the polynomial multiplication:
+    For these they use Number Theoretic Transform (NTT), a Discrete Fourier Transform (DFT) over a ring.
+   \item New schemes.
+   \item New upgrades in the schemes (like RNS).
+   \item New methods of Bootstrapping.
+   \item Software Optimization. % chequear
+   \item Algorithms implementations.
+   \item Hardware Acceleration (GPUs, FPGA, specific designs).
+\end{itemize}
+
+    \textbf{Linearity problem}: Aproximate with polynomial expantions.
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{New approach}
+Accelerate the client side, specialy encryption and decryption.
+
+CHACO: \textbf{C}lient-aided \textbf{H}E for \textbf{O}paque \textbf{C}ompute \textbf{O}ffloading.
+
+Is a client-aided HE: operate by using the client multiple times.
+
+Prior systems of these type also focus on accelerating the server part.
+
+% para que y cuando se utiliza el rotacional redundancy
+    Minimice the client costs.
+\begin{itemize}\itemsep-0.7em
+    \item Reduces ciphertext size $\rightarrow$ reducing the cost of comunication.
+    \item New algorithm: rotational redundancy $\rightarrow$ reduces computation costs.
+    \item Reduction of parameters values $\rightarrow$ reduces computation and comunication costs.
+    \item Hardware acceleration for client: CHACO-TACO.
+\end{itemize}
+
+
+\end{frame}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Research}
+
+\begin{frame}
+\frametitle{}
+complejidad
+
+aproximate non linear functions acumulate noise quickly and require large HE parameters. large ciphertext, harder to comunicate and compute.
+
+
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{}
+security assumptions + selecting parameters
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{Rotational Redundancy}
+
+Packed HE algorithms $\rightarrow$ rearrange ecrypted vectors $\rightarrow$ rotations and multiplications.
+
+Noise grows a lot!
+
+New algorithm! Rotational Redundancy.
+
+Appends redundant values to the ciphertext.
+\begin{figure}
+    \includegraphics[width=0.65\textwidth]{rotation.png}
+\end{figure}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{}
+Taco
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \begin{frame}
+\frametitle{}
+design space
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{}
+evaluation
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{}
+communiation reduces
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{}
+Taco client compute
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{}
+chaco comunication
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Conclution}
+\begin{frame}
+\frametitle{}
+conlcution
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{}
+conclution
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{}
+\Huge
+
+\begin{center}
+   Questions?
+\end{center}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Quizas al pedo.
+\begin{frame}[noframenumbering]
+\frametitle{Math notation}
+BFV, BGV and CKKS works with ciphertex  $\in \mathcal{R}_q =\mathbb{Z}_q[X]/(X^N+0)$
+
+$\mathbb{Z}[X]$ = Set of Polynomials with integer coefficients.
+
+$\mathbb{Z}_q[X]$ = Set of Polynomials with integer coefficients mod q.
+
+$\mathbb{Z}_q[X]/(X^N+0)$ = The Polynomials degree N-1.
+
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%quizas tampoco
+\begin{frame}[noframenumbering]
 \frametitle{Workflow}
 
     Encryption has two phases:
@@ -312,59 +561,36 @@ $\mathbb{Z}_q[X]/(X^N+1)$ = The Polynomials degree N-1.
 \end{frame}
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[noframenumbering]
 
+    \frametitle{Encryption}
 
-\begin{frame}
-\frametitle{BFV}
+    Encryption has two phases:
 
-The parameters depends in the security level needed and amount of operations that will made.
-
-% un poco mas de esto?
-Bigger parameters $\approx$ Bigger ''budget error'' $\approx$ less use of Bootstrapping.
-
-Some usual parameters to get the sense of what we are doing:
-
-N = 8192, 16384, 32768.
-
-q = $2^{218}$,   $2^{438}$,  $2^{881}$.
-
-t  << q.
-
-% que significa q/t
-
-    \textbf{Implementations}: Residue Number System (RNS) (stay with 64bits arithmetic's), and SIMD arithmetic.
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-\begin{frame}
-\frametitle{Encryption}
-
-Encryption has two phases:
-
- - From an integer m to plaintext M $\rightarrow$ Easy, one way: binary representation as Polynomial coefficient.
+    - From an integer m to plaintext M $\rightarrow$ Easy, one way: binary representation as Polynomial coefficient.
 
     - From plaintext to ciphertext using $PK = (PK_1, PK_2)$:
 
-\begin{itemize}
-    \item Sample a polynomial $u$ from $\mathcal{R}_2$.
-    \item Sample polynomial errors $e_1$ and $e_2$ form a Gaussian distribution.
-    \item Calculate scaling factor $\triangle = \lfloor q/t\rfloor $
-    \item Encryption of plaintext M is $C=(C_1, C_2)$
-\end{itemize}
-\begin{align}
-    &C_1 = [PK_1 * u + e_1 + \triangle M ]_q\nonumber \\
-    &C_2 = [PK_2 * u + e_2]_q\nonumber
-\end{align}
+    \begin{itemize}
+        \item Sample a polynomial $u$ from $\mathcal{R}_2$.
+        \item Sample polynomial errors $e_1$ and $e_2$ form a Gaussian distribution.
+        \item Calculate scaling factor $\triangle = \lfloor q/t\rfloor $
+        \item Encryption of plaintext M is $C=(C_1, C_2)$
+    \end{itemize}
+    %
+    \begin{align}
+        &C_1 = [PK_1 * u + e_1 + \triangle M ]_q\nonumber \\
+        &C_2 = [PK_2 * u + e_2]_q\nonumber
+    \end{align}
 
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-\begin{frame}
-\frametitle{Multiplication}
+\begin{frame}[noframenumbering]
+
+    \frametitle{Multiplication}
 
     High computational cost:
     \vspace{-0.15cm}
@@ -382,7 +608,7 @@ Encryption has two phases:
 
     \textbf{Other problem}: high noise growth: we are multiplying the errors of the two ciphertexts, the result error
     grows a lot!
-\vspace{-0.1cm}
+    \vspace{-0.1cm}
 
     \textbf{Solution}: \vspace{-0.3cm}
     \begin{itemize} \vspace{-0.2cm}
@@ -391,176 +617,6 @@ Encryption has two phases:
         \item Use Bootstrapping  (FHE). Even more demanding (multiple multiplications like $C_{mul}$).
     \end{itemize}
 \end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\begin{frame}
-\frametitle{Recap}
-
-    \textbf{Rembember!} All things are high degree polynomials with huge coefficient.
-
-For a single multiplication of two numbers:
-\begin{itemize}
-    \item Enconde and encrypt: Sample the errors and parts of the Keys and multiply them to generate the Keys.
-    \item Multiplication: Multiply the different parts of the ciphertexts.
-    \item Relinerize: Multiply the result with the evaluation key.
-\end{itemize}
-
-Each homomorphic operation is $10^3 \sim 10^6$ times slower than unencrypted.
-\pause
-
-Large footprint in memory.
-An encrypted date can occupy $10^5$ more space.
-
-\pause
-The schemes are iterative, operating many time with each data.
-\pause
-
-
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-\begin{frame}
-\frametitle{Research}
-
-    The usual way of approaching this problem of speed (and others):  accelerating the server
-    part.
-\begin{itemize}
-   \item Accelerating the polynomial multiplication:
-    For these they use Number Theoretic Transform (NTT), a Discrete Fourier Transform (DFT) over a ring.
-    \item New schemes.
-    \item New upgrades in the schemes (like RNS).
-   \item New methods of Bootstrapping.
-   \item Software Optimization.
-   \item Hardware Acceleration (GPUs, FPGA, specific designs).
-\end{itemize}
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-\begin{frame}
-\frametitle{New approach}
-
-
-    The new approach:  accelerate the client side.
-
-    CHACO: \textbf{C}lient-aided \textbf{H}E for \textbf{O}paque \textbf{C}ompute \textbf{O}ffloading.
-
-
-    Is a client-aided HE: operate by using the client multiple times.
-
-    Prior systems of these type also focus on accelerating the server part.
-
-    % para que y cuando se utiliza el rotacional redundancy
-    \begin{itemize}
-        \item Reduces ciphertext size $\rightarrow$ reducing cominication.
-        \item New algorithm: rotational redundancy $\rightarrow$ reduces computation costs.
-        \item Reduction of parameters values $\rightarrow$ reduces computation costs.
-        \item Minimice client costs.
-        \item Hardware acceleration for client: CHACO-TACO.
-    \end{itemize}
-
-
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\begin{frame}
-\frametitle{}
-The paper poitns to use for DNNs, PAgeRank, KNN and K-means.
-
-ML modeol ->inference as a service
-data privacy -> offloading exposes sensitive user data to a shared potentially untrasted offload server.
-
-HE problemns: only polynomial calculation, non linearity si imposible, only approximate. client-aided solve this.
-
-many mpc proposals use the client solving this problem but are ineficient because de client is slow.
-    Large ciphertext comunication
-
-    chaco is a mpc that minimiza the client cost. Order of magnitude less that others
-
-    encrypted linear operations on the server.
-    plaintext non linear operations on the client.
-
-
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-\begin{frame}
-\frametitle{}
-
-now Encrpytion and decryption, that before was one time per  computation, now is use many times beeing now a bottleneck.
-
-CHACO-TACO eliminates this.
-
-chaco for bfv and ckks.
-
-DONDE hace rotational en BFV? y para que sirve.
-
-ACA REPITO, VER ARRIBA COMO PONERLO.
-    \begin{itemize}
-        \item CHACO, a Client-optimized system for privacy-preserving computation enabiling encrpyted computing for resorucescontraied devices.
-        \item Rotational redundancy.
-        \item CHACO-taco
-        \item collection fo chaco based encrypted worloads.
-    \end{itemize}
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-\begin{frame}
-\frametitle{}
-complejidad
-
-aproximate non linear functions acumulate noise quickly and require large HE parameters. large ciphertext, harder to comunicate and compute.
-\end{frame}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-\begin{frame}
-\frametitle{}
-
-\end{frame}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-\begin{frame}
-\frametitle{}
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-\begin{frame}
-\frametitle{}
-
-\end{frame}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-\begin{frame}
-\frametitle{}
-\Huge
-
-\begin{center}
-   Questions?
-\end{center}
-\end{frame}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 \end{document}
 

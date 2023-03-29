@@ -8,7 +8,8 @@ thispath = os.path.dirname(os.path.realpath(__file__))
 default_binary = os.path.join(
     thispath,
     "../../../",
-    "tests/test-progs/hello/bin/x86/linux/hello",
+    "tests/test-progs/hello/hello-std",
+    #"tests/test-progs/hello/bin/x86/linux/hello",
 )
 SimpleOpts.add_option("binary", nargs="?", default=default_binary)
 args = SimpleOpts.parse_args()
