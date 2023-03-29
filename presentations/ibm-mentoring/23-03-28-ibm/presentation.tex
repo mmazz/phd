@@ -191,7 +191,7 @@ Potentially very useful for cloud computing use.
     This error grows in each operation (particularly with multiplications).
 
 \vspace{0.3cm}
-    If the error is too big the decryption will not work.
+      If the error is too big the decryption will not work. or undecryptable
     \column{0.5\textwidth}
         \begin{figure}[h!]
             \centering
@@ -333,8 +333,7 @@ t  << q.
 
 % que significa q/t
 
-    \textbf{Implementations}: Residue Number System (RNS) (stay with 64bits arithmetic's).
-
+    \textbf{Implementations}: Residue Number System (RNS) (stay with 64bits arithmetic's), and SIMD arithmetic.
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -450,13 +449,17 @@ The schemes are iterative, operating many time with each data.
     CHACO: \textbf{C}lient-aided \textbf{H}E for \textbf{O}paque \textbf{C}ompute \textbf{O}ffloading.
 
 
+    Is a client-aided HE: operate by using the client multiple times.
+
+    Prior systems of these type also focus on accelerating the server part.
+
     % para que y cuando se utiliza el rotacional redundancy
     \begin{itemize}
-        \item Another way to operate by using multiple times the client.
-        \item New algorithm: rotational redundancy.
-        \item Reduction of parameters values.
+        \item Reduces ciphertext size $\rightarrow$ reducing cominication.
+        \item New algorithm: rotational redundancy $\rightarrow$ reduces computation costs.
+        \item Reduction of parameters values $\rightarrow$ reduces computation costs.
         \item Minimice client costs.
-        \item Hardware acceleration for client: CHACO-TACO
+        \item Hardware acceleration for client: CHACO-TACO.
     \end{itemize}
 
 
@@ -466,6 +469,20 @@ The schemes are iterative, operating many time with each data.
 
 \begin{frame}
 \frametitle{}
+The paper poitns to use for DNNs, PAgeRank, KNN and K-means.
+
+ML modeol ->inference as a service
+data privacy -> offloading exposes sensitive user data to a shared potentially untrasted offload server.
+
+HE problemns: only polynomial calculation, non linearity si imposible, only approximate. client-aided solve this.
+
+many mpc proposals use the client solving this problem but are ineficient because de client is slow.
+    Large ciphertext comunication
+
+    chaco is a mpc that minimiza the client cost. Order of magnitude less that others
+
+    encrypted linear operations on the server.
+    plaintext non linear operations on the client.
 
 
 \end{frame}
@@ -476,6 +493,55 @@ The schemes are iterative, operating many time with each data.
 \begin{frame}
 \frametitle{}
 
+now Encrpytion and decryption, that before was one time per  computation, now is use many times beeing now a bottleneck.
+
+CHACO-TACO eliminates this.
+
+chaco for bfv and ckks.
+
+DONDE hace rotational en BFV? y para que sirve.
+
+ACA REPITO, VER ARRIBA COMO PONERLO.
+    \begin{itemize}
+        \item CHACO, a Client-optimized system for privacy-preserving computation enabiling encrpyted computing for resorucescontraied devices.
+        \item Rotational redundancy.
+        \item CHACO-taco
+        \item collection fo chaco based encrypted worloads.
+    \end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{}
+complejidad
+
+aproximate non linear functions acumulate noise quickly and require large HE parameters. large ciphertext, harder to comunicate and compute.
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{}
+
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{}
 
 \end{frame}
 
