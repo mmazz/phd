@@ -66,7 +66,7 @@
 
 \usepackage{hyperref}
 
-\title[CHACO]{Client-optimized Algorithms and Acceleration for Encrypted Compute Offloading}
+\title[CHOCO]{Client-optimized Algorithms and Acceleration for Encrypted Compute Offloading}
 \author[Matias Mazzanti]{Matias Mazzanti}
 
 
@@ -112,7 +112,21 @@
 %    Data Presentation/Findings (3-5 slides)
 %    Conclusion (1 slide)
 
+\begin{frame}
+    \frametitle{CHOCO-TACO}
 
+    CHOCO is New approach for FHE.
+
+    Accelerate Encryption and Decryption (the client side).
+
+    Use the client to refresh the noise.
+
+    Use the client to do nonlinear operations.
+
+    New algorithm for minimice computation cost.
+
+    CHOCO-TACO is a hardware accelerator for this.
+\end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[noframenumbering]
     \frametitle{Schedule}
@@ -137,6 +151,11 @@
 \end{columns}
 
 \end{frame}
+
+
+
+
+%% hacer una especie de entre cortito de que es?
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
@@ -181,6 +200,7 @@ Potentially very useful for cloud computing use.
 
 \end{frame}
 
+% ACA PONER COMO ES CLIENT-AIDED?
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -201,6 +221,8 @@ Potentially very useful for cloud computing use.
             \centering
             \includegraphics[scale=0.2]{multNoise.jpg}
         \end{figure}
+
+
 
 \end{columns}
 
@@ -252,8 +274,6 @@ This operations of elements in a ring return elements in the ring $\rightarrow$ 
     \item N will be the degree of the Polynomials (N-1).
     \item q and t will be the mod of the coefficients.
 \end{itemize}
-
-
 
 
 \end{frame}
@@ -314,7 +334,7 @@ Some usual parameters to get the sense of what we are doing:
 
 N = 8192, 16384, 32768.
 
-q = $2^{218}$,   $2^{438}$,  $2^{881}$.
+    q = $2^{218}$,   $2^{438}$,  $2^{881}$. (bigger q, bigger noise budget)
 
 t  << q.
 
@@ -337,7 +357,8 @@ t  << q.
     \textbf{Multiplication + Relinerize}: Six polynomial multiplications, three additions and five modulus.
 
    Multiplications make the noise grow a lot.
-a
+
+   % tabla de complejidades?
 
 \end{frame}
 
@@ -356,9 +377,14 @@ Large footprint in memory.
 An encrypted date can occupy $10^5$ more space.
 
 \pause
-The schemes are iterative, operating many time with each data specialy Bootstrapping.
+    The schemes are iterative, operating many time with each data specialy Bootstrapping (CHOCO don't use it).
 
-
+        \begin{figure}[h!]
+            \centering
+            \includegraphics[scale=0.8]{workflow.png}
+        \end{figure}
+    \centering
+        SIMD example
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -374,8 +400,7 @@ The schemes are iterative, operating many time with each data specialy Bootstrap
    \item New schemes.
    \item New upgrades in the schemes (like RNS).
    \item New methods of Bootstrapping.
-   \item Software Optimization. % chequear
-   \item Algorithms implementations.
+   \item Algorithms implementations, like packed ones (concatenate multiple plaintexts).
    \item Hardware Acceleration (GPUs, FPGA, specific designs).
 \end{itemize}
 
@@ -388,7 +413,7 @@ The schemes are iterative, operating many time with each data specialy Bootstrap
 \frametitle{New approach}
 Accelerate the client side, specialy encryption and decryption.
 
-CHACO: \textbf{C}lient-aided \textbf{H}E for \textbf{O}paque \textbf{C}ompute \textbf{O}ffloading.
+CHOCO: \textbf{C}lient-aided \textbf{H}E for \textbf{O}paque \textbf{C}ompute \textbf{O}ffloading.
 
 Is a client-aided HE: operate by using the client multiple times.
 
@@ -400,7 +425,7 @@ Prior systems of these type also focus on accelerating the server part.
     \item Reduces ciphertext size $\rightarrow$ reducing the cost of comunication.
     \item New algorithm: rotational redundancy $\rightarrow$ reduces computation costs.
     \item Reduction of parameters values $\rightarrow$ reduces computation and comunication costs.
-    \item Hardware acceleration for client: CHACO-TACO.
+    \item Hardware acceleration for client: CHOCO-TACO.
 \end{itemize}
 
 
@@ -413,11 +438,24 @@ Prior systems of these type also focus on accelerating the server part.
 \section{Research}
 
 \begin{frame}
-\frametitle{}
-complejidad
+\frametitle{CHOCO - application}
 
-aproximate non linear functions acumulate noise quickly and require large HE parameters. large ciphertext, harder to comunicate and compute.
+The most clear example: DNN inference.
 
+Before: No client itermiediate comunication $\rightarrow$ adapt networks architectre and approximations of non-linear operations.
+
+    Problems: Fast noise acumulation, large HE parameters, big ciphertext (more costly to process and communication)
+
+CHOCO:
+\begin{itemize}
+    \item Client-aided $\rightarrow$ offload linear convolution and fully-conected layers to HE server.
+    \item Send intermediate reuslts to the client to perform non-linear operations and refresh noise.
+    \item Supports unmodified networks with arbitrary activation functions.
+\end{itemize}
+
+Larger client cost!
+
+    CHOCO minimize this cost (with also CHACO-TACO).
 
 \end{frame}
 
@@ -427,7 +465,21 @@ aproximate non linear functions acumulate noise quickly and require large HE par
 
 \begin{frame}
 \frametitle{}
-security assumptions + selecting parameters
+
+Quizas solo contar que vieron que el 99\% del tiempo se lo lleva el encrypt y decrypt
+
+y que ademas NTT y esas cosas llevan solo el 60\% del tiempo.
+
+QUEDA LA DUDA DE quanitzar 4bits.... SI pasan de 8 bits a 4 bits, super agresivo.
+pero parece que para estas cosas funciona y reduce mucjho el tamaño del cifrado
+
+Evaluation of client costs - communication and computation.
+
+Four DNN models with a client using TFLite
+\begin{figure}
+    \includegraphics[width=0.45\textwidth]{motivation.png}
+\end{figure}
+
 \end{frame}
 
 
@@ -437,7 +489,7 @@ security assumptions + selecting parameters
 \begin{frame}
 \frametitle{Rotational Redundancy}
 
-Packed HE algorithms $\rightarrow$ rearrange ecrypted vectors $\rightarrow$ rotations and multiplications.
+Packed HE algorithms $\rightarrow$  rearrange ecrypted vectors $\rightarrow$ rotations and multiplications.
 
 Noise grows a lot!
 
@@ -448,6 +500,11 @@ Appends redundant values to the ciphertext.
     \includegraphics[width=0.65\textwidth]{rotation.png}
 \end{figure}
 
+Exploits the fact that the client  always decrypt, unpack, repack and encrypt.
+
+So client discard redundant data adds new values for the next operation.
+
+Tipically the redundancy is a small fraction of the total vector size.
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
