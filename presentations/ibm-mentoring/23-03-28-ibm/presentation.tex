@@ -358,7 +358,7 @@ t  << q.
 
    Multiplications make the noise grow a lot.
 
-   % tabla de complejidades?
+    \textbf{RNS}: naive explanation, slipt a ciphertext of more than 64bits in $k$ chunks and operates in that way.
 
 \end{frame}
 
@@ -438,7 +438,13 @@ Prior systems of these type also focus on accelerating the server part.
 \section{Research}
 
 \begin{frame}
-\frametitle{CHOCO - application}
+\frametitle{Motivation}
+
+
+\begin{figure}
+    \includegraphics[width=0.45\textwidth]{motivation.png}
+\end{figure}
+
 
 The most clear example: DNN inference.
 
@@ -465,6 +471,7 @@ Larger client cost!
 
 \begin{frame}
 \frametitle{}
+<<<<<<< HEAD
 
 Quizas solo contar que vieron que el 99\% del tiempo se lo lleva el encrypt y decrypt
 
@@ -480,6 +487,8 @@ Four DNN models with a client using TFLite
     \includegraphics[width=0.45\textwidth]{motivation.png}
 \end{figure}
 
+
+
 \end{frame}
 
 
@@ -493,9 +502,12 @@ Packed HE algorithms $\rightarrow$  rearrange ecrypted vectors $\rightarrow$ rot
 
 Noise grows a lot!
 
+%Convolutions use a lot of rotations. Explica como lo usaron...
+
+
 New algorithm! Rotational Redundancy.
 
-Appends redundant values to the ciphertext.
+    Client appends redundant values to the plaintext (before the encryption).
 \begin{figure}
     \includegraphics[width=0.65\textwidth]{rotation.png}
 \end{figure}
@@ -506,13 +518,40 @@ So client discard redundant data adds new values for the next operation.
 
 Tipically the redundancy is a small fraction of the total vector size.
 \end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{Rotational Redundancy}
+uso y beneficios del rotational
+
+\end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \begin{frame}
 \frametitle{}
 Taco
+
+\begin{figure}
+    \includegraphics[width=0.55\textwidth]{pipeline.png}
+\end{figure}
+
 \end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{}
+Taco
+
+\begin{figure}
+    \includegraphics[width=0.85\textwidth]{architecture.png}
+\end{figure}
+
+\end{frame}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
