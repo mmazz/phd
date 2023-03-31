@@ -115,15 +115,17 @@
 \begin{frame}
     \frametitle{CHOCO-TACO}
 
-    CHOCO is New approach for FHE.
+    CHOCO is a HE approach for devices with constrained resources.
 
-    Accelerate Encryption and Decryption (the client side).
+    Is a client-aided approach.
+
+    Accelerate the client side (primarily Encryption and Decryption).
+
+    New algorithm for minimice computation cost.
 
     Use the client to refresh the noise.
 
     Use the client to do nonlinear operations.
-
-    New algorithm for minimice computation cost.
 
     CHOCO-TACO is a hardware accelerator for this.
 \end{frame}
@@ -132,7 +134,15 @@
     \frametitle{Schedule}
 \begin{columns}
     \column{0.5\textwidth}
-    Part 1:
+    Introduction
+    \begin{itemize}
+        \item What is HE?
+        \item What is FHE?
+        \item Schemes
+        \item Math notation
+    \end{itemize}
+
+    Implementation
     \begin{itemize}
         \item What is HE?
         \item What is FHE?
@@ -141,13 +151,14 @@
     \end{itemize}
 
     \column{0.5\textwidth}
-    Part 2:
+    Results
     \begin{itemize}
         \item What is HE?
         \item What is FHE?
         \item Schemes
         \item Math notation
     \end{itemize}
+    Conclusion
 \end{columns}
 
 \end{frame}
@@ -159,14 +170,36 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
+
+\begin{frame}
+    \frametitle{}
+        Motivation, low power, etc
+
+        IoT: Many small devices, lot of data, low compute power, high computation complexity.
+
+        Solution: Compute offloading, communicate data to robust server to process.
+
+        Problem: data privacy. In many cases this data is sensitive (like helth care data)
+
+
+        Solution: HE or FHE.
+        \begin{figure}
+            \includegraphics[width=0.75\textwidth]{model.png}
+        \end{figure}
+
+
+\end{frame}
+
 \begin{frame}
 \frametitle{What is HE?}
-
 
     Homomorphic Encryption (HE) $\rightarrow$ form of encryption. Early 80s
 \vspace{-0.3cm}
 
     Operate \textbf{directly} with encrypted data (without the need of decrypt).
+\vspace{-0.3cm}
+
+    HE supports only addition, multiplication and rotation $\rightarrow$ only \textbf{linear} operations.
 \vspace{0.3cm}
   \begin{columns}
     \column{0.5\textwidth}
@@ -191,8 +224,8 @@ Typical use case:
  \vspace{-0.3cm}
 
 
-Potentially very useful for cloud computing use.
- \vspace{-0.3cm}
+%Potentially very useful for cloud computing use.
+% \vspace{-0.3cm}
 
  \pause
     \textbf{Present}: Orders of magnitude \textbf{slower} for real use.
@@ -209,7 +242,8 @@ Potentially very useful for cloud computing use.
     \frametitle{FHE}
   \begin{columns}
     \column{0.5\textwidth}
-      In general, HE schemes use \texttt{Ring Learning With Errors} (RLWE) that  adds some sort of noise (error) to the encryption.
+      In general, HE schemes use \texttt{Ring Learning With Errors} (RLWE) that
+      adds some noise (error) to the encryption.
 
 \vspace{0.3cm}
     This noise grows in each operation (particularly with multiplications).
@@ -229,9 +263,8 @@ Potentially very useful for cloud computing use.
     Fully Homomorphic Encryption (FHE): Unlimited number of operations. In this type of schemes
     it use \texttt{Bootstrapping} that are techniques that refresh this error.
 
-    Even slower!!!
+    Even slower!!! Bottleneck.
 
-    \textbf{Other problem}: Only linear operations!
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -243,15 +276,22 @@ Potentially very useful for cloud computing use.
     Many schemes. \textbf{Warning}: Many acronyms!!!
 
     Popular schemes by types:
-    \begin{itemize}
-        \item Operations on integers: BFV and BGV.
-        \item Operations on real numbers: CKKS.
+    \begin{itemize}\vspace{-0.2cm}
+        \item Operations on integers: \textbf{BFV} and BGV.\vspace{-0.2cm}
+        \item Operations on real numbers: CKKS.\vspace{-0.2cm}
         \item Operations on Boolean gates: FHEW and THFHE.
     \end{itemize}
 
     \textbf{Paper}: BFV.
 
-    \textbf{Implementations}: Residue Number System (RNS) (stay with 64bits arithmetic's), and SIMD arithmetic (batching).
+    \textbf{''Upgrades''}:
+\begin{itemize}\vspace{-0.2cm}
+    \item Residue Number System (RNS) (stay with 64bits arithmetic's).        Represent the bigger input as the residues of $k$ relative primes.
+        Then we operate pair-wise.
+ \vspace{-0.2cm}
+   \item SIMD arithmetic (batching).
+\end{itemize}
+
 
 \end{frame}
 
@@ -265,14 +305,15 @@ Works in a Polynomial Ring domain.
 
 \textbf{Ring}: a set with addition, subtraction and multiplication. (and other property's, commutative, associative, etc).
 
-This operations of elements in a ring return elements in the ring $\rightarrow$ take modulus.
+    This operations of elements in a ring return elements in the ring $\rightarrow$ take \textbf{modulus}.
 
 \textbf{Parameters}: are application-specific and desire security.
 
 \begin{itemize}
     \item $\lambda$ security level. $\sim$ $2^\lambda$ operation to decrypt with prob 1.
-    \item N will be the degree of the Polynomials (N-1).
-    \item q and t will be the mod of the coefficients.
+    \item $N$: the degree of the Polynomials ($N$-1).
+    \item $q$ and $t$: the mod of the coefficients.
+    \item $k$: size of the set of the RNS technique.
 \end{itemize}
 
 
@@ -303,18 +344,17 @@ This operations of elements in a ring return elements in the ring $\rightarrow$ 
 \begin{frame}
     \frametitle{Bootstrapping tradeoff}
 
-    Approach 1:
+    Approach 1: \textbf{No Bootstrapping}
 
     Know how many operations are needed (depth level)
 
     Bigger scheme parameters $\approx$ bigger noise budget $\approx$ slower computation.
 
-    Approach 2:
+    Approach 2: \textbf{Bootstrapping}
 
     Use Bootstrapping us needed.
 
-
-    Approach 3 (Paper):
+    Approach 3: \textbf{Client-aided}
 
     Use the client to unencrypt an encrypt again (refresh the noise).
 \end{frame}
@@ -332,11 +372,11 @@ The parameters depends in the security level needed and amount of operations tha
 
 Some usual parameters to get the sense of what we are doing:
 
-N = 8192, 16384, 32768.
+$N$ = 8192, 16384, 32768 $\rightarrow$ bigger $N$ $\approx$ bigger noise budget but bigger ciphertex and heavier computation.
 
-    q = $2^{218}$,   $2^{438}$,  $2^{881}$. (bigger q, bigger noise budget)
+    $q$ = $2^{218}$,   $2^{438}$,  $2^{881}$ $\rightarrow$ bigger $q$ $\approx$ bigger noise budget but bigger ciphertex and heavier computation.
 
-t  << q.
+    $t$  << $q$. $\rightarrow$ smaller $t$ $\approx$ bigger noise budget but less precision.
 
 % que significa q/t
 
@@ -358,7 +398,6 @@ t  << q.
 
    Multiplications make the noise grow a lot.
 
-    \textbf{RNS}: naive explanation, split a ciphertext of more than 64bits in $k$ chunks and operates in that way.
 
 \end{frame}
 
