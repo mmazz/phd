@@ -378,6 +378,7 @@ $N$ = 8192, 16384, 32768 $\rightarrow$ bigger $N$ $\approx$ bigger noise budget 
 
     $t$  << $q$. $\rightarrow$ smaller $t$ $\approx$ bigger noise budget but less precision.
 
+    $k\in [2,5] \rightarrow$ generally select to stay in 64bits arithmetics, bigger parameters, bigger $k$.
 % que significa q/t
 
 
@@ -473,7 +474,6 @@ CHOCO: \textbf{C}lient-aided \textbf{H}E for \textbf{O}paque \textbf{C}ompute \t
 %ACLARAR que es mas apra IoT.
 \end{frame}
 
-operate by using the client multiple times.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -481,6 +481,10 @@ operate by using the client multiple times.
 
 \begin{frame}
 \frametitle{Motivation}
+
+
+UNIR ESTAS DOS DIAPOS
+
 The most clear example: DNN inference.
 % they use a lot, and things like rotational seems to be boosted.
 
@@ -570,14 +574,13 @@ Packed HE algorithms $\rightarrow$  aligned vectors to operate in the desire way
 %Convolutions use a lot of rotations. Explica como lo usaron...
 New algorithm! Rotational Redundancy $\rightarrow$ lower arithmetic depth $\rightarrow$ less noise.
 
-50\% smaller ciphertext. 1.87x speed, still 96.3x remmains.
+50\% smaller ciphertext and allows one less prime remainder ($k$)  1.87x speed, still 96.3x remmains
 % por ser ciphertext hay que rotar todo y no solo la ventanita que queremos.
 \begin{figure}
-    \includegraphics[width=0.65\textwidth]{rotation.png}
+    \includegraphics[width=0.85\textwidth]{rotation.png}
 \end{figure}
 
 
-    Client appends redundant values to the plaintext (before the encryption).
 
     % RGB is 3 channel or each convolution layer)
 \end{frame}
@@ -585,32 +588,37 @@ New algorithm! Rotational Redundancy $\rightarrow$ lower arithmetic depth $\righ
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-\begin{frame}
-\frametitle{Rotational Redundancy - CHOCO}
-Exploits the fact that the client  always decrypt, unpack, repack and encrypt.
+%\begin{frame}
+%\frametitle{Rotational Redundancy - CHOCO}
+%Exploits the fact that the client  always decrypt, unpack, repack and encrypt.
+%
+%So client discard redundant data adds new values for the next operation.
+%
+%Typically the redundancy is a small fraction of the total vector size.
+%
+%Convolution requieres windowed rotation within each channel.
+%
+%CHOCO packs each channel of an image with sufficient redundancy to keep
+%values aligned through the encrypted convolution.
+%
+%CHOCO stacks the redundan channel vector into evenly-spaced, power-of-two-sized slots in the final ciphertext vector.
+%
+%All elements can be properly aligned for convolution.
+%
+%50\% reduction of ciphertext size compared to SEALS with same N=8192.
+%
+%One less  RNS entry.
 
-So client discard redundant data adds new values for the next operation.
 
-Typically the redundancy is a small fraction of the total vector size.
-
-Convolution requieres windowed rotation within each channel.
-
-CHOCO packs each channel of an image with sufficient redundancy to keep
-values aligned through the encrypted convolution.
-
-CHOCO stacks the redundan channel vector into evenly-spaced, power-of-two-sized slots in the final ciphertext vector.
-
-All elements can be properly aligned for convolution.
-
-50\% reduction of ciphertext size compared to SEALS with same N=8192.
-
-One less  RNS entry.
-\end{frame}
+% FPGA implementation
+%\end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \begin{frame}
 \frametitle{CHOCO-TACO}
+CHOCO + FPGA Encrypt and Decrypt = 4.4x, remain 22x.
+
 CHOCO-TACO: \textbf{T}hrough \textbf{A}ccelerated \textbf{C}ryptographic \textbf{O}perations
 
 CHOCO-TACO accelerates all of the componentes sub-operations of HE encryption and decryption.
@@ -631,12 +639,12 @@ CHOCO-TACO is for BFV and CKKS.
 
 \begin{frame}
 \frametitle{CHOCO-TACO}
-\begin{equation}
-    Enc([PK_0,PK_1],m) = ([\triangle m + PK_0u+e_1]_q, [PK_1u+e_2]_q)
-\end{equation}
+\begin{equation*}
+    Enc([P_0,P_1],m) = ([\triangle m + P_0u+e_1]_q, [P_1u+e_2]_q)
+\end{equation*}
 
 \begin{figure}
-    \includegraphics[width=0.55\textwidth]{pipeline.png}
+    \includegraphics[width=0.95\textwidth]{pipeline.png}
 \end{figure}
 
 % Modulus Switching
@@ -652,12 +660,37 @@ CHOCO-TACO is for BFV and CKKS.
 \frametitle{CHOCO-TACO}
  Straightforward, parallel, pipelined hardware.
 
+\only<1>{
  Modules: Pseudo-Random Number Generation, Polynomial Multiplication, Polynomial Addition, Modulus Switching and Message Encoding.
+}
+\only<2>{
+    \begin{figure}
+        \includegraphics[width=1.05\textwidth]{architecture0.png}
+    \end{figure}
+}
+\only<3>{
+    \begin{figure}
+        \includegraphics[width=1.05\textwidth]{architecture1.png}
+    \end{figure}
+}
+\only<4>{
+    \begin{figure}
+        \includegraphics[width=1.05\textwidth]{architecture2.png}
+    \end{figure}
+}
+\only<5>{
+    \begin{figure}
+        \includegraphics[width=1.05\textwidth]{architecture3.png}
+    \end{figure}
+}
+\only<6>{
+    \begin{figure}
+        \includegraphics[width=1.05\textwidth]{architecture4.png}
+    \end{figure}
+}
 
-
-\begin{figure}
-    \includegraphics[width=0.85\textwidth]{architecture.png}
-\end{figure}
+% Hablar del paralelismo, que hay multiples capas,  SRAM buffers para evitar el movimiento
+% iunecesario de data.
 
 
 \end{frame}
@@ -666,79 +699,103 @@ CHOCO-TACO is for BFV and CKKS.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-\begin{frame}
+\begin{frame}a
 \frametitle{Design space}
-
+%quizas sacar el grafico que no dice mucho.
 Simulation of 31340 different architectural configurations.
 \begin{figure}
-    \includegraphics[width=0.45\textwidth]{design-space.png}
+    \includegraphics[width=0.85\textwidth]{design-space.png}
 \end{figure}
 Select 200mW and smallest design with run time within 1\% of optimal time and energy.
 
 19.3mm$^2$ area and consumes 0.1228mJ to perform single encryption in 0.66ms for N = 8192 and k = 3.
+% implement in  RTL individual hatdware components.
+% synthesized them with cadence genus in 45nm technology node.
+% model memory with destiny, SRAM as aggresive wire techonlogy.
+% optmized for read energyy with 8-word,64byte, memory accces.
+%clocked 100Mhz for energy optimization.
 \end{frame}
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-\begin{frame}
-\frametitle{}
-\begin{figure}
-    \includegraphics[width=0.45\textwidth]{comunication.png}
-\end{figure}
-
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 \begin{frame}
-    \frametitle{}
+\frametitle{Communication reduction}
+   \textbf{recap}: CHOCO use N=8192 (in general more than 16000) +
+4-bits aggresive quantization + reduction of $k=2$ $\rightarrow$ 50\% smaller ciphertext than SEAL
+
+
     \begin{figure}
-    \includegraphics[width=0.45\textwidth]{motivation2.png}
-\end{figure}
+        \includegraphics[width=0.95\textwidth]{comunication.png}
+    \end{figure}
 
-
+    % Lola Non-client
 \end{frame}
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \begin{frame}
-\frametitle{}
+    \frametitle{Client compute Acceleration}
+    % SW CHOCO 1.7x over SEAL
+    % lower baseline local TFLite compute, UPPER SEAL.
+    % TFLite 121x over CHOCO SW show clear bottleneck in encrypt and decrypt.
+    % EVEN with HEAX (NTT boost) still 14.5x slower than tflite.
+    % WITH TACO that optimil allocation of compute resourcesm, minimal buffering,
+    %tightly integrated memories anjd multiple levels opf parrallelism to address the
+    %remaining 40% of computation.
+    % TACO 2.2x faster thab TFLite.
     \begin{figure}
-    \includegraphics[width=0.45\textwidth]{energy.png}
+    \includegraphics[width=0.75\textwidth]{motivation2.png}
 \end{figure}
-
 
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 \begin{frame}
-\frametitle{}
+    \frametitle{Competitive Compute}
+    10mW Bluetooth communication at 22Mbps.
+
+    % 24x average time overhead compared to local compute.
+    % in small devices battery preservation oftenb outweights the need for fast compute.
+    % CHOCO and TFLite is competitive. in VGG 37% savings.
     \begin{figure}
-    \includegraphics[width=0.45\textwidth]{comunication2.png}
-\end{figure}
+        \includegraphics[width=0.85\textwidth]{energy.png}
+    \end{figure}
+
+    Communications still is a challenge. CHOCO 66\% reduction over SEAL.
 
 
-
-choco comunication
 \end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{frame}
+%\frametitle{}
+%    \begin{figure}
+%    \includegraphics[width=0.95\textwidth]{comunication2.png}
+%\end{figure}
+%
+%
+%
+%\end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Conclusion}
 \begin{frame}
 \frametitle{}
 \begin{itemize}
-    \item CHOCO motivates and prioritizes client-aware optimization
-    \item CHOCO algorithm optimizations reduce communication by orders of magnitude over prior work
-    \item CHOCO-TACO hardware comprehensively accelerates client-side cryptography Primitives
-    \item CHOCO enables participation from resource-constrained devices in client-aided encryption computation
-    \item CHOCO makes client responsibility competitive with local compute
+    \item CHOCO motivates and prioritizes client-aware optimization.
+    \item CHOCO algorithm optimizations reduce communication by orders of magnitude over prior work.
+    \item CHOCO-TACO hardware comprehensively accelerates client-side cryptography Primitives.
+    \item CHOCO enables participation from resource-constrained devices in client-aided encryption computation.
+    \item CHOCO makes client responsibility competitive with local compute.
+    \item Communications still a Bottleneck.
 \end{itemize}
 
 \end{frame}
@@ -858,7 +915,15 @@ $\mathbb{Z}_q[X]/(X^N+0)$ = The Polynomials degree N-1.
 \end{figure}
 
 \end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\begin{frame}[noframenumbering]
+\frametitle{}
+\begin{figure}
+    \includegraphics[width=0.45\textwidth]{complexity.png}
+\end{figure}
+
+\end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}[noframenumbering]
