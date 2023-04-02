@@ -305,7 +305,7 @@ Works in a Polynomial Ring domain.
 
 \textbf{Ring}: a set with addition, subtraction and multiplication. (and other property's, commutative, associative, etc).
 
-    This operations of elements in a ring return elements in the ring $\rightarrow$ take \textbf{modulus}.
+    This operations of elements in a ring return elements in the ring $\rightarrow$  \textbf{modular arithmetics}.
 
 \textbf{Parameters}: are application-specific and desire security.
 
@@ -436,12 +436,12 @@ An encrypted date can occupy $10^5$ more space.
 
     Usual way of increase performance:  accelerating the server part.
 \begin{itemize}\itemsep-0.7em
-   \item Accelerating the polynomial multiplication:
-    For these they use Number Theoretic Transform (NTT), a Discrete Fourier Transform (DFT) over a ring.
    \item New schemes.
    \item New upgrades in the schemes (like RNS).
    \item New methods of Bootstrapping.
    \item Algorithms implementations, like packed ones (concatenate multiple plaintexts).
+   \item Accelerating the polynomial multiplication:
+       For these they use Number Theoretic Transform (NTT), a Discrete Fourier Transform (DFT) over a ring.
    \item Hardware Acceleration (GPUs, FPGA, specific designs).
 \end{itemize}
 
@@ -452,27 +452,28 @@ An encrypted date can occupy $10^5$ more space.
 
 \begin{frame}
 \frametitle{New approach}
-Accelerate the client side, specially encryption and decryption.
 
 CHOCO: \textbf{C}lient-aided \textbf{H}E for \textbf{O}paque \textbf{C}ompute \textbf{O}ffloading.
 
-Is a client-aided HE: operate by using the client multiple times.
+    Is a \textbf{client-aided} HE: client refresh noise when is needed.
 
-Prior systems of these type also focus on accelerating the server part.
+    Client also do non-linear operations, like activation functions in Neural Netwroks (NN)
+
+     CHOCO accelerates the client side, specially encryption and decryption.
 
 % para que y cuando se utiliza el rotacional redundancy
     Minimice the client costs.
 \begin{itemize}\itemsep-0.7em
+        \item New algorithm: rotational redundancy $\rightarrow$ reduces computation costs.
     \item Reduces ciphertext size $\rightarrow$ reducing the cost of communication.
-    \item New algorithm: rotational redundancy $\rightarrow$ reduces computation costs.
     \item Reduction of parameters values $\rightarrow$ reduces computation and communication costs.
     \item Hardware acceleration for client: CHOCO-TACO.
 \end{itemize}
-
+% rotational es mas para DNN y demas? o funca para otras cosaS?
 %ACLARAR que es mas apra IoT.
 \end{frame}
 
-
+operate by using the client multiple times.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -480,48 +481,79 @@ Prior systems of these type also focus on accelerating the server part.
 
 \begin{frame}
 \frametitle{Motivation}
-The most clear example: DNN inference. % they use a lot, and things like rotational seems to be boosted.
+The most clear example: DNN inference.
+% they use a lot, and things like rotational seems to be boosted.
 
-Before: No client intermediate communication $\rightarrow$ adapt networks architecture and approximations of non-linear operations.
+    \textbf{Before}: No client intermediate communication $\rightarrow$ adapt networks architecture and approximations of non-linear operations.
 
-    Problems: Fast noise accumulation, large HE parameters, big ciphertext (more costly to process and communication)
+    \textbf{Problems}: Fast noise accumulation, large HE parameters, big ciphertext (more costly to process and communication)
 
 CHOCO:
 \begin{itemize}
-    \item Client-aided $\rightarrow$ offload linear convolution and fully-connected layers to HE server.
-    \item Send intermediate results to the client to perform non-linear operations and refresh noise.
-    \item Supports unmodified networks with arbitrary activation functions.
+    \vspace{-0.2cm}  \item Client-aided $\rightarrow$ offload linear convolution and fully-connected layers to HE server.
+    \vspace{-0.2cm}\item Send intermediate results to the client to perform non-linear operations and refresh noise.
+    \vspace{-0.2cm}\item Supports unmodified networks with arbitrary activation functions.
 \end{itemize}
 
 Larger client cost!
-
-    CHOCO minimize this cost (with also CHOCO-TACO).
+CHOCO minimize this cost (with also CHOCO-TACO).
 
 \end{frame}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+% Quizas esta vuela por que despues hay otra parecida usando CHOCO
 \begin{frame}
-\frametitle{}
+\frametitle{Benchmark}
+% NO USAN CHOCO aca
+\begin{columns}
+    \column{0.5\textwidth}
+    \textbf{CPU Client}: ARM cortex-A7
+    \vspace{0.2cm}
 
-Quizas solo contar que vieron que el 99\% del tiempo se lo lleva el encrypt y decrypt
+    \textbf{Workload}: single image DNNs inference, 4 different models.
 
-y que ademas NTT y esas cosas llevan solo el 60\% del tiempo.
+    \column{0.5\textwidth}
+    \textbf{Profile}: 60\% is on polynomial multiplication and NTT of SEAL encryption and decryption.
+do.
+    \vspace{0.2cm}
 
-QUEDA LA DUDA DE quanitzar 4bits.... SI pasan de 8 bits a 4 bits, super agresivo.
-pero parece que para estas cosas funciona y reduce mucjho el tamaño del cifrado
+99\% of client compute HE operations.
+\end{columns}
 
-Evaluation of client costs - communication and computation.
 
-Four DNN models with a client using TFLite
+    \vspace{-0.3cm}
+
 \begin{figure}
-    \includegraphics[width=0.45\textwidth]{motivation.png}
+    \includegraphics[width=0.65\textwidth]{motivation.png}
 \end{figure}
+\centering
+Up to 180x overhead to offload compute.
+
 % Lo que muestra aca es la diferencia entre lo que tarda la Encrpytion y decryption en el cliente
 % vs lo otro
 
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{Algorithm optimizations}
+
+    Idea: Minimize arithmetic Depth % y esto?
+
+    \begin{itemize}
+        \item Lower Noise Growth.
+        \item Lower Parameters Selections.
+        \item Lower Ciphertext Size.
+    \end{itemize}
+
+    Less computation, memory demmands and commuinication.
+
+    Selecting Efficient HE Parameters: agressive 4-bits input quantization.
+    % primero discretizo los inputs y depsues lo paso a plaintext y demas.
 \end{frame}
 
 
@@ -531,21 +563,21 @@ Four DNN models with a client using TFLite
 \begin{frame}
 \frametitle{Rotational Redundancy}
 
-Packed HE algorithms $\rightarrow$  rearrange encrypted vectors $\rightarrow$ rotations and multiplications.
+Packed HE algorithms $\rightarrow$  aligned vectors to operate in the desire way.
 
-Noise grows a lot!
+    Rearrange encrypted vectors $\rightarrow$ rotations and multiplications  $\rightarrow$ Noise grows a lot!
 
 %Convolutions use a lot of rotations. Explica como lo usaron...
+New algorithm! Rotational Redundancy $\rightarrow$ lower arithmetic depth $\rightarrow$ less noise.
 
-
-New algorithm! Rotational Redundancy.
-
-    Client appends redundant values to the plaintext (before the encryption).
+50\% smaller ciphertext. 1.87x speed, still 96.3x remmains.
+% por ser ciphertext hay que rotar todo y no solo la ventanita que queremos.
 \begin{figure}
     \includegraphics[width=0.65\textwidth]{rotation.png}
 \end{figure}
 
 
+    Client appends redundant values to the plaintext (before the encryption).
 
     % RGB is 3 channel or each convolution layer)
 \end{frame}
