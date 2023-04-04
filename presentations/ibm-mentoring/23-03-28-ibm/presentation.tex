@@ -1,5 +1,5 @@
-\documentclass[10pt]{beamer}
-%\documentclass[10pt,handout]{beamer}
+%\documentclass[10pt]{beamer}
+\documentclass[10pt,handout]{beamer}
 \usepackage[english]{babel}
 % % \usepackage[backend=biber, style=authoryear-icomp]{biblatex}
 \resetcounteronoverlays{exx}
@@ -57,7 +57,9 @@
   \vskip0pt%
 }
 \newcommand{\floor}[1]{\lfloor #1 \rfloor}
-
+\newcommand{\SubItem}[1]{
+    {\setlength\itemindent{15pt} \item[-] #1}
+}
 \makeatletter
 \setbeamertemplate{navigation symbols}{}
 %\setbeameroption{show notes}
@@ -101,40 +103,34 @@
 %
 %- Weaknesses
 %Critically! Search weakness not bad things.
-%
-%
-%
-%
-%    Introduction (1 slide)
-%    Research Questions/Hypotheses (1 slide)
-%    Literature Review/Theory (1 slide)
-%    Methods & Data Collection (1 slide)
-%    Data Presentation/Findings (3-5 slides)
-%    Conclusion (1 slide)
+
 
 \begin{frame}
     \frametitle{CHOCO-TACO}
 
-    CHOCO is a HE approach for devices with constrained resources.
+    CHOCO is a \textbf{HE} approach for devices with \textbf{constrained resources}.
 
-    Is a client-aided approach.
+    Is a \textbf{client-aided} approach.
+\pause
 
     Accelerate the client side (primarily Encryption and Decryption).
 
-    New algorithm for minimice computation cost.
+    \textbf{New algorithm} for minimice computation cost.
 
+\pause
     Use the client to refresh the noise.
 
     Use the client to do nonlinear operations.
 
-    CHOCO-TACO is a hardware accelerator for this.
+    CHOCO-TACO is a \textbf{hardware accelerator} for this.
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[noframenumbering]
     \frametitle{Schedule}
 \begin{columns}
     \column{0.5\textwidth}
-    Introduction
+\centering
+    \textbf{Introduction}
     \begin{itemize}
         \item What is HE?
         \item What is FHE?
@@ -144,7 +140,10 @@
         \item Parameters
     \end{itemize}
 
-    Implementation
+\pause
+    \column{0.5\textwidth}
+\centering
+    \textbf{Implementation}
     \begin{itemize}
         \item Usual approach.
         \item CHOCO approach.
@@ -152,18 +151,22 @@
         \item Rotational Redundancy.
         \item CHOCO-TACO.
     \end{itemize}
-
-    \column{0.5\textwidth}
-    Results
-    \begin{itemize}
+\end{columns}
+\pause
+\centering
+    \textbf{Results}
+  \begin{center}
+    \begin{minipage}{0.5\textwidth}
+      \begin{itemize}
         \item Design Space.
-        \item Communication reduction.
         \item Client compute acceleration.
         \item Competitive compute.
-    \end{itemize}
-    Conclusion
-\end{columns}
-
+        \item Communication reduction.
+      \end{itemize}
+    \end{minipage}
+  \end{center}
+  \centering
+    \textbf{Conclusion}
 \end{frame}
 
 
@@ -175,66 +178,52 @@
 \section{Introduction}
 
 \begin{frame}
-    \frametitle{}
-        Motivation, low power, etc
+    \frametitle{Motivation}
 
-        IoT: Many small devices, lot of data, low compute power, high computation complexity.
+        \textbf{IoT}: Many small devices, low compute power, lot of data, high computation complexity.
+    \vspace{-0.3cm}
 
-        Solution: Compute offloading, communicate data to robust server to process.
+        \textbf{Solution}: Compute offloading, communicate data to robust server to process.
+    \vspace{-0.3cm}
 
-        Problem: data privacy. In many cases this data is sensitive (like health care data)
-
-
-        Solution: HE or FHE.
-        \begin{figure}
-            \includegraphics[width=0.75\textwidth]{model.png}
-        \end{figure}
+\pause
+        \textbf{Problem}: data privacy. In many cases this data is sensitive (like health care data)
+    \vspace{-0.3cm}
 
 
-\end{frame}
-
-\begin{frame}
-\frametitle{What is HE?}
-
-    Homomorphic Encryption (HE) $\rightarrow$ form of encryption. Early 80s
-\vspace{-0.3cm}
-
-    Operate \textbf{directly} with encrypted data (without the need of decrypt).
-\vspace{-0.3cm}
-
-    HE supports only addition, multiplication and rotation $\rightarrow$ only \textbf{linear} operations.
-\vspace{0.3cm}
-  \begin{columns}
-    \column{0.5\textwidth}
-Typical use case:
-\begin{itemize}
-    \item Client encrypted his data with his own secret key.
-    \item Send this and the public key to the server.
-    \item Server operates with out decryption (e.g. Machine Learning).
-    \item Server send back the result in the encryption form.
-    \item Client decrypts the result with the secret key.
-\end{itemize}
-
-
-\column{0.5\textwidth}
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[scale=0.1]{fhe.jpg}
+\pause
+          \textbf{Solution}: Homomorphic Encryption (HE). Operate \textbf{directly} with encrypted data (without the need of decrypt).
+          \pause
+\begin{columns}
+    \column{0.6\textwidth}
+    \only<4>{
+    \begin{figure}
+    \includegraphics[scale=0.13]{fhe.jpg}
     \caption{Paper:https://ia.cr/2022/657}
-\end{figure}
+    \end{figure}}
+    \only<5,6>{
+    \begin{figure}[h!]
+        \centering
+            \includegraphics[width=1.\textwidth]{model.png}
+    \end{figure}
+
+    }
+    \column{0.4\textwidth}
+    \begin{itemize}
+        \item Client encrypted data (SK).
+        \item Send data and PK to server.
+        \item Server operates with out decrypt it.
+        \item Server send back the result.
+        \item Client decrypts the result with SK.
+    \end{itemize}
 \end{columns}
- \vspace{-0.3cm}
-
-
-%Potentially very useful for cloud computing use.
-% \vspace{-0.3cm}
-
- \pause
+\pause
+\pause
+    \vspace{-0.2cm}
     \textbf{Present}: Orders of magnitude \textbf{slower} for real use.
-
-
 \end{frame}
+
+
 
 % ACA PONER COMO ES CLIENT-AIDED?
 
@@ -243,16 +232,20 @@ Typical use case:
 
 \begin{frame}
     \frametitle{FHE}
+    HE supports only addition, multiplication and rotation $\rightarrow$ only \textbf{linear} operations.
+    \vspace{0.3cm}
   \begin{columns}
     \column{0.5\textwidth}
       In general, HE schemes use \texttt{Ring Learning With Errors} (RLWE) that
-      adds some noise (error) to the encryption.
+      \textbf{adds some noise} (error) to the encryption.
+
+\pause
+\vspace{0.3cm}
+      This \textbf{noise grows} in each operation (particularly with \textbf{multiplications}).
 
 \vspace{0.3cm}
-    This noise grows in each operation (particularly with multiplications).
-
-\vspace{0.3cm}
-      If the noise is too big will be undecryptable.
+      If the noise is too big will be \textbf{undecryptable}.
+\pause
     \column{0.5\textwidth}
         \begin{figure}[h!]
             \centering
@@ -263,11 +256,12 @@ Typical use case:
 
 \end{columns}
 
-    Fully Homomorphic Encryption (FHE): Unlimited number of operations. In this type of schemes
+\pause
+    Fully Homomorphic Encryption (FHE): \textbf{Unlimited} number of operations. In this type of schemes
     it use \texttt{Bootstrapping} that are techniques that refresh this error.
 
-    Even slower!!! Bottleneck.
-
+\pause
+    Even slower!!!
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -275,23 +269,26 @@ Typical use case:
 
 \begin{frame}
     \frametitle{Schemes}
+    % ver de agregar algo para batching.
 
     Many schemes. \textbf{Warning}: Many acronyms!!!
 
     Popular schemes by types:
     \begin{itemize}\vspace{-0.2cm}
         \item Operations on integers: \textbf{BFV} and BGV.\vspace{-0.2cm}
+\pause
         \item Operations on real numbers: CKKS.\vspace{-0.2cm}
         \item Operations on Boolean gates: FHEW and THFHE.
     \end{itemize}
 
-    \textbf{Paper}: BFV.
-
+\pause
     \textbf{''Upgrades''}:
 \begin{itemize}\vspace{-0.2cm}
-    \item Residue Number System (RNS) (stay with 64bits arithmetic's).        Represent the bigger input as the residues of $k$ relative primes.
-        Then we operate pair-wise.
+    \item Residue Number System (\textbf{RNS}) (stay with 64bits arithmetic's).
+        Representation of an input as \textbf{smaller} $k$ residues of relative primes.
+        The Chinese Remainder Theorem (\textbf{CRT}) allows pair-wise operations.
  \vspace{-0.2cm}
+\pause
    \item SIMD arithmetic (batching).
 \end{itemize}
 
@@ -303,28 +300,33 @@ Typical use case:
 
 \begin{frame}
     \frametitle{BFV}
-Works in a Polynomial Ring domain.
+    Works in a \textbf{Polynomial Ring} domain.
 
- \vspace{-0.2cm}
+ \vspace{-0.25cm}
 \textbf{Ring}: a set with addition, subtraction and multiplication. (and other property's, commutative, associative, etc).
 
- \vspace{-0.2cm}
+\pause
+ \vspace{-0.25cm}
     This operations of elements in a ring return elements in the ring $\rightarrow$  \textbf{modular arithmetics}.
 
- \vspace{-0.2cm}
+ \vspace{-0.25cm}
 \textbf{Parameters}: are application-specific and desire security.
 
+\pause
  \vspace{-0.3cm}
-\begin{itemize}\itemsep-0.7em
-    \item $\lambda$ security level. $\sim$ $2^\lambda$ operation to decrypt with prob 1.
+\begin{itemize}\itemsep-0.9em
+    \item $\lambda$ security level. $\sim$ $2^\lambda$ operation to decrypt with prob 1. (128, 256, 512.)
     \item $N$: the degree of the Polynomials ($N$-1).
+        \SubItem{$N$ = 8192, 16384, 32768: $\uparrow$ $N$ $\approx$ $\uparrow$ noise budget, $\uparrow$ ciphertex and comp.}
+\pause
     \item $q$ and $t$: the mod of the coefficients.
+        \SubItem{$q$ = $2^{218}$,   $2^{438}$,  $2^{881}$: $\uparrow$ $q$ $\approx$ $\uparrow$ noise budget, $\uparrow$ ciphertex, computation.}
+        \SubItem{$t$  << $q$: $\downarrow$ $t$ $\approx$ $\uparrow$ noise budget, $\downarrow$ precision.}
     \item $k$: size of the set of the RNS technique.
+        \SubItem{$k\in [3,5], 9, 16$: stay in 64bits arithmetic's, $\uparrow$ parameters, $\uparrow$ $k$.}
 \end{itemize}
 % q en general es exponencial con la profunidad L.
-    RNS example: $k$=3, $x=123456789$, $M = 17 * 257 * 65537$ (3 coprimes of q).
-
-    $x_{RNS} = [x$ $mod$ $17,$ $x$ $mod$ $257,$ $x$ mod $ 65537] = [1, 157, 50618]$ CRT to come back
+\pause
 \end{frame}
 
 
@@ -334,18 +336,26 @@ Works in a Polynomial Ring domain.
 \begin{frame}
 \frametitle{BFV Primitives}
 
-    Basic Primitives (simplified):
-\begin{itemize}\itemsep-0.7em
+\begin{itemize}\itemsep-0.9em
     \item ParamGen($\lambda$)$\rightarrow$ Params.
     \item KeyGen(Params) $\rightarrow$ SK, PK, EvalK (each is a tuple of two polynomials)
+        \SubItem{ Sample 3 polynomials, two polynomial multiplication, two additions and two modulus.}
+\pause
     \item Encrypt(PK, m) $\rightarrow$ c (tuple of two polynomials)
+        \SubItem{ Sample 3 polynomials, two polynomial multiplication, one scalar multiplication, three additions and two modulus.}
     \item Decrypt(SK, c) $\rightarrow$ m
+        \SubItem{ similar to Encryption.}
+\pause
     \item EvalAdd(c$_1$, c$_2$) $\rightarrow$ c$_3$ (tuple of two polynomials)
     \item EvalMult(c$_1$, c$_2$) $\rightarrow$ c$_{mul}$ (tuple of three polynomials)
+\pause
     \item Relinerize(c$_{mul}$, EvalK) $\rightarrow$ c$_{mul}$' (tuple of two polynomials)
+        \SubItem{ Six polynomial multiplications, three additions and five modulus.}
 \end{itemize}
 
 \end{frame}
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -358,57 +368,18 @@ Works in a Polynomial Ring domain.
 
     Bigger scheme parameters $\approx$ bigger noise budget $\approx$ slower computation.
 
+\pause
     Approach 2: \textbf{Bootstrapping}
 
     Use Bootstrapping us needed.
 
+\pause
     Approach 3: \textbf{Client-aided}
 
     Use the client to decrypt and encrypt again (refresh the noise).
 \end{frame}
 
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% combinarla con la de los parametros.
-\begin{frame}
-\frametitle{Parameters}
-
-The parameters depends in the security level needed and amount of operations that will made.
-
-
-Some usual parameters to get the sense of what we are doing:
-
-$N$ = 8192, 16384, 32768 $\rightarrow$ bigger $N$ $\approx$ bigger noise budget but bigger ciphertex and heavier computation.
-
-    $q$ = $2^{218}$,   $2^{438}$,  $2^{881}$ $\rightarrow$ bigger $q$ $\approx$ bigger noise budget but bigger ciphertex and heavier computation.
-
-    $t$  << $q$. $\rightarrow$ smaller $t$ $\approx$ bigger noise budget but less precision.
-
-    $k\in [3,5], 9, 16 \rightarrow$ generally select to stay in 64bits arithmetic's, bigger parameters, bigger $k$.
-% que significa q/t
-
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% combinarla con la de los parametros.
-\begin{frame}
-\frametitle{Operations}
-
-    \textbf{Keys generations}: Sample 3 polynomials. Then two polynomial multiplication, Two additions and two modulus.
-
-    \textbf{Encryption}: Sample 3 polynomials. Then two polynomial multiplication, one scalar multiplication, three additions and two modulus.
-
-    \textbf{Decryption}: similar to Encryption.
-
-    \textbf{Multiplication + Relinerize}: Six polynomial multiplications, three additions and five modulus.
-
-   Multiplications make the noise grow a lot.
-
-
-\end{frame}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -574,6 +545,7 @@ Up to 180x overhead to offload compute.
 
 \begin{frame}
 \frametitle{Algorithm optimizations}
+% como hicieron para usar un valor menos de k?
     \textbf{Reduce parameters} $\rightarrow$Efficient HE Parameters $\rightarrow$ aggressive 4-bits input quantification.
     % primero discretizo los inputs y depsues lo paso a plaintext y demas.
     \vspace{-0.2cm}
@@ -590,8 +562,9 @@ Rearrange encrypted vectors $\rightarrow$ rotations and multiplications  $\right
     New algorithm! \textbf{Rotational Redundancy} $\rightarrow$ lower arithmetic depth $\rightarrow$ less noise.
 
     \vspace{-0.2cm}
-    50\% smaller ciphertext $\rightarrow$ $k$-1 $\rightarrow$ 1.7x speed, still 62x remains
+    50\% smaller ciphertext $\rightarrow$ $k$-1 $\rightarrow$ 1.7x speed, remains 62x overhead vs TFLite.
     \vspace{-0.2cm}
+    \pause
 % por ser ciphertext hay que rotar todo y no solo la ventanita que queremos.
 \begin{figure}
     \includegraphics[width=0.85\textwidth]{rotation.png}
@@ -673,20 +646,23 @@ Each block: processing elements for individual coefficients.
 \begin{frame}
 \frametitle{CHOCO-TACO}
 % Entender las flechas de colores y como se hace cob RNS.
-
+% entender el mod switching de ahi.
     \vspace{-0.5cm}
 \begin{equation*}
     Enc([P_0,P_1],m) = ([\triangle m + P_0u+e_1]_q, [P_1u+e_2]_q)
 \end{equation*}
-\centering
 \pause
-    1094x time and 648x energy (over SW)
-    \vspace{-0.4cm}
+    \vspace{-1.cm}
 \begin{figure}
     \includegraphics[width=0.95\textwidth]{pipeline.png}
 \end{figure}
-\centering
     \vspace{-0.5cm}
+\pause
+\centering
+    1094x time and 648x energy (over SW)
+\pause
+
+    \vspace{-0.2cm}
 Decryption is similiar. Less parallelism, only 125x time
 %\begin{equation*}
 %    Dec(SK,[c_0,c_1]) = [\lfloor \frac{t}{q}[c_0+c_1SK]_q\rfloor]_t
@@ -836,6 +812,7 @@ Select 200mW and smallest design with run time within 1\% of optimal time and en
         \includegraphics[width=1\textwidth]{energy.png}
     \end{figure}
 \pause
+37\% decrease energy consumption for VGG16.
 
     Communications still is a challenge. CHOCO 66\% reduction over SEAL.
 
@@ -848,14 +825,17 @@ Select 200mW and smallest design with run time within 1\% of optimal time and en
 
 \begin{frame}
     \frametitle{Communication reduction}
-    \textbf{recap}: CHOCO use N=8192 (in general more than 16000) +
-    4-bits aggressive quantification + reduction of $k=2$ $\rightarrow$ 50\% smaller ciphertext than SEAL
-
 
     \begin{figure}
         \includegraphics[width=0.95\textwidth]{comunication.png}
     \end{figure}
+CHOCO outperforms existing protocols up to three orders of magnitude.
 
+% gazelle es basicamente ujna implementacion de CNN
+    90x improvement in communication overhead over Gazelle.
+\pause
+
+    Even better than LoLa (Non-client-aided).
     % Lola Non-client
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -934,7 +914,39 @@ $\mathbb{Z}_q[X]/(X^N+0)$ = The Polynomials degree N-1.
 
 
 \end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% combinarla con la de los parametros.
+\begin{frame}[noframenumbering]
+
+\frametitle{Parameters}
+
+The parameters depends in the security level needed and amount of operations that will made.
+
+\vspace{-0.2cm}
+
+Some usual parameters to get the sense of what we are doing:
+\vspace{-0.2cm}
+
+$N$ = 8192, 16384, 32768 $\rightarrow$ bigger $N$ $\approx$ bigger noise budget but bigger ciphertex and heavier computation.
+\vspace{-0.2cm}
+
+    $q$ = $2^{218}$,   $2^{438}$,  $2^{881}$ $\rightarrow$ bigger $q$ $\approx$ bigger noise budget but bigger ciphertex and heavier computation.
+\vspace{-0.2cm}
+
+    $t$  << $q$. $\rightarrow$ smaller $t$ $\approx$ bigger noise budget but less precision.
+
+\vspace{-0.2cm}
+    $k\in [3,5], 9, 16 \rightarrow$ generally select to stay in 64bits arithmetic's, bigger parameters, bigger $k$.
+% que significa q/t
+
+
+\vspace{-0.2cm}
+    RNS example: $k$=3, $x=123456789$, $M = 17 * 257 * 65537$ (3 coprimes of q).
+
+\vspace{-0.2cm}
+    $x_{RNS} = [x$ $mod$ $17,$ $x$ $mod$ $257,$ $x$ mod $ 65537] = [1, 157, 50618]$ CRT to come back
+\end{frame}
 
 \begin{frame}[noframenumbering]
 
