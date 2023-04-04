@@ -90,21 +90,6 @@
 \section{Organization}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 15 - 20 slides (good ones..)
-
-
-%Brief summary
-%what is the problem the paper is trying to solve
-%what are the key ideas of the paper
-%what is the key contribution to literature at the time
-%what are the most important things you take out from it
-%
-%- Strenghts
-%does the paper solve the problem well?
-%
-%- Weaknesses
-%Critically! Search weakness not bad things.
-
-
 \begin{frame}
     \frametitle{CHOCO-TACO}
 
@@ -170,10 +155,6 @@
 \end{frame}
 
 
-
-
-%% hacer una especie de entre cortito de que es?
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 
@@ -224,9 +205,6 @@
 \end{frame}
 
 
-
-% ACA PONER COMO ES CLIENT-AIDED?
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -252,8 +230,6 @@
             \centering
             \includegraphics[scale=0.2]{multNoise.jpg}
         \end{figure}
-
-
 
 \end{columns}
 
@@ -290,7 +266,7 @@
         The Chinese Remainder Theorem (\textbf{CRT}) allows pair-wise operations.
  \vspace{-0.2cm}
 \pause
-   \item SIMD arithmetic (batching).
+   \item SIMD arithmetic.
 \end{itemize}
 
 
@@ -471,35 +447,7 @@ CHOCO: \textbf{C}lient-aided \textbf{H}E for \textbf{O}paque \textbf{C}ompute \t
 
 \section{Research}
 
-%\begin{frame}
-%\frametitle{Motivation}
-%
-%
-%UNIR ESTAS DOS DIAPOS
-%
-%The most clear example: DNN inference.
-%% they use a lot, and things like rotational seems to be boosted.
-%
-%    \textbf{Before}: No client intermediate communication $\rightarrow$ adapt networks architecture and approximations of non-linear operations.
-%
-%    \textbf{Problems}: Fast noise accumulation, large HE parameters, big ciphertext (more costly to process and communication)
-%
-%CHOCO:
-%\begin{itemize}
-%    \vspace{-0.2cm}  \item Client-aided $\rightarrow$ offload linear convolution and fully-connected layers to HE server.
-%    \vspace{-0.2cm}\item Send intermediate results to the client to perform non-linear operations and refresh noise.
-%    \vspace{-0.2cm}\item Supports unmodified networks with arbitrary activation functions.
-%\end{itemize}
-%
-%Larger client cost!
-%CHOCO minimize this cost (with also CHOCO-TACO).
-%
-%\end{frame}
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% Quizas esta vuela por que despues hay otra parecida usando CHOCO
 \begin{frame}
 \frametitle{Benchmark}
 % NO USAN CHOCO aca
@@ -545,75 +493,44 @@ Up to 180x overhead to offload compute.
 \begin{frame}
 \frametitle{Algorithm optimizations}
 % como hicieron para usar un valor menos de k?
-    \textbf{Reduce parameters} $\rightarrow$Efficient HE Parameters $\rightarrow$ aggressive 4-bits input quantification.
+    \textbf{Reduce parameters}  $\rightarrow$ aggressive 4-bits input quantification.
     % primero discretizo los inputs y depsues lo paso a plaintext y demas.
     \vspace{-0.2cm}
 
     \pause
-Packed HE algorithms $\rightarrow$  aligned vectors to operate in the desire way.
-    \vspace{-0.2cm}
-
-Rearrange encrypted vectors $\rightarrow$ rotations and multiplications  $\rightarrow$ Noise grows a lot!
+ HE SIMD algorithms $\rightarrow$ rearrange encrypted vectors  $\rightarrow$rotations and multiplications  $\rightarrow$ Noise grows a lot!
 
     \pause
     \vspace{-0.2cm}
 %Convolutions use a lot of rotations. Explica como lo usaron...
-    New algorithm! \textbf{Rotational Redundancy} $\rightarrow$ lower arithmetic depth $\rightarrow$ less noise.
+    \textbf{Rotational Redundancy} $\rightarrow$ eliminates multiplications $\rightarrow$ less noise $\rightarrow$ smaller parameters.
 
-    \vspace{-0.2cm}
-    50\% smaller ciphertext $\rightarrow$ $k$-1 $\rightarrow$ 1.7x speed, remains 62x overhead vs TFLite.
-    \vspace{-0.2cm}
+
     \pause
+    \vspace{-0.4cm}
 % por ser ciphertext hay que rotar todo y no solo la ventanita que queremos.
 \begin{figure}
     \includegraphics[width=0.85\textwidth]{rotation.png}
 \end{figure}
-    % RGB is 3 channel or each convolution layer)
+    \pause
+    \vspace{-0.4cm}
+    % RGB is 3 channel or each convolutio    \vspace{-0.2cm}
+    Algorithm implementations (DNN) $\rightarrow$ 50\% smaller ciphertext $\rightarrow$ a $k$  less $\rightarrow$ 1.7x (remains 62x vs TFLite).
+
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%\begin{frame}
-%\frametitle{Rotational Redundancy - CHOCO}
-%Exploits the fact that the client  always decrypt, unpack, repack and encrypt.
-%
-%So client discard redundant data adds new values for the next operation.
-%
-%Typically the redundancy is a small fraction of the total vector size.
-%
-%Convolution requieres windowed rotation within each channel.
-%
-%CHOCO packs each channel of an image with sufficient redundancy to keep
-%values aligned through the encrypted convolution.
-%
-%CHOCO stacks the redundan channel vector into evenly-spaced, power-of-two-sized slots in the final ciphertext vector.
-%
-%All elements can be properly aligned for convolution.
-%
-%50\% reduction of ciphertext size compared to SEALS with same N=8192.
-%
-%One less  RNS entry.
-
-
-% FPGA implementation
-%\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 \begin{frame}
 \frametitle{CHOCO-TACO}
 CHOCO + FPGA Encrypt and Decrypt = 4.4x, remain 22x.
     \vspace{-0.2cm}
 
+    \pause
 CHOCO-TACO: \textbf{T}hrough \textbf{A}ccelerated \textbf{C}ryptographic \textbf{O}perations
     \vspace{-0.2cm}
 
-\pause
 Accelerates all of the componentes sub-operations of HE encryption and decryption.
-    \vspace{-0.2cm}
-
-Virtually eliminates these client costs.
     \vspace{-0.2cm}
 
 \pause
@@ -645,8 +562,15 @@ Each block: processing elements for individual coefficients.
 
 \begin{frame}
 \frametitle{CHOCO-TACO}
-
 \only<1>{
+\begin{equation*}
+    Enc([P_0,P_1],m) = ([\triangle m + P_0u+e_1]_q, [P_1u+e_2]_q)
+\end{equation*}
+    \begin{figure}
+        \includegraphics[width=1.0\textwidth]{architectureZERO.png}
+    \end{figure}
+}
+\only<2>{
 \begin{equation*}
     Enc([P_0,P_1],m) = ([\triangle m + P_0\textcolor{red}{u}+\textcolor{red}{e_1}]_q, [P_1\textcolor{red}{u}+\textcolor{red}{e_2}]_q)
 \end{equation*}
@@ -657,7 +581,7 @@ Each block: processing elements for individual coefficients.
 % random vectors to a NTT transformation.
 % initial buffer contains the PK and do multiplication.
 % pruductos go to an INTT to then add
-    \only<2>{
+    \only<3>{
 \begin{equation*}
     Enc([P_0,P_1],m) = ([\triangle m + \textcolor{red}{P_0u}+e_1]_q, [\textcolor{red}{P_1u}+e_2]_q)
 \end{equation*}
@@ -666,7 +590,7 @@ Each block: processing elements for individual coefficients.
     \end{figure}
 }
 % c1 is ready.
-\only<3>{
+\only<4>{
 \begin{equation*}
     Enc([P_0,P_1],m) = ([\triangle m + \textcolor{red}{P_0u+e_1}]_q, \textcolor{red}{[P_1u+e_2]_q})
 \end{equation*}
@@ -674,7 +598,7 @@ Each block: processing elements for individual coefficients.
         \includegraphics[width=1.0\textwidth]{architecture2.png}
     \end{figure}
 }
-\only<4>{
+\only<5>{
     \begin{equation*}
         Enc([P_0,P_1],m) = ([\textcolor{red}{\triangle m} + P_0u+e_1]_q, [P_1u+e_2]_q)
 \end{equation*}
@@ -682,7 +606,7 @@ Each block: processing elements for individual coefficients.
         \includegraphics[width=1.0\textwidth]{architecture3.png}
     \end{figure}
 }
-\only<5>{
+\only<6>{
 \begin{equation*}
     Dec(SK,[c_0,c_1]) = \left[ \left\lfloor \frac{t}{q}[c_0+c_1SK]_q\right\rceil \right]_t
 \end{equation*}
@@ -690,7 +614,7 @@ Each block: processing elements for individual coefficients.
         \includegraphics[width=1.0\textwidth]{architecture4.png}
     \end{figure}
 }
-\only<6>{ Encryption 1094x time and 648x energy (over SW).
+\only<7>{ Encryption 1094x time and 648x energy (over SW).
 
     \vspace{-0.2cm}
     Decryption (Less parallelism) only 125x time.
@@ -727,18 +651,13 @@ Implementation:
 \pause
 Select 200mW and smallest design with run time within 1\% of optimal time and energy.
 
-19.3mm$^2$ area and consumes 0.1228mJ to perform single encryption in 0.66ms for N = 8192 and k = 3.
+19.3mm$^2$ area and consumes 0.12mJ to perform single encryption in 0.66ms for N = 8192 and k = 3.
 % implement in  RTL individual hatdware components.
 % synthesized them with cadence genus in 45nm technology node.
 % model memory with destiny, SRAM as aggresive wire techonlogy.
 % optmized for read energyy with 8-word,64byte, memory accces.
 %clocked 100Mhz for energy optimization.
 \end{frame}
-
-
-
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -810,16 +729,6 @@ CHOCO outperforms existing protocols up to three orders of magnitude.
     Even better than LoLa (Non-client-aided) by 27x.
     % Lola Non-client
 \end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\begin{frame}
-%\frametitle{}
-%    \begin{figure}
-%    \includegraphics[width=0.95\textwidth]{comunication2.png}
-%\end{figure}
-%
-%
-%
-%\end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Conclusion}
