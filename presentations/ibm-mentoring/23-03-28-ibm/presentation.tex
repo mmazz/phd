@@ -1,5 +1,5 @@
-%\documentclass[10pt]{beamer}
-\documentclass[10pt,handout]{beamer}
+\documentclass[10pt]{beamer}
+%\documentclass[10pt,handout]{beamer}
 \usepackage[english]{babel}
 % % \usepackage[backend=biber, style=authoryear-icomp]{biblatex}
 \resetcounteronoverlays{exx}
@@ -120,9 +120,9 @@
 \pause
     Use the client to refresh the noise.
 
-    Use the client to do nonlinear operations.
+    Use the client to compute non-linear operations.
 
-    CHOCO-TACO is a \textbf{hardware accelerator} for this.
+    CHOCO-TACO is a \textbf{hardware accelerator}.
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[noframenumbering]
@@ -148,7 +148,7 @@
         \item Usual approach.
         \item CHOCO approach.
         \item Benchmark.
-        \item Rotational Redundancy.
+        \item Algorithm optimizations.
         \item CHOCO-TACO.
     \end{itemize}
 \end{columns}
@@ -233,6 +233,7 @@
 \begin{frame}
     \frametitle{FHE}
     HE supports only addition, multiplication and rotation $\rightarrow$ only \textbf{linear} operations.
+\pause
     \vspace{0.3cm}
   \begin{columns}
     \column{0.5\textwidth}
@@ -285,7 +286,7 @@
     \textbf{''Upgrades''}:
 \begin{itemize}\vspace{-0.2cm}
     \item Residue Number System (\textbf{RNS}) (stay with 64bits arithmetic's).
-        Representation of an input as \textbf{smaller} $k$ residues of relative primes.
+        Representation of an input as $k$ \textbf{smaller}  residues of relative primes.
         The Chinese Remainder Theorem (\textbf{CRT}) allows pair-wise operations.
  \vspace{-0.2cm}
 \pause
@@ -310,18 +311,19 @@
     This operations of elements in a ring return elements in the ring $\rightarrow$  \textbf{modular arithmetics}.
 
  \vspace{-0.25cm}
-\textbf{Parameters}: are application-specific and desire security.
+\textbf{Parameters}: are application-specific and desired security.
 
 \pause
  \vspace{-0.3cm}
 \begin{itemize}\itemsep-0.9em
-    \item $\lambda$ security level. $\sim$ $2^\lambda$ operation to decrypt with prob 1. (128, 256, 512.)
+    \item $\lambda$ security level. $\sim$ $2^\lambda$ operation to decrypt with prob 1. (128, 256.)
     \item $N$: the degree of the Polynomials ($N$-1).
         \SubItem{$N$ = 8192, 16384, 32768: $\uparrow$ $N$ $\approx$ $\uparrow$ noise budget, $\uparrow$ ciphertex and comp.}
 \pause
     \item $q$ and $t$: the mod of the coefficients.
         \SubItem{$q$ = $2^{218}$,   $2^{438}$,  $2^{881}$: $\uparrow$ $q$ $\approx$ $\uparrow$ noise budget, $\uparrow$ ciphertex, computation.}
         \SubItem{$t$  << $q$: $\downarrow$ $t$ $\approx$ $\uparrow$ noise budget, $\downarrow$ precision.}
+\pause
     \item $k$: size of the set of the RNS technique.
         \SubItem{$k\in [3,5], 9, 16$: stay in 64bits arithmetic's, $\uparrow$ parameters, $\uparrow$ $k$.}
 \end{itemize}
@@ -337,7 +339,7 @@
 \frametitle{BFV Primitives}
 
 \begin{itemize}\itemsep-0.9em
-    \item ParamGen($\lambda$)$\rightarrow$ Params.
+    \item ParamGen($\lambda$)$\rightarrow$ Default Params.
     \item KeyGen(Params) $\rightarrow$ SK, PK, EvalK (each is a tuple of two polynomials)
         \SubItem{ Sample 3 polynomials, two polynomial multiplication, two additions and two modulus.}
 \pause
@@ -397,7 +399,6 @@ Large footprint in memory.
 An encrypted date can occupy $10^5$ more space.
 
 \pause
-    The schemes are iterative, operating many time with each data specially Bootstrapping (CHOCO don't use it).
 
         \begin{figure}[h!]
             \centering
@@ -417,11 +418,9 @@ An encrypted date can occupy $10^5$ more space.
     Usual way of increase performance:  accelerating the server part.
 \pause
 \begin{itemize}\itemsep-0.7em
-   \item New schemes.
-   \item New upgrades in the schemes (like RNS).
    \item New methods of Bootstrapping.
-\pause
    \item Algorithms implementations, like packed ones (concatenate multiple plaintexts).
+       \pause
    \item Accelerating the polynomial multiplication:
        For these they use Number Theoretic Transform (NTT), a Discrete Fourier Transform (DFT) over a ring.
    \item Hardware Acceleration (GPUs, FPGA, specific designs).
@@ -452,8 +451,8 @@ CHOCO: \textbf{C}lient-aided \textbf{H}E for \textbf{O}paque \textbf{C}ompute \t
     Minimice the client costs: specially encryption and decryption.
     \vspace{-0.2cm}
 \begin{itemize}\itemsep-0.7em
+        \item Reduces ciphertext size $\rightarrow$ reduces computation and communication costs.
     \item New algorithm: rotational redundancy $\rightarrow$ reduces computation costs.
-    \item Reduces ciphertext size $\rightarrow$ reduces computation and communication costs.
 \pause
     \item Reduction of parameters values $\rightarrow$ reduces computation and communication costs.
     \item Hardware acceleration for client: CHOCO-TACO.
@@ -640,46 +639,12 @@ Each block: processing elements for individual coefficients.
 % transformamos de nuevo con INTT
 
 \end{frame}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \begin{frame}
 \frametitle{CHOCO-TACO}
-% Entender las flechas de colores y como se hace cob RNS.
-% entender el mod switching de ahi.
-    \vspace{-0.5cm}
-\begin{equation*}
-    Enc([P_0,P_1],m) = ([\triangle m + P_0u+e_1]_q, [P_1u+e_2]_q)
-\end{equation*}
-\pause
-    \vspace{-1.cm}
-\begin{figure}
-    \includegraphics[width=0.95\textwidth]{pipeline.png}
-\end{figure}
-    \vspace{-0.5cm}
-\pause
-\centering
-    1094x time and 648x energy (over SW)
-\pause
-
-    \vspace{-0.2cm}
-Decryption is similiar. Less parallelism, only 125x time
-%\begin{equation*}
-%    Dec(SK,[c_0,c_1]) = [\lfloor \frac{t}{q}[c_0+c_1SK]_q\rfloor]_t
-%\end{equation*}
-
-
-% Modulus Switching
-
-% al multiplicar dos polynomios en el espacio NTT es simplemente elemento a elemento C[i] = A[i]*B[i]. y despues
-% transformamos de nuevo con INTT
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-\begin{frame}
-\frametitle{CHOCO-TACO Encryption}
 
 \only<1>{
 \begin{equation*}
@@ -725,7 +690,14 @@ Decryption is similiar. Less parallelism, only 125x time
         \includegraphics[width=1.0\textwidth]{architecture4.png}
     \end{figure}
 }
+\only<6>{ Encryption 1094x time and 648x energy (over SW).
 
+    \vspace{-0.2cm}
+    Decryption (Less parallelism) only 125x time.
+    \begin{figure}
+        \includegraphics[width=1.0\textwidth]{architecture4.png}
+    \end{figure}
+}
 % Hablar del paralelismo, que hay multiples capas,  SRAM buffers para evitar el movimiento
 % iunecesario de data.
 
@@ -741,7 +713,7 @@ Decryption is similiar. Less parallelism, only 125x time
 %quizas sacar el grafico que no dice mucho.
 Simulation of 31340 different architectural configurations.
 
-Implantation:
+Implementation:
 \pause
 \begin{itemize}
     \item Individual Hardware components in RTL.
@@ -832,10 +804,10 @@ Select 200mW and smallest design with run time within 1\% of optimal time and en
 CHOCO outperforms existing protocols up to three orders of magnitude.
 
 % gazelle es basicamente ujna implementacion de CNN
-    90x improvement in communication overhead over Gazelle.
+    90x improvement in communication overhead over Gazelle (CIFAR10).
 \pause
 
-    Even better than LoLa (Non-client-aided).
+    Even better than LoLa (Non-client-aided) by 27x.
     % Lola Non-client
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -852,12 +824,12 @@ CHOCO outperforms existing protocols up to three orders of magnitude.
 
 \section{Conclusion}
 \begin{frame}
-\frametitle{}
+\frametitle{Conclusion}
 \begin{itemize}
-    \item CHOCO motivates and prioritizes client-aware optimization.
+    \item CHOCO motivates and prioritizes client-aided optimization.
     \item CHOCO algorithm optimizations reduce communication by orders of magnitude over prior work.
 \pause
-    \item CHOCO-TACO hardware comprehensively accelerates client-side cryptography Primitives.
+    \item CHOCO-TACO hardware comprehensively accelerates client-side HE.
     \item CHOCO enables participation from resource-constrained devices in client-aided encryption computation.
 \pause
     \item CHOCO makes client responsibility competitive with local compute.
@@ -1041,6 +1013,37 @@ $N$ = 8192, 16384, 32768 $\rightarrow$ bigger $N$ $\approx$ bigger noise budget 
 
     Parallelism: TACO exploits pipelining and data parallelismo of independent RNS residues and coefficients.
 
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}[noframenumbering]
+
+\frametitle{CHOCO-TACO}
+% Entender las flechas de colores y como se hace cob RNS.
+% entender el mod switching de ahi.
+    \vspace{-0.5cm}
+\begin{equation*}
+    Enc([P_0,P_1],m) = ([\triangle m + P_0u+e_1]_q, [P_1u+e_2]_q)
+\end{equation*}
+\pause
+    \vspace{-1.cm}
+\begin{figure}
+    \includegraphics[width=0.95\textwidth]{pipeline.png}
+\end{figure}
+    \vspace{-0.5cm}
+
+Decryption is similiar. Less parallelism, only 125x time
+%\begin{equation*}
+%    Dec(SK,[c_0,c_1]) = [\lfloor \frac{t}{q}[c_0+c_1SK]_q\rfloor]_t
+%\end{equation*}
+
+
+% Modulus Switching
+
+% al multiplicar dos polynomios en el espacio NTT es simplemente elemento a elemento C[i] = A[i]*B[i]. y despues
+% transformamos de nuevo con INTT
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
