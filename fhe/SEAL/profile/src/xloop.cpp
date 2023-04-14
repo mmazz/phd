@@ -6,16 +6,55 @@
 #include "examples.h"
 using namespace seal;
 using namespace std;
-
-
-int main()
+/*
+     +----------------------------------------------------+
+        | poly_modulus_degree | max coeff_modulus bit-length |
+        +---------------------+------------------------------+
+        | 1024                | 27                           |
+        | 2048                | 54                           |
+        | 4096                | 109                          |
+        | 8192                | 218                          |
+        | 16384               | 438                          |
+        | 32768               | 881                          |
+        +---------------------+------------------------------+
+*/
+int main(int argc, char *argv[])
 {
+    int poly_degree = 4;
+
+    if (argc>1){
+        int num = atoi(argv[1]);
+        if (num < 2){
+            cout << "The polynomial results must have a degree greater than 2" << endl;
+        }
+        else
+            poly_degree = num;
+    }
+
+    size_t poly_modulus_degree = 32768;
+    if (argc>2){
+        poly_modulus_degree = atoi(argv[2]);
+        if (poly_modulus_degree != 32768 or poly_modulus_degree != 16384){
+            cout << "The polynomial modulus must be" << endl;
+        }
+
+    }
+
+    vector<int> modulus;
+    if(poly_modulus_degree==8192){ // max degree 3
+        modulus ={ 60, 40, 40, 60 };
+    }
+    if(poly_modulus_degree==16384){ // max degree 7
+        modulus ={ 60, 40, 40, 40, 40, 40, 40, 40,  60 };
+    }
+    if (poly_modulus_degree==32768){ // max degree 20
+        modulus ={ 60, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 60 };
+    }
     print_example_banner("Example: CKKS Basics");
 
     EncryptionParameters parms(scheme_type::ckks);
-    size_t poly_modulus_degree = 32768;
     parms.set_poly_modulus_degree(poly_modulus_degree);
-    parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 60, 40, 40, 40, 40, 40, 40, 40,  40, 40, 60 }));
+    parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulus));
 
     double scale = pow(2.0, 40);
 
@@ -50,10 +89,6 @@ int main()
     cout << "Input vector: " << endl;
     print_vector(input, 3, 7);
 
-    cout << "Evaluating polynomial x^4 " << endl;
-
-    int loops = 4;
-
     Plaintext x_plain;
     print_line(__LINE__);
     cout << "Encode input vectors." << endl;
@@ -66,11 +101,11 @@ int main()
 
     Ciphertext x_res;
     print_line(__LINE__);
-    for (int i=0; i<=loops; i++){
-        cout << "Compute x^" << i+2 << " and relinearize:" << endl;
+    for (int i=2; i<=poly_degree; i++){
+        cout << "Compute x^" << i << " and relinearize:" << endl;
         evaluator.multiply(x_encrypted, x_pow_encrypted, x_res);
         evaluator.relinearize_inplace(x_res, relin_keys);
-        cout << "    + Scale of x^" << i+2 <<" before rescale: " << log2(x_res.scale()) << " bits" << endl;
+        cout << "    + Scale of x^" << i <<" before rescale: " << log2(x_res.scale()) << " bits" << endl;
         evaluator.rescale_to_next_inplace(x_res);
         parms_id_type last_parms_id = x_res.parms_id();
         evaluator.mod_switch_to_inplace(x_encrypted, last_parms_id);
@@ -97,13 +132,13 @@ int main()
 
     Plaintext plain_result;
     print_line(__LINE__);
-    cout << "Decrypt and decode x^" << loops+2 << endl;
+    cout << "Decrypt and decode x^" << poly_degree << endl;
     cout << "    + Expected result:" << endl;
     vector<double> true_result;
     for (size_t i = 0; i < input.size(); i++)
     {
         double x = input[i];
-        true_result.push_back(pow(x,2+loops));
+        true_result.push_back(pow(x,poly_degree));
     }
     print_vector(true_result, 3, 7);
 
