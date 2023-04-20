@@ -12,7 +12,7 @@ architecture rtl of mod_m_counter_prog_tb is
 
     --Inputs
     signal clk : std_logic := '1';
-    signal reset: std_logic := '1';
+    signal reset: std_logic := '0';
     signal run : std_logic := '1';
     signal frec : unsigned(M-1 downto 0):= (others => '0');
     signal duty_cycle : unsigned(M-1 downto 0):= (others => '0');
@@ -44,9 +44,19 @@ begin
               out_o=> output
           );
 
-    reset <= '1', '0' after 5 us;
-    run <= '0', '1' after 20 us;
+   -- reset <= '1', '0' after 5 us;
+   -- run <= '0', '1' after 20 us;
+signals_change: process
+begin
     duty_cycle <= "100";
+    wait for 50 us;
+    frec <= "001";
+    wait for 50 us;
+    frec <= "010";
+    wait for 50 us;
+    frec <= "011";
+    end process;
+
 end architecture;
 
 
@@ -108,3 +118,4 @@ end architecture;
 --
 --    end process;
 --end architecture;
+
