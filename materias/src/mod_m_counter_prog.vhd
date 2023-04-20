@@ -9,15 +9,15 @@ entity mod_m_counter_prog is
     port(clk_i       : in std_logic;
         reset_i      : in std_logic;
         run_i        : in std_logic; --  Activador
-        frec_i  : in std_logic_vector (M-1 downto 0);
+        frec_i       : in std_logic_vector (M-1 downto 0);
         duty_cycle_i : in std_logic_vector (M-1 downto 0);
         out_o        : out std_logic
     );
 end entity;
 
 architecture rtl of mod_m_counter_prog is
-    signal r_reg  : unsigned(M-1 downto 0);
-    signal r_next : unsigned(M-1 downto 0);
+    signal r_reg  : unsigned(M-1 downto 0):= (others => '0');
+    signal r_next : unsigned(M-1 downto 0):= (others => '0');
 begin
     NXT_STATE_PROC: process(clk_i)
     begin
@@ -52,6 +52,7 @@ entity led_controller is
 end entity;
 
 architecture structural of led_controller is
+    signal cycle_0 : std_logic_vector(M-1 downto 0):= "001";
     signal cycle_1 : std_logic_vector(M-1 downto 0):= (others => '1');
     signal count2 : std_logic;
 
@@ -62,7 +63,7 @@ begin
             reset_i => reset_i,
             run_i => run_i,
             frec_i => frec_i,
-            duty_cycle_i=> cycle_1,
+            duty_cycle_i=> cycle_0,
             out_o => count2
             );
 
@@ -70,9 +71,10 @@ begin
     generic map(M => M)
     port map (clk_i => clk_i,
             reset_i => reset_i,
-            run_i => count2,
-            frec_i => frec_i,
+            run_i => count2, -- creo que necesito la negacion.
+            frec_i => cycle_1,
             duty_cycle_i => duty_cycle_i,
             out_o => out_o
             );
 end architecture;
+
