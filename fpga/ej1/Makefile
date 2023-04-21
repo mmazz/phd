@@ -4,7 +4,7 @@ DUT:=mod_m_counter_prog
 
 # testbench
 TESTBENCHFILE = ${DUT}_tb
-TESTBENCHPATH = testbench/${TESTBENCHFILE}.vhd
+TESTBENCHPATH = ${TESTBENCHFILE}.vhd
 
 #GHDL CONFIG
 
