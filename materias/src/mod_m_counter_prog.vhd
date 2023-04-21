@@ -30,7 +30,7 @@ begin
         end if;
     end process;
     r_next <= (others => '0') when r_reg = unsigned(frec_i) else r_reg + 1;
-    out_o <= '1' when (r_next < unsigned(duty_cycle_i)) and (run_i = '1') else '0';
+    out_o <= '1' when (r_next < unsigned(duty_cycle_i))  else '0';
 end architecture;
 
 

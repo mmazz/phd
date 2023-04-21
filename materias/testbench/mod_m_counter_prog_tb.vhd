@@ -49,12 +49,55 @@ begin
 signals_change: process
 begin
     duty_cycle <= "100";
+    reset<= '1';
+    reset<= '0';
     wait for 50 us;
     frec <= "001";
+    reset<= '1';
+    reset<= '0';
     wait for 50 us;
     frec <= "010";
+    reset<= '1';
+    reset<= '0';
     wait for 50 us;
     frec <= "011";
+    reset<= '1';
+    reset<= '0';
+    wait for 50 us;
+    duty_cycle <= "001";
+    reset<= '1';
+    reset<= '0';
+    wait for 50 us;
+    frec <= "001";
+    reset<= '1';
+    reset<= '0';
+    wait for 50 us;
+    frec <= "010";
+    reset<= '1';
+    reset<= '0';
+    wait for 50 us;
+    frec <= "011";
+    reset<= '1';
+    reset<= '0';
+    wait for 50 us;
+    duty_cycle <= "111";
+    reset<= '1';
+    reset<= '0';
+    wait for 50 us;
+    frec <= "001";
+    reset<= '1';
+    reset<= '0';
+    wait for 50 us;
+    frec <= "010";
+    reset<= '1';
+    reset<= '0';
+    wait for 50 us;
+    frec <= "011";
+    reset<= '1';
+    reset<= '0';
+
+
+
     end process;
 
 end architecture;
