@@ -101,6 +101,7 @@ int main(int argc, char *argv[])
         modulus.push_back(60);
         //modulus ={ 60, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 60 };
     }
+
     print_example_banner("Example: CKKS Basics");
 
     chrono::high_resolution_clock::time_point time_start_total, time_end_total;
