@@ -25,11 +25,13 @@ time_values = df.mean(axis=1).values
 
 df = pd.read_csv('../data/memory_profile.txt', sep=",", header=None)
 values = df[0].values
+df = df.iloc[:,:-1]
 df = df.drop(0, axis=1)
 memory_coeff = df.mean(axis=1).values
 
 df = pd.read_csv('../data/memory_profile_degrees.txt', sep=",", header=None)
 degrees = df[0].values
+df = df.iloc[:,:-1]
 df = df.drop(0, axis=1)
 memory_poly_degree = df.mean(axis=1).values
 
@@ -44,7 +46,6 @@ ax.set_ylabel("Time ($\mu s$)", color='steelblue')
 ax.set_yscale('log')
 ax.set(xticks=degrees)
 
-print(memory_poly_degree, len(memory_poly_degree))
 #memory_poly_degree = [11000, 20100, 34000, 65000]
 ax2 = ax.twinx()  # instantiate a second axes that shares the same x-axis
 ax2.plot(degrees, memory_poly_degree, '-o', color='firebrick', lw=3, label='CKKS')
@@ -62,7 +63,6 @@ ax.set_ylabel(r'Time ($\mu s$)', color='steelblue')
 ax.set_yscale('log')
 ax.set(xticks=values)
 ###
-
 #memory_coeff = [66000, 122000, 185000, 271000, 365000, 477000, 600000, 746000, 900000]
 ax2 = ax.twinx()  # instantiate a second axes that shares the same x-axis
 ax2.plot(values, memory_coeff, '-o', color='firebrick', lw=3, label='CKKS')
@@ -71,10 +71,3 @@ ax2.set_yscale('log')
 ax2.set(xticks=values)
 fig.savefig('ckks_mult_depth.png', bbox_inches='tight')
 
-
-ax4=ax3.twinx()
-ax4.plot(values, memory_coeff, '-o', color='firebrick', lw=2, label='CKKS memory usage')
-ax4.set_ylabel("Memory usage (Bytes)", color='firebrick')
-ax4.set_yscale('log')
-#ax4.legend()
-fig2.savefig('ckks_mult_depth.png',  bbox_inches='tight')
