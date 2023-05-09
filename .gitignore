@@ -1,3 +1,6 @@
+books/*
+!fhe/SEAL/profile/*
+fhe/SEAL/*
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
@@ -76,9 +79,16 @@ pip-delete-this-directory.txt
 venv/
 ENV/
 
-
-
+*.png
+*.jpg
+*.jepg
+*.xcf
+*.svg
+*.yaml
+*.txt
+*.o
 
 # mypy
 .mypy_cache/
+
 
