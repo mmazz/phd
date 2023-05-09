@@ -21,6 +21,9 @@ using namespace std;
         | 32768               | 881                          |
         +---------------------+------------------------------+
 */
+
+// First argument is the multiplication depth
+// Second argument is the N.
 int main(int argc, char *argv[])
 {
     int poly_degree = 4;

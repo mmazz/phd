@@ -75,7 +75,7 @@
 
 
 \institute{}
-\date{23 of May de 2023}
+\date{26 of May de 2023}
 
 
 \begin{document}
@@ -86,46 +86,27 @@
 
 \end{frame}
 
+% 20 minutos de charla. 10 diapos...
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Schedule}
-\begin{frame}
-    \frametitle{Schedule}
-    \begin{itemize}
-        \item About me.
-        \item Background.
-        \item Future work.
-        \item Conclusion.
-    \end{itemize}
-\end{frame}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{About me}
 \begin{frame}
-    \frametitle{Origins and Thesis}
-Master in Physics with orientation to computation.
+    \frametitle{Background}
+    Degree (equivalent to Master) in Physics with orientation to computation.
 
-Thesis inside the department of computation of UBA.
+    Topic: Bayesian inference of the ability of players of the board game of Go.
 
-Topic: Bayesian inference of the ability of players of the board game of Go.
+Computer Science Department, University of Buenos Aires.
 
 Results: An improvement in the system of Ranking of online platforms.
 \end{frame}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}
-    \frametitle{Original Ph.D.}
-Original proposal: Continue the theme of the thesis using the estimation model and look for its \textbf{parallelization} using GPU.
-
-Parallelization for the model was not justified $\rightarrow$ using the model to answer other questions.
-
-Model and study \textbf{human learning}.
-
-The path that the Ph.D. took did not convince me $\to$ \textbf{change of plans}.
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-    \frametitle{Phd}
-    Appearence of Augusto Vega $\rightarrow$ Arquitecture $+$ Homomorphic Encryption (HE).
+    \frametitle{Ongoing Ph.D. Project}
+    Co-advisors:
+    Augusto Vega (IBM), Esteban Mocskos (UBA) $\rightarrow$ Arquitecture $+$ Homomorphic Encryption (HE).
 
     Main topic: Accerelate this type of Encryption with Hardware-Software codisign.
 
@@ -134,15 +115,17 @@ The path that the Ph.D. took did not convince me $\to$ \textbf{change of plans}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Background}
 \begin{frame}
-    \frametitle{Motivation}
+    \frametitle{HE solves privacy problems?}
+% graficamente explicar todo. mando data y puede haber
+    % buscar grafico
+% que soluciona
+%        \textbf{Cloud}: Huge importance in the actual buissness model.
+%    \vspace{-0.3cm}
 
-        \textbf{Cloud}: Huge importance in the actual buissness model.
-    \vspace{-0.3cm}
+%        \textbf{Compute offloading}: Communicate data to robust server to process.
+%    \vspace{-0.3cm}
 
-        \textbf{Compute offloading}: Communicate data to robust server to process.
-    \vspace{-0.3cm}
-
-\pause
+%\pause
         \textbf{Problem}: Data privacy. In many cases this data is sensitive (like health care data)
     \vspace{-0.3cm}
 
@@ -150,21 +133,10 @@ The path that the Ph.D. took did not convince me $\to$ \textbf{change of plans}.
 \pause
           \textbf{Solution}: Homomorphic Encryption (HE). Operate \textbf{directly} with encrypted data (without the need of decrypt).
           \pause
-\begin{columns}
-    \column{0.6\textwidth}
     \begin{figure}
-    \includegraphics[scale=0.13]{fhe.jpg}
-    \caption{Paper:https://ia.cr/2022/657}
+        \includegraphics[scale=0.13]{homomorphic-enc-800x603.png}
+        \caption{Paper:https://ia.cr/2022/657}
     \end{figure}
-    \column{0.4\textwidth}
-    \begin{itemize}
-        \item Client encrypted data (SK).
-        \item Send data and PK to server.
-        \item Server operates with out decrypt it.
-        \item Server send back the result.
-        \item Client decrypts the result with SK.
-    \end{itemize}
-\end{columns}
 \pause
 \pause
     \vspace{-0.2cm}
@@ -173,7 +145,30 @@ The path that the Ph.D. took did not convince me $\to$ \textbf{change of plans}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % HABlar  de ckks bgv y bfv
 \begin{frame}
-            \frametitle{HE}
+    %  sin detalles los problemas, problemas de computo
+    % mostrar diferencia en ordenes en magnitud.
+    % raw vs he.
+
+    % quizas contar el tema de las etapas y no errores.
+    \frametitle{Homorphic Encryption (HE)}
+
+    Vector Multiplication comparision:
+    \begin{table}[]
+        \begin{tabular}{|l|l|l|}
+            \hline
+                             & Raw & HE \\ \hline
+            Memory Usage     &   &    \\ \hline
+            Time consumption &     &    \\ \hline
+        \end{tabular}
+    \end{table}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% HABlar  de ckks bgv y bfv
+\begin{frame}
+
+    \frametitle{}
     HE supports only addition, multiplication and rotation $\rightarrow$ only \textbf{linear} operations.
 \pause
     \vspace{0.3cm}
@@ -245,8 +240,51 @@ Generally bigger parameters bigger noise budget.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Puede volar esta
+\section{Future Work}
 \begin{frame}
+    \frametitle{SEAL profile}
+Microsft SEAL: HE library.
+    \begin{figure}
+        \begin{minipage}[c]{0.49\linewidth}
+            \includegraphics[width=\linewidth]{ckks_N.png}
+        %    \caption{Execution time and memory usage to compute $X^2$ (element-wise) using CKKS for different polynomial ring degrees $N$.}
+        \end{minipage}
+        \hfill
+        \begin{minipage}[c]{0.49\linewidth}
+            \includegraphics[width=\linewidth]{ckks_mult_depth.png}
+       %     \caption{ Consumption time and memory usage for computing different powers of a vector in CKKS scheme for the polynomial ring degree $N=32768$. In the left side its shows the time y-axis and in the right side the memory y-axis. }
+        \end{minipage}%
+    \end{figure}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+    \frametitle{Bit error}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+    \frametitle{Encodig: CKKS vs BFV/BGV}
+    \begin{figure}
+        \begin{minipage}[c]{0.49\linewidth}
+            \includegraphics[width=\linewidth]{encoding.png}
+            \caption{Image A}
+        \end{minipage}
+        \hfill
+        \begin{minipage}[c]{0.49\linewidth}
+            \includegraphics[width=\linewidth]{encoding-ckks.png}
+            \caption{Image B}
+        \end{minipage}%
+    \end{figure}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion}
+\begin{frame}
+    \frametitle{Conclusion}
+    Conclusion
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Puede volar esta
+\begin{frame}[noframenumbering]
     \frametitle{BFV Primitives}
 \begin{itemize}\itemsep-0.9em
     \item ParamGen($\lambda$)$\rightarrow$ Default Params.
@@ -268,51 +306,6 @@ Generally bigger parameters bigger noise budget.
 
 \end{frame}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Future Work}
-\begin{frame}
-    \frametitle{SEAL profile}
-Microsft SEAL: HE library.
-    \begin{figure}
-        \begin{minipage}[c]{0.49\linewidth}
-            \includegraphics[width=\linewidth]{ckks_N.png}
-            \caption{Execution time and memory usage to compute $X^2$ (element-wise) using CKKS for different polynomial ring degrees $N$.}
-        \end{minipage}
-        \hfill
-        \begin{minipage}[c]{0.49\linewidth}
-            \includegraphics[width=\linewidth]{ckks_mult_depth.png}
-            \caption{ Consumption time and memory usage for computing different powers of a vector in CKKS scheme for the polynomial ring degree $N=32768$.
-    In the left side its shows the time y-axis and in the right side the memory y-axis.
-}
-        \end{minipage}%
-    \end{figure}
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-    \frametitle{Bit error}
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}
-    \frametitle{CKKS vs BFV/BGV}
-    \begin{figure}
-        \begin{minipage}[c]{0.49\linewidth}
-            \includegraphics[width=\linewidth]{encoding.png}
-            \caption{Image A}
-        \end{minipage}
-        \hfill
-        \begin{minipage}[c]{0.49\linewidth}
-            \includegraphics[width=\linewidth]{encoding-ckks.png}
-            \caption{Image B}
-        \end{minipage}%
-    \end{figure}
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Conclusion}
-\begin{frame}
-    \frametitle{Conclusion}
-    Conclusion
-\end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}[noframenumbering]
