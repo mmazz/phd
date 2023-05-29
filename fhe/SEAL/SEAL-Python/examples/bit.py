@@ -33,8 +33,9 @@ def encrypt(n=16):
     cipher_x = encryptor.encrypt(plain_x)
     return x, cipher_x, decryptor, ckks_encoder
 
-def bitchange(x):
-    return x
+def bitchange(cipher_x):
+    cipher_x_change = cipher_x
+    return cipher_x_change
 
 def decrypt(cipher_x, decryptor, ckks_encoder):
     plain = decryptor.decrypt(cipher_x)

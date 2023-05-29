@@ -50,6 +50,14 @@ def sampleDG(sigma, N):
     coef = np.int64(np.random.normal(loc=0.0, scale=sigma, size=N))
     return np.rint(coef)
 
+def bad_v(v):
+    bad_v = True
+    i=0
+    while (i <len(v) and not bad_v):
+        if v[i]==1 or v[i]==-1:
+            bad_v = False
+        i+=1
+    return bad_v
 
 def sampleZO(N, rho=0.5):
     """ Samples a distribution that has a probability 1-rho to be zero
@@ -65,5 +73,8 @@ def sampleZO(N, rho=0.5):
             if a==0:
                 a = -1
             coef[i] = a
+    if bad_v(coef):
+        index = random.randint(0, N-1)
+        coef[index] = 1
     return np.int64(coef)
 

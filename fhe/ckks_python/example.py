@@ -19,6 +19,13 @@ level = 3
 q0 = 2**4
 P = scale**level*q0
 
+def real_round(list, roundCS):
+    res = []
+    for i in range(len(list)):
+        res.append(round(list[i].real,roundCS))
+    return res
+
+
 print("CKKS in Python")
 print()
 print("Parameters:")
@@ -44,7 +51,8 @@ print("Suma: c1+c2")
 cadd = encoder.Cadd(c0,c1)
 madd = encoder.decrypt(cadd, secret)
 zadd = encoder.decode(madd, scale)
-zaddreal = np.round(zadd.real, roundCS)
+zaddreal = real_round(zadd, roundCS)
+
 print(z0[0]+z1[0], "=?", zaddreal[0], "   ,   ", z0[1]+z1[1], "=?", zaddreal[1])
 
 print()
@@ -53,7 +61,7 @@ cmul_cte = encoder.Cmul_cte(c0, m1)
 cmul_cte = encoder.reScale(cmul_cte)
 mmul_cte = encoder.decrypt(cmul_cte, secret)
 zmul_cte = encoder.decode(mmul_cte, scale)
-zmulReal_cte = np.round(zmul_cte.real, roundCS)
+zmulReal_cte = real_round(zmul_cte, roundCS)
 z0z1 = [np.round(z0[0]*z1[0], roundCS), np.round(z0[1]*z1[1], roundCS)]
 print(z0z1[0], "=?", zmulReal_cte[0], "   ,   ", z0z1[1], "=?", zmulReal_cte[1])
 
@@ -63,7 +71,7 @@ cmul = encoder.Cmul(c0, c1)
 cmulRescale = encoder.reScale(cmul)
 mmulRescale = encoder.decrypt(cmulRescale, secret)
 zmulRescale = encoder.decode(mmulRescale, scale)
-zmulReScaleReal = np.round(zmulRescale.real, roundCS)
+zmulReScaleReal = real_round(zmulRescale, roundCS)
 print(z0z1[0], "=?", zmulReScaleReal[0], "   ,   ", z0z1[1], "=?", zmulReScaleReal[1])
 print("error nu", cmulRescale.nu)
 print("error B", cmulRescale.B)
@@ -73,7 +81,7 @@ cmul2 = encoder.Cmul(c0, cmulRescale)
 cmulRescale2 = encoder.reScale(cmul2)
 mmulRescale2 = encoder.decrypt(cmulRescale2, secret)
 zmulRescale2 = encoder.decode(mmulRescale2, scale)
-zmulReScaleReal2 = np.round(zmulRescale2.real, roundCS)
+zmulReScaleReal2 = real_round(zmulRescale2, roundCS)
 print(z0[0]*z0z1[0], "=?", zmulReScaleReal2[0], "   ,   ", z0[1]*z0z1[1], "=?", zmulReScaleReal2[1])
 
 print()
@@ -82,7 +90,7 @@ cmul3 = encoder.Cmul(cmulRescale, cmulRescale)
 cmulRescale3 = encoder.reScale(cmul3)
 mmulRescale3 = encoder.decrypt(cmulRescale3, secret)
 zmulRescale3 = encoder.decode(mmulRescale3, scale)
-zmulReScaleReal3 = np.round(zmulRescale3.real, roundCS)
+zmulReScaleReal3 = real_round(zmulRescale3, roundCS)
 print(z0z1[0]*z0z1[0], "=?", zmulReScaleReal3[0], "   ,   ", z0z1[1]*z0z1[1], "=?", zmulReScaleReal3[1])
 
 print("error nu", cmulRescale3.nu)

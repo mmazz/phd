@@ -47,7 +47,6 @@ int main(int argc, char *argv[])
     chrono::high_resolution_clock::time_point time_start, time_end;
     chrono::microseconds time_diff;
     cout << "Non HE case: ";
-    time_start = chrono::high_resolution_clock::now();
     size_t slot_count = poly_modulus_degree/2;
     vector<double> input;
     input.reserve(slot_count);
@@ -59,11 +58,13 @@ int main(int argc, char *argv[])
         curr_point += step_size;
     }
 
-    vector<double> true_result;
-    for (size_t i = 0; i < input.size(); i++)
+    time_start = chrono::high_resolution_clock::now();
+    int N = input.size();
+    vector<double> true_result(N);
+    for (size_t i = 0; i < N; i++)
     {
         double x = input[i];
-        true_result.push_back(pow(x,poly_degree));
+        true_result[i] = pow(x,poly_degree);
     }
     time_end = chrono::high_resolution_clock::now();
     time_diff = chrono::duration_cast<chrono::microseconds>(time_end - time_start);

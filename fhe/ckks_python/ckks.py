@@ -34,7 +34,7 @@ class CKKSScheme:
     Also the rotation of ciphertexts is not implemented.
     """
 
-    def __init__(self, M:int, h:int, scale:int, P:int, level:int, q0:int, arithmetic64=False):
+    def __init__(self, M:int, h:int, scale:int, P:int, level:int, q0:int, arithmetic64=False, verbose=True):
         if arithmetic64:
            import arithmetic64 as arithmetic
            import distributions64 as dist
@@ -58,13 +58,14 @@ class CKKSScheme:
         self.P = P
         self.pub = ()
         self.evk = ()
-        print("Starting modulus qL: ", "{0:n}".format(self.new_mod(self.level_max)))
-        print()
         qL = self.new_mod(level)
         cota_N = int(110/7.2*mp.log(P*qL, 2))
-        print("Security condition:", self.N, ">=", cota_N)
+        if (verbose):
+            print("Starting modulus qL: ", "{0:n}".format(self.new_mod(self.level_max)))
+            print()
+            print("Security condition:", self.N, ">=", cota_N)
+            print("scale: ", scale, " >? ",int( self.N + 2*self.B_clean))
         self.B_clean = 8 *np.sqrt(2)*sigma*self.N + 6*sigma*np.sqrt(self.N) + 16*sigma*np.sqrt(h*self.N)
-        print("scale: ", scale, " >? ",int( self.N + 2*self.B_clean))
         self.B_sk = 8*sigma*self.N/np.sqrt(3)
         self.B_scale = np.sqrt(self.N/3)*(3+8*np.sqrt(h))
 
@@ -231,7 +232,12 @@ class CKKSScheme:
         e0 = self.dist.sampleDG(self.sigma, self.N)
         e1 = self.dist.sampleDG(self.sigma, self.N)
 
+
         v = self.dist.sampleZO(self.N, 0.5)
+        # Pasaba que si v era todo cero habia problemas con el c1
+        # hacia que tenga menos valores
+
+
         mc = (self.arithmetic.polyAdd(m, e0, ql), e1)
 
         vpk0 = self.arithmetic.polyMul(v, pub[0], ql, poly_mod)

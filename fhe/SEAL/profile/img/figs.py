@@ -47,27 +47,28 @@ ax.set_yscale('log')
 ax.set(xticks=degrees)
 
 #memory_poly_degree = [11000, 20100, 34000, 65000]
-ax2 = ax.twinx()  # instantiate a second axes that shares the same x-axis
-ax2.plot(degrees, memory_poly_degree, '-o', color='firebrick', lw=3, label='CKKS')
-ax2.set_ylabel("Memory usage (Bytes)", color='firebrick')
-ax2.set(xticks=degrees)
+#ax2 = ax.twinx()  # instantiate a second axes that shares the same x-axis
+#ax2.plot(degrees, memory_poly_degree, '-o', color='firebrick', lw=3, label='CKKS')
+#ax2.set_ylabel("Memory usage (Bytes)", color='firebrick')
+#ax2.set(xticks=degrees)
 fig.savefig('ckks_N.png', bbox_inches='tight')
 
 ###
 
 #time = [165921,271041,434388,648560,904618,1278232,1733814,2211678,2769027]
 fig, ax = plt.subplots(nrows=1, ncols=1, tight_layout=True )
-ax.plot(values, time, '-o', color='steelblue', lw=3, label='CKKS')
+ax.plot(values, time, '-o', color='steelblue', lw=3, label='N=32768')
 ax.set_xlabel("Multiplicative depth")
 ax.set_ylabel(r'Time ($\mu s$)', color='steelblue')
 ax.set_yscale('log')
+ax.legend()
 ax.set(xticks=values)
 ###
 #memory_coeff = [66000, 122000, 185000, 271000, 365000, 477000, 600000, 746000, 900000]
-ax2 = ax.twinx()  # instantiate a second axes that shares the same x-axis
-ax2.plot(values, memory_coeff, '-o', color='firebrick', lw=3, label='CKKS')
-ax2.set_ylabel("Memory usage (Bytes)", color='firebrick')
-ax2.set_yscale('log')
-ax2.set(xticks=values)
+#ax2 = ax.twinx()  # instantiate a second axes that shares the same x-axis
+#ax2.plot(values, memory_coeff, '-o', color='firebrick', lw=3, label='CKKS')
+#ax2.set_ylabel("Memory usage (Bytes)", color='firebrick')
+#ax2.set_yscale('log')
+#ax2.set(xticks=values)
 fig.savefig('ckks_mult_depth.png', bbox_inches='tight')
 
