@@ -148,7 +148,7 @@ class CKKSScheme:
         """
         self.original_len = len(z)
         while(len(z)!=int(self.N/2)):
-            z.append(0)
+            np.append(z,0)
 
         return z
 

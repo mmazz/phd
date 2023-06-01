@@ -53,10 +53,11 @@ int main(int argc, char *argv[])
     start_non = usage_non.ru_maxrss;
     size_t slot_count = poly_modulus_degree/2;
     vector<double> input;
-    input.reserve(slot_count);
+    int size_example = 500;
+    input.reserve(size_example);
     double curr_point = 0;
-    double step_size = 1.5 / (static_cast<double>(slot_count) - 1);
-    for (size_t i = 0; i < slot_count; i++)
+    double step_size = 1.5 / (static_cast<double>(size_example) - 1);
+    for (size_t i = 0; i < size_example; i++)
     {
         input.push_back(curr_point);
         curr_point += step_size;
