@@ -1,0 +1,19 @@
+Tener simbolos en vim:
+
+Poner en CMakeLists.txt lo siguiente y recompilar.
+Tanto en SEAL, native/src/seal, y native/src/seal/util
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "") # works
+
+
+
+Intentando hardcodear la seed.
+
+cambios:
+
+encryptor.h linea 137. encryptor_internal( plaintext, is_asymmetric, save_seed, cipher, pool)
+cambie el save_seed por un true. np funco.
+
+
+encryptor.cpp linea 229, quiero cout cosas.
+Dentro de aca no me deja cout nada... no aparece en pantalla.

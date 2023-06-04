@@ -1,6 +1,0 @@
-Intentando hardcodear la seed.
-
-cambios:
-
-encryptor.h linea 137. encryptor_internal( plaintext, is_asymmetric, save_seed, cipher, pool)
-cambie el save_seed por un true. np funco.
