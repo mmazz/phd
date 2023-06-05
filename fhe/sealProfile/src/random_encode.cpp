@@ -11,7 +11,8 @@
 #include <bitset>
 #include <chrono>
 
-bool TESTING = false;
+//bool TESTING = false;
+bool TESTING = true;
 
 using namespace seal;
 using namespace std;
@@ -27,6 +28,21 @@ using namespace std;
         | 32768               | 881                          |
         +---------------------+------------------------------+
 */
+
+void saveData(int index_value, int bit_change, float res)
+{
+    std::fstream logFile;
+    // Open File
+    logFile.open("/home/mmazz/phd/fhe/sealProfile/log_encode.txt", std::ios::app);
+    //Write data into log file
+    logFile << "Diff: :" << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
+    // close file stream
+    logFile.close();
+
+}
+
+
+
 float diff_vec(vector<double> v1, vector<double> v2){
     //vector<double> res(v1.size());
     float res = 0;
@@ -150,12 +166,12 @@ int main()
                 encoder.decode(plain_result, result);
                 float res = diff_vec(input, result);
                 if (res < 100){
+                    saveData(index_value, bit_change, res);
                     cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
                 }
             }
         }
+
     }
-
-
        return 0;
 }
