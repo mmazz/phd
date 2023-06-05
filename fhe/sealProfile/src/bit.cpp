@@ -122,17 +122,23 @@ int main(int argc, char *argv[])
 ///
 /////////////////////////////////////////////
 
-//    uint8_t* bits_x = (uint8_t*)(&x_plain);
-//    int bit = 0;
-//    int byte = 0;
-//    uint8_t mask = (1 << bit);
-//
-//    uint8_t nuevo = bits_x[byte] & ~(mask);
-//    uint8_t negbit =~(bits_x[byte] & (mask));
+  //  uint8_t* bits_x = (uint8_t*)(&x_plain);
+  //  int bit = 0;
+  //  int byte = 0;
+  //  uint8_t mask = (1 << bit);
 
-//    bits_x[byte] = (nuevo & ~(mask)) | (negbit & (mask));
+  //  uint8_t nuevo = bits_x[byte] & ~(mask);
+  //  uint8_t negbit =~(bits_x[byte] & (mask));
 
-    cout << "\n Tamaño en memoria del encoding: " << x_plain.capacity() << endl;
+  //  bits_x[byte] = (nuevo & ~(mask)) | (negbit & (mask));
+
+
+
+    cout << "\n []" << x_plain[0] << endl;
+
+    cout << "\n Coeff count : " << x_plain.coeff_count() << endl;
+    cout << "\n Capacity" << x_plain.capacity() << endl;
+    cout << "\n  significant" << x_plain.significant_coeff_count() << endl;
     Ciphertext x_encrypted;
     encryptor.encrypt(x_plain, x_encrypted);
 
