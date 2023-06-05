@@ -11,7 +11,8 @@
 #include <bitset>
 #include <chrono>
 
-bool TESTING = false;
+//bool TESTING = false;
+bool TESTING = true;
 
 using namespace seal;
 using namespace std;
@@ -93,7 +94,6 @@ int main()
     keygen.create_public_key(public_key);
 
 
-    cout << secret_key.data()[0] << "\n\n";
     Encryptor encryptor(context, public_key);
     Evaluator evaluator(context);
     Decryptor decryptor(context, secret_key);
@@ -112,31 +112,17 @@ int main()
     int N = poly_modulus_degree + 2*poly_modulus_degree;
     int bits = 2;
     cout << "Modulos: " << modulus[0] << " " << modulus[1] << " "<< modulus[2] << " " << modulus[3]<< endl;
-    cout << modulus.size() << endl;
-
-    // Estaria teniendo diferentes valores con el log_ckks.txt que es un log que mete
-    // el dato dentro del codigo en un log
-    if(!TESTING){
-        for(int i=0; i<poly_modulus_degree; i++){
-            for(int j=0; j<modulus.size()-1; j++){
-                index_value = i + (j*poly_modulus_degree);
-                cout << index_value << ": " << x_plain[index_value] <<endl;
-            }
-        }
-
-    }
 
     // Este es el experimento que quiero, pero antes quiero chequear que los elementos
     // que estoy tocando del encoding sean los correctos.
+    Ciphertext x_encrypted;
+    encryptor.encrypt(x_plain, x_encrypted);
     if(TESTING){
-        Ciphertext x_encrypted;
         Plaintext plain_result;
         vector<double> result;
-        // Lupeo todo el vector, Son K polynomios con K = len(modulus)-1.
-        // Cada uno tiene N = poly_modulus_degree coefficientes.
-        // Estan pegados uno al lado del otro, entonces es un vector de N*K elementos.
+        // chequear que es algo analogo a encoding...
         for (int index_value=0; index_value<N; index_value++){
-            original_value = x_plain[index_value];
+            original_value = x_encrypted[index_value];
             bit_change = 0;
             cout << index_value << endl;
             int modulus_index = int(index_value/poly_modulus_degree)+1;
@@ -144,10 +130,8 @@ int main()
             // Para cada elemento le cambio un bit. Se supone que cada coefficiente tiene tantos
             // bits como su numero primo asociado que esta en el vector modulus.
             for (int bit_change=0; bit_change<modulus[modulus_index]; bit_change++){
-                x_plain[index_value] = bit_flip(x_plain[index_value], bit_change);
-                encryptor.encrypt(x_plain, x_encrypted);
+                x_encrypted[index_value] = bit_flip(x_encrypted[index_value], bit_change);
                 decryptor.decrypt(x_encrypted, plain_result);
-
                 encoder.decode(plain_result, result);
                 float res = diff_vec(input, result);
                 if (res < 100){
