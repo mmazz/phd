@@ -10,6 +10,7 @@
 
 #include <bitset>
 #include <chrono>
+
 using namespace seal;
 using namespace std;
 /*
@@ -133,6 +134,8 @@ int main(int argc, char *argv[])
 
     cout << "coef y scale? " << x_plain[1] << "  " << x_plain[2] << "\n";
     cout<< sizeof(x_plain.data()) << "\n";
+    cout<< x_plain[0] << "\n";
+    cout<< x_plain[1] << "\n";
     encoder.encode(input, scale, x_plain2);
     cout << "Encoding first value: No cambia \n";
     cout << "Coeff 0 encode 1: " << x_plain[0] << "\n";
@@ -149,7 +152,15 @@ int main(int argc, char *argv[])
     // obtengo resultados diferentes.
     Ciphertext x_encrypted;
     Ciphertext x_encrypted2;
+
+    cout << "Chequeando que si reencripto se vuelve a realizar lo mismo"<<endl;
     encryptor.encrypt(x_plain, x_encrypted);
+    cout << x_encrypted[0] << endl;
+    x_encrypted[0] =1 ;
+    cout << x_encrypted[0] << endl;
+    encryptor.encrypt(x_plain, x_encrypted);
+    cout << x_encrypted[0] << endl;
+
     encryptor.encrypt(x_plain, x_encrypted2);
 
 

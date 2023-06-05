@@ -10,6 +10,9 @@
 
 #include <bitset>
 #include <chrono>
+
+bool TESTING = false;
+
 using namespace seal;
 using namespace std;
 /*
@@ -24,81 +27,58 @@ using namespace std;
         | 32768               | 881                          |
         +---------------------+------------------------------+
 */
+float diff_vec(vector<double> v1, vector<double> v2){
+    //vector<double> res(v1.size());
+    float res = 0;
 
-int main(int argc, char *argv[])
+    if (v1.size()==v2.size()){
+        for (int i=0; i<v1.size(); i++){
+            res += abs(v1[i]-v2[i]);
+        }
+        res = res/v1.size();
+    }
+    else{
+        cout << "Vectores de diferente tamaño!!!" << endl;
+    }
+    return res;
+}
+//uint8_t* bits_x = (uint8_t*)(&x_plain);
+//uint8_t mask = (1 << bit);
+//
+//uint8_t nuevo = bits_x[byte] & ~(mask);
+//uint8_t negbit =~(bits_x[byte] & (mask));
+//
+//bits_x[byte] = (nuevo & ~(mask)) | (negbit & (mask));
+
+
+uint64_t bit_flip(uint64_t original, ushort bit){
+    uint64_t mask = (1ULL << bit); // I set the bit to flip. 1ULL is for a one of 64bits
+    //cout <<"mask 0x" <<std::hex << mask << std::endl;
+    return mask^original; // I flip the bit using xor with the mask.
+}
+int main()
 {
-    int poly_degree = 4;
-
-    if (argc>1){
-        int num = atoi(argv[1]);
-        if (num < 2){
-            cout << "The polynomial results must have a degree greater than 2" << endl;
-        }
-        else
-            poly_degree = num;
-    }
-
-    size_t poly_modulus_degree = 32768;
-    if (argc>2){
-        poly_modulus_degree = atoi(argv[2]);
-        if (poly_modulus_degree != 32768 or poly_modulus_degree != 16384){
-            cout << "The polynomial modulus must be" << endl;
-        }
-
-    }
-
-    ////////////////////////////////    struct rusage usage;
-
+    int poly_degree = 2;
+    size_t poly_modulus_degree = 4096;
     size_t slot_count = poly_modulus_degree/2;
+
     vector<double> input;
     input.reserve(slot_count);
     double curr_point = 0;
-    double step_size = 1.5 / (static_cast<double>(slot_count) - 1);
+    double step_size = 1. / (static_cast<double>(slot_count) - 1);
     for (size_t i = 0; i < slot_count; i++)
     {
         input.push_back(curr_point);
         curr_point += step_size;
     }
 
-    //////////////////////
-
 
     vector<int> modulus;
-    double scale = pow(2.0, 40);
-    if(poly_modulus_degree==4096){ // max degree 3
-        modulus ={ 40, 20, 20, 20};
-        scale = pow(2.0, 10);
-    }
-    if(poly_modulus_degree==8192){ // max degree 3
-        modulus = {60};
-        for (int i=0; i<poly_degree; i++){
-            modulus.push_back(40);
-        }
-        modulus.push_back(60);
-    }
-    if(poly_modulus_degree==16384){ // max degree 7
-        modulus = {60};
-        for (int i=0; i<poly_degree; i++){
-            modulus.push_back(40);
-        }
-        modulus.push_back(60);
-    }
-    if (poly_modulus_degree==32768){ // max degree 20
-        modulus = {60};
-        for (int i=0; i<poly_degree; i++){
-            modulus.push_back(40);
-        }
-        modulus.push_back(60);
-    }
+    modulus ={ 40, 20, 20, 20};
+    double scale = pow(2.0, 39);
+
 
     print_example_banner("Example: CKKS Basics");
-
-    // std::array<std::uint64_t, prng_seed_uint64_count>
-  //  prng_seed_type secret_key = {
-  //          random_uint64(), random_uint64(), random_uint64(), random_uint64(),
-  //          random_uint64(), random_uint64(), random_uint64(), random_uint64()
-  //  };
-  //  std::shared_ptr<UniformRandomGeneratorFactory> rg = make_shared<Blake2xbPRNGFactory(secret_key)>;
 
     EncryptionParameters parms(scheme_type::ckks);
     parms.set_poly_modulus_degree(poly_modulus_degree);
@@ -119,53 +99,63 @@ int main(int argc, char *argv[])
     Decryptor decryptor(context, secret_key);
 
     CKKSEncoder encoder(context);
-   // print_vector(true_result, 3, 7);
-   // cout << "Input vector: " << endl;
+
     Plaintext x_plain;
     encoder.encode(input, scale, x_plain);
+   // for (int i=0 ; i<poly_modulus_degree+2*poly_modulus_degree; i++){
+   //     cout<< dec << i << ") " << x_plain[i] <<  "  " <<"0x" << hex <<x_plain[i]<<endl;
+   // }
 
+    int index_value = 0;
+    int bit_change = 0;
+    uint64_t original_value = 0;
+    int N = poly_modulus_degree + 2*poly_modulus_degree;
+    int bits = 2;
+    cout << "Modulos: " << modulus[0] << " " << modulus[1] << " "<< modulus[2] << " " << modulus[3]<< endl;
+    cout << modulus.size() << endl;
 
-    Ciphertext x_encrypted;
-    encryptor.encrypt(x_plain, x_encrypted);
+    // Estaria teniendo diferentes valores con el log_ckks.txt que es un log que mete
+    // el dato dentro del codigo en un log
+    if(!TESTING){
+        for(int i=0; i<poly_modulus_degree; i++){
+            for(int j=0; j<modulus.size()-1; j++){
+                index_value = i + (j*poly_modulus_degree);
+                cout << index_value << ": " << x_plain[index_value] <<endl;
+            }
+        }
 
+    }
 
-    cout << "Values of first coeff of encription with same keys: \n";
-    cout << x_encrypted[0]<<"\n";
-    cout << "\n ";
-    EncryptionParameters parms2(scheme_type::ckks);
-    parms.set_poly_modulus_degree(poly_modulus_degree);
-    parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulus));
+    // Este es el experimento que quiero, pero antes quiero chequear que los elementos
+    // que estoy tocando del encoding sean los correctos.
+    if(TESTING){
+        Ciphertext x_encrypted;
+        Plaintext plain_result;
+        vector<double> result;
+        // Lupeo todo el vector, Son K polynomios con K = len(modulus)-1.
+        // Cada uno tiene N = poly_modulus_degree coefficientes.
+        // Estan pegados uno al lado del otro, entonces es un vector de N*K elementos.
+        for (int index_value=0; index_value<N; index_value++){
+            original_value = x_plain[index_value];
+            bit_change = 0;
+            cout << index_value << endl;
+            int modulus_index = int(index_value/poly_modulus_degree)+1;
 
-    SEALContext context2(parms2);
-    print_parameters(context2);
-    cout << endl;
-    KeyGenerator keygen2(context2);
-    auto secret_key2 = keygen2.secret_key();
-    PublicKey public_key2;
-    keygen2.create_public_key(public_key2);
+            // Para cada elemento le cambio un bit. Se supone que cada coefficiente tiene tantos
+            // bits como su numero primo asociado que esta en el vector modulus.
+            for (int bit_change=0; bit_change<modulus[modulus_index]; bit_change++){
+                x_plain[index_value] = bit_flip(x_plain[index_value], bit_change);
+                encryptor.encrypt(x_plain, x_encrypted);
+                decryptor.decrypt(x_encrypted, plain_result);
 
+                encoder.decode(plain_result, result);
+                float res = diff_vec(input, result);
+                if (res < 100){
+                    cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
+                }
+            }
+        }
+    }
 
-    cout << secret_key2.data()[0] << "\n\n";
-    Encryptor encryptor2(context2, public_key2);
-    Evaluator evaluator2(context2);
-    Decryptor decryptor2(context2, secret_key2);
-
-    CKKSEncoder encoder2(context2);
-   // print_vector(true_result, 3, 7);
-   // cout << "Input vector: " << endl;
-    Plaintext x_plain2;
-    encoder2.encode(input, scale, x_plain2);
-
-
-    Ciphertext x_encrypted2;
-    encryptor2.encrypt(x_plain2, x_encrypted2);
-
-
-    cout << "Values of first coeff of encription with same keys: \n";
-    cout << x_encrypted2[0]<<"\n";
-    cout << "\n ";
-   // print_vector(input, 3, 7);
-   // print_vector(result, 3, 7);
-
-    return 0;
+       return 0;
 }

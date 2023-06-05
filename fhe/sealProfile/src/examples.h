@@ -4,6 +4,7 @@
 #pragma once
 
 #include "seal/seal.h"
+//#include "/home/mmazz/phd/fhe/SEAL_hardcode/native/src/seal/seal.h"
 #include <algorithm>
 #include <chrono>
 #include <cstddef>
