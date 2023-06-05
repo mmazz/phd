@@ -17,3 +17,21 @@ cambie el save_seed por un true. np funco.
 
 encryptor.cpp linea 229, quiero cout cosas.
 Dentro de aca no me deja cout nada... no aparece en pantalla.
+
+
+Randomgen.h linea 420, puse false en random gen: no funco...
+randomgen.cpp linea 39 y 45, cambie lo que busco para el random... no funco
+Randomgen.h linea 49, directamente doy el numero que da aleatorio. no funco
+
+rompi todo desde aca: probar de a una cosa...
+
+en 321 esta como crea la seed, es aca!
+
+- Randomgen.cpp 212 y 225 le saco lo que hace el refill?
+- 167
+
+- randomgen.h 446, creo que hardcodie seed en algo...a
+
+[rompe todo] 331 creo qeu ahi hago que siempre sea la misma seed y no cambie
+
+- 304, la inicializo con 8 unos, pero siempre son 8?
