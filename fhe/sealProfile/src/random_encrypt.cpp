@@ -64,7 +64,7 @@ float diff_vec(vector<double> v1, vector<double> v2){
 //bits_x[byte] = (nuevo & ~(mask)) | (negbit & (mask));
 
 
-uint64_t bit_flip(uint64_t original, ushort bit){
+uint64_t bit_flip(uint64_t &original, ushort bit){
     uint64_t mask = (1ULL << bit); // I set the bit to flip. 1ULL is for a one of 64bits
     //cout <<"mask 0x" <<std::hex << mask << std::endl;
     return mask^original; // I flip the bit using xor with the mask.
@@ -103,6 +103,7 @@ int main()
     KeyGenerator keygen(context);
     auto secret_key = keygen.secret_key();
     PublicKey public_key;
+    // Tiene una long de poly_degree por 8
     keygen.create_public_key(public_key);
 
 
@@ -114,44 +115,78 @@ int main()
 
     Plaintext x_plain;
     encoder.encode(input, scale, x_plain);
-   // for (int i=0 ; i<poly_modulus_degree+2*poly_modulus_degree; i++){
-   //     cout<< dec << i << ") " << x_plain[i] <<  "  " <<"0x" << hex <<x_plain[i]<<endl;
-   // }
-
+    int x_plain_size = (modulus.size()-1)*poly_modulus_degree;
     int index_value = 0;
-    int bit_change = 0;
     uint64_t original_value = 0;
-    int N = poly_modulus_degree + 2*poly_modulus_degree;
-    int bits = 2;
-    cout << "Modulos: " << modulus[0] << " " << modulus[1] << " "<< modulus[2] << " " << modulus[3]<< endl;
 
     // Este es el experimento que quiero, pero antes quiero chequear que los elementos
     // que estoy tocando del encoding sean los correctos.
+    // Tiene exactamente x_plain_size por 2 de tamaño, como era de esperar
     Ciphertext x_encrypted;
+    Ciphertext x_encrypted_original;
+    // el .data() creo que es un puntero y entonces me puedo pasar....
+    // pero dan igual, si hago .data(1) empiezo desde el segundo cifrado!!
     encryptor.encrypt(x_plain, x_encrypted);
+    encryptor.encrypt(x_plain, x_encrypted_original);
     if(TESTING){
         Plaintext plain_result;
         vector<double> result;
         // chequear que es algo analogo a encoding...
-        for (int index_value=0; index_value<N; index_value++){
-            original_value = x_encrypted[index_value];
-            bit_change = 0;
-            cout << index_value << endl;
-            int modulus_index = int(index_value/poly_modulus_degree)+1;
-
+        //for (int index_value=0; index_value<2*x_plain_size; index_value++){
+        int modulus_index = 0;
+        float res = 0;
+        int mod_change = 0;
+        int mod = 0;
+        for (int index_value=0; index_value<x_plain_size; index_value++){
+            modulus_index = int((index_value+1)/poly_modulus_degree);
             // Para cada elemento le cambio un bit. Se supone que cada coefficiente tiene tantos
             // bits como su numero primo asociado que esta en el vector modulus.
-            for (int bit_change=0; bit_change<modulus[modulus_index]; bit_change++){
+            mod = modulus[modulus_index];
+            if(mod!= mod_change){
+                mod_change = mod;
+                cout << "Mod: " << mod << " index " << index_value<< endl;
+            }
+            cout<< index_value<< endl;
+           // cout << "original: " << x_encrypted[index_value]  << endl;
+            for (int bit_change=0; bit_change<mod-2; bit_change++){
+               // cout << index_value << " " << bit_change << endl;
+              //  cout << x_encrypted[index_value]  << endl;
                 x_encrypted[index_value] = bit_flip(x_encrypted[index_value], bit_change);
+
+              //  cout << x_encrypted[index_value]  << endl;
                 decryptor.decrypt(x_encrypted, plain_result);
                 encoder.decode(plain_result, result);
-                float res = diff_vec(input, result);
-                if (res < 100){
+                res = diff_vec(input, result);
+                if (res < 1000){
                     saveData(index_value, bit_change, res);
                     cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
                 }
+                x_encrypted[index_value] = x_encrypted_original[index_value];
+             //   cout<< x_encrypted[index_value] << " = " << x_encrypted_original[index_value]<< endl;
             }
         }
+        cout << "c0 done" <<endl;
+        modulus_index = 0;
+        res = 0;
+        for (int index_value=x_plain_size; index_value<2*x_plain_size; index_value++){
+            modulus_index = int((index_value/2+1)/poly_modulus_degree);
+            // Para cada elemento le cambio un bit. Se supone que cada coefficiente tiene tantos
+            // bits como su numero primo asociado que esta en el vector modulus.
+            cout<< index_value<< endl;
+            for (int bit_change=0; bit_change<modulus[modulus_index]-2; bit_change++){
+                x_encrypted[index_value] = bit_flip(x_encrypted[index_value], bit_change);
+                decryptor.decrypt(x_encrypted, plain_result);
+                encoder.decode(plain_result, result);
+                res = diff_vec(input, result);
+                if (res < 1000){
+                    saveData(index_value, bit_change, res);
+                    cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
+                }
+                x_encrypted[index_value] = x_encrypted_original[index_value];
+               // cout<< x_encrypted[index_value] << " = " << x_encrypted_original[index_value]<< endl;
+            }
+        }
+
     }
 
        return 0;

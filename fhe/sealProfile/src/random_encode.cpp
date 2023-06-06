@@ -11,8 +11,8 @@
 #include <bitset>
 #include <chrono>
 
-bool TESTING = false;
-//bool TESTING = true;
+//bool TESTING = false;
+bool TESTING = true;
 
 using namespace seal;
 using namespace std;
@@ -69,8 +69,9 @@ float diff_vec(vector<double> v1, vector<double> v2){
 
 uint64_t bit_flip(uint64_t original, ushort bit){
     uint64_t mask = (1ULL << bit); // I set the bit to flip. 1ULL is for a one of 64bits
-    //cout <<"mask 0x" <<std::hex << mask << std::endl;
-    return mask^original; // I flip the bit using xor with the mask.
+    uint64_t res = 0;
+    res =  mask^original; // I flip the bit using xor with the mask.
+    return res;
 }
 int main()
 {
@@ -116,41 +117,46 @@ int main()
     CKKSEncoder encoder(context);
 
     Plaintext x_plain;
+    Plaintext x_plain_original;
     encoder.encode(input, scale, x_plain);
-    int index_value = 0;
-    int bit_change = 0;
-    uint64_t original_value = 0;
-    int N = poly_modulus_degree + 2*poly_modulus_degree;
+    encoder.encode(input, scale, x_plain_original);
+    int x_plain_size = poly_modulus_degree + 2*poly_modulus_degree;
     int bits = 2;
 
     // Este es el experimento que quiero, pero antes quiero chequear que los elementos
     // que estoy tocando del encoding sean los correctos.
     if(TESTING){
+        // se esta rompiendo con algunos cambios de bits altos en algunos coeffs.
+        // ejemplo coeff 4100 al cambiar el bit 19.
+        // parece que se rompe el is_data_valid_for(x_plain, context)
+        // como esta en forma de ntt, en valcheck.cpp linea 263, chequea ahi.
         Ciphertext x_encrypted;
         Plaintext plain_result;
         vector<double> result;
         // Lupeo todo el vector, Son K polynomios con K = len(modulus)-1.
         // Cada uno tiene N = poly_modulus_degree coefficientes.
         // Estan pegados uno al lado del otro, entonces es un vector de N*K elementos.
-        for (int index_value=0; index_value<N; index_value++){
-            original_value = x_plain[index_value];
-            bit_change = 0;
+        for (int index_value=0; index_value<x_plain_size; index_value++){
             cout << index_value << endl;
             int modulus_index = int(index_value/poly_modulus_degree)+1;
-//
             // Para cada elemento le cambio un bit. Se supone que cada coefficiente tiene tantos
             // bits como su numero primo asociado que esta en el vector modulus.
-            for (int bit_change=0; bit_change<modulus[modulus_index]; bit_change++){
+            for (short bit_change=0; bit_change<modulus[modulus_index]-2; bit_change++){
+                //cout << bit_change << endl;
+               // cout << x_plain[index_value]<< endl;
                 x_plain[index_value] = bit_flip(x_plain[index_value], bit_change);
+              //  cout << x_plain[index_value] << endl;
+               // cout <<  "validity " <<x_plain.is_ntt_form() << " " <<is_valid_for(x_plain, context)<< " " << is_buffer_valid(x_plain)<< " " <<  is_data_valid_for(x_plain, context)<< " " << is_metadata_valid_for(x_plain, context)<<endl;
                 encryptor.encrypt(x_plain, x_encrypted);
                 decryptor.decrypt(x_encrypted, plain_result);
-//
+              //  cout << "decode?" << endl;
                 encoder.decode(plain_result, result);
                 float res = diff_vec(input, result);
                 if (res < 10000){
                     saveData(index_value, bit_change, res);
                     cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
                 }
+                x_plain[index_value]= x_plain_original[index_value] ;
             }
         }
     }
@@ -162,6 +168,7 @@ int main()
     // Queda la duda si la sensibilidad viene de parte de NTT y por eso cambiando un
     // unico bit da todo mal.
     if(!TESTING){
+        int index_value = 0;
         for(int i=0; i<poly_modulus_degree; i++){
             for(int j=0; j<modulus.size()-1; j++){
                 index_value = i + (j*poly_modulus_degree);

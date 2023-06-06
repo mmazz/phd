@@ -35,20 +35,23 @@ using namespace std;
         +---------------------+------------------------------+
 */
 
-void saveData(int index_value, int bit_change, float res)
+void saveData(int index_value, int bit_change, float res, int new_file)
 {
     std::fstream logFile;
     // Open File
-    logFile.open("/home/mmazz/phd/fhe/sealProfile/log_encode.txt", std::ios::app);
-    //Write data into log file
-    logFile << "Diff: :" << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
-    // close file stream
+    if (new_file==1){
+        logFile.open("/home/mmazz/phd/fhe/sealProfile/log_encode_nonNTT.txt", std::ios::out);
+        logFile << "New file: " << endl ;
+    }
+    else{
+        logFile.open("/home/mmazz/phd/fhe/sealProfile/log_encode.txt", std::ios::app);
+        logFile << "Diff: " << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
+    }
     logFile.close();
 }
 
 
 float diff_vec(vector<double> &v1, vector<double> &v2){
-    //vector<double> res(v1.size());
     float res = 0;
 
     if (v1.size()==v2.size()){
@@ -160,47 +163,52 @@ int main()
     reset_values(x_plain);
 
     // Confirmado! Mapea bien!
-    int x_plain_size = poly_modulus_degree + 2*poly_modulus_degree;
+    int x_plain_size = (modulus.size()-1)*poly_modulus_degree;
     ntt_transformation(x_plain, coeff_modulus_size, coeff_count, ntt_tables);
-    check_equality(x_plain_original, x_plain, x_plain_size);
+    int result = check_equality(x_plain_original, x_plain, x_plain_size);
+
+    if(result!=0)
+        cout << "Error en la transformacion ntt"<< endl;
+
     reset_values(x_plain);
 
     int index_value = 0;
-    int bit_change = 0;
-    uint64_t original_value = 0;
-    int bits = 2;
     // Este es el experimento que quiero, pero antes quiero chequear que los elementos
     // que estoy tocando del encoding sean los correctos.
     if(TESTING){
         Ciphertext x_encrypted;
         Plaintext plain_result;
         vector<double> result;
+        float res = 0;
+        int new_file = 1;
+        saveData(new_file, new_file, res, new_file); // simplemente crea el archivo
+        new_file = 0;
         // Lupeo todo el vector, Son K polynomios con K = len(modulus)-1.
         // Cada uno tiene N = poly_modulus_degree coefficientes.
         // Estan pegados uno al lado del otro, entonces es un vector de N*K elementos.
-        //for (int index_value=0; index_value<N; index_value++){
-        for (int index_value=0; index_value<x_plain_size; index_value+=100){
-            bit_change = 0;
+        for (int index_value=0; index_value<x_plain_size; index_value++){
             cout << index_value << endl;
-            int modulus_index = int(index_value/poly_modulus_degree);
+            // el modulo cambia por polynomio:
+            int modulus_index = int((index_value+1)/poly_modulus_degree);
             // Para cada elemento le cambio un bit. Se supone que cada coefficiente tiene tantos
             // bits como su numero primo asociado que esta en el vector modulus.
             //for (int bit_change=0; bit_change<modulus[modulus_index]; bit_change++){
-            cout << "modulus: " << modulus[modulus_index] << endl;
-            for (int bit_change=0; bit_change<modulus[modulus_index]; bit_change+=10){
+            for (int bit_change=0; bit_change<modulus[modulus_index]-2; bit_change++){
                 reset_values(x_plain);
                 x_plain[index_value] = bit_flip(x_plain[index_value], bit_change);
                 ntt_transformation(x_plain, coeff_modulus_size, coeff_count, ntt_tables);
                 encryptor.encrypt(x_plain, x_encrypted);
                 decryptor.decrypt(x_encrypted, plain_result);
                 encoder.decode(plain_result, result);
-                float res = diff_vec(input, result);
+                res = diff_vec(input, result);
+             //   cout << res << endl;
                 if (res < 10000){
-                    saveData(index_value, bit_change, res);
+                    saveData(index_value, bit_change, res, new_file);
                     cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
                 }
             }
         }
+        cout << x_encrypted[x_plain_size*2-1] << endl;
     }
        return 0;
 }
