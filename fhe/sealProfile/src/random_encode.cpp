@@ -1,15 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
-
-#include <iostream>
-#include <vector>
-#include "examples.h"
 #include <seal/randomgen.h>
 #include <seal/keygenerator.h>
-#include <memory>
-
-#include <bitset>
-#include <chrono>
+#include "examples.h"
 
 //bool TESTING = false;
 bool TESTING = true;
@@ -29,50 +22,6 @@ using namespace std;
         +---------------------+------------------------------+
 */
 
-void saveData(int index_value, int bit_change, float res)
-{
-    std::fstream logFile;
-    // Open File
-    logFile.open("/home/mmazz/phd/fhe/sealProfile/log_encode.txt", std::ios::app);
-    //Write data into log file
-    logFile << "Diff: :" << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
-    // close file stream
-    logFile.close();
-
-}
-
-
-
-float diff_vec(vector<double> v1, vector<double> v2){
-    //vector<double> res(v1.size());
-    float res = 0;
-
-    if (v1.size()==v2.size()){
-        for (int i=0; i<v1.size(); i++){
-            res += abs(v1[i]-v2[i]);
-        }
-        res = res/v1.size();
-    }
-    else{
-        cout << "Vectores de diferente tamaño!!!" << endl;
-    }
-    return res;
-}
-//uint8_t* bits_x = (uint8_t*)(&x_plain);
-//uint8_t mask = (1 << bit);
-//
-//uint8_t nuevo = bits_x[byte] & ~(mask);
-//uint8_t negbit =~(bits_x[byte] & (mask));
-//
-//bits_x[byte] = (nuevo & ~(mask)) | (negbit & (mask));
-
-
-uint64_t bit_flip(uint64_t original, ushort bit){
-    uint64_t mask = (1ULL << bit); // I set the bit to flip. 1ULL is for a one of 64bits
-    uint64_t res = 0;
-    res =  mask^original; // I flip the bit using xor with the mask.
-    return res;
-}
 int main()
 {
     int poly_degree = 2;
@@ -123,6 +72,10 @@ int main()
     int x_plain_size = poly_modulus_degree + 2*poly_modulus_degree;
     int bits = 2;
 
+    std::string file_name = "encoding";
+    int new_file = 1;
+    saveDataLog(file_name, 0, 0, 0, new_file);
+    new_file = 0;
     // Este es el experimento que quiero, pero antes quiero chequear que los elementos
     // que estoy tocando del encoding sean los correctos.
     if(TESTING){
@@ -153,7 +106,7 @@ int main()
                 encoder.decode(plain_result, result);
                 float res = diff_vec(input, result);
                 if (res < 10000){
-                    saveData(index_value, bit_change, res);
+                    saveDataLog(file_name,index_value, bit_change, res, new_file);
                     cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
                 }
                 x_plain[index_value]= x_plain_original[index_value] ;

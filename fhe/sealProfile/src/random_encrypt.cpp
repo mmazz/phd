@@ -28,47 +28,7 @@ using namespace std;
         | 32768               | 881                          |
         +---------------------+------------------------------+
 */
-void saveData(int index_value, int bit_change, float res)
-{
-    std::fstream logFile;
-    // Open File
-    logFile.open("/home/mmazz/phd/fhe/sealProfile/log_encrypt.txt", std::ios::app);
-    //Write data into log file
-    logFile << "Diff: :" << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
-    // close file stream
-    logFile.close();
 
-}
-
-float diff_vec(vector<double> v1, vector<double> v2){
-    //vector<double> res(v1.size());
-    float res = 0;
-
-    if (v1.size()==v2.size()){
-        for (int i=0; i<v1.size(); i++){
-            res += abs(v1[i]-v2[i]);
-        }
-        res = res/v1.size();
-    }
-    else{
-        cout << "Vectores de diferente tamaño!!!" << endl;
-    }
-    return res;
-}
-//uint8_t* bits_x = (uint8_t*)(&x_plain);
-//uint8_t mask = (1 << bit);
-//
-//uint8_t nuevo = bits_x[byte] & ~(mask);
-//uint8_t negbit =~(bits_x[byte] & (mask));
-//
-//bits_x[byte] = (nuevo & ~(mask)) | (negbit & (mask));
-
-
-uint64_t bit_flip(uint64_t &original, ushort bit){
-    uint64_t mask = (1ULL << bit); // I set the bit to flip. 1ULL is for a one of 64bits
-    //cout <<"mask 0x" <<std::hex << mask << std::endl;
-    return mask^original; // I flip the bit using xor with the mask.
-}
 int main()
 {
     int poly_degree = 2;
@@ -112,7 +72,11 @@ int main()
     Decryptor decryptor(context, secret_key);
 
     CKKSEncoder encoder(context);
+    auto context_data_ptr = context.get_context_data(context.first_parms_id());
+    auto &context_data = *context_data_ptr;
 
+    auto &parms2 = context_data.parms();
+    auto &coeff_modulus = parms2.coeff_modulus();
     Plaintext x_plain;
     encoder.encode(input, scale, x_plain);
     int x_plain_size = (modulus.size()-1)*poly_modulus_degree;
@@ -128,6 +92,11 @@ int main()
     // pero dan igual, si hago .data(1) empiezo desde el segundo cifrado!!
     encryptor.encrypt(x_plain, x_encrypted);
     encryptor.encrypt(x_plain, x_encrypted_original);
+
+    std::string file_name = "encryption";
+    int new_file = 1;
+    saveDataLog(file_name, 0,0,0,new_file);
+    new_file = 0;
     if(TESTING){
         Plaintext plain_result;
         vector<double> result;
@@ -137,7 +106,8 @@ int main()
         float res = 0;
         int mod_change = 0;
         int mod = 0;
-        for (int index_value=0; index_value<x_plain_size; index_value++){
+        //for (int index_value=0; index_value<x_plain_size; index_value++){
+        for (int index_value=4200; index_value<x_plain_size; index_value+=50){
             modulus_index = int((index_value+1)/poly_modulus_degree);
             // Para cada elemento le cambio un bit. Se supone que cada coefficiente tiene tantos
             // bits como su numero primo asociado que esta en el vector modulus.
@@ -147,18 +117,29 @@ int main()
                 cout << "Mod: " << mod << " index " << index_value<< endl;
             }
             cout<< index_value<< endl;
+            uint64_t modulus_k = coeff_modulus[modulus_index].value();
            // cout << "original: " << x_encrypted[index_value]  << endl;
-            for (int bit_change=0; bit_change<mod-2; bit_change++){
+            //for (int bit_change=0; bit_change<mod-2; bit_change++){
+            for (int bit_change=0; bit_change<mod-2; bit_change+=4){
                // cout << index_value << " " << bit_change << endl;
               //  cout << x_encrypted[index_value]  << endl;
                 x_encrypted[index_value] = bit_flip(x_encrypted[index_value], bit_change);
 
+            //    cout <<  "validity ntt form: " << x_encrypted.is_ntt_form() << ", valid for:  ";
+            //    cout <<is_valid_for(x_encrypted, context)<< ", buffer valid: " << is_buffer_valid(x_encrypted);
+            //    cout << ",  data valid for: " <<  is_data_valid_for(x_encrypted, context)<< ", metadata valid for:  ";
+            //    cout << is_metadata_valid_for(x_encrypted, context)<<endl;
+                if (x_encrypted[index_value] >= modulus_k){
+                    cout<< "Mas grande que el modulo!" << modulus_k << endl;
+                    x_encrypted[index_value] = x_encrypted_original[index_value];
+                    break;
+                }
               //  cout << x_encrypted[index_value]  << endl;
                 decryptor.decrypt(x_encrypted, plain_result);
                 encoder.decode(plain_result, result);
                 res = diff_vec(input, result);
                 if (res < 1000){
-                    saveData(index_value, bit_change, res);
+                    saveDataLog(file_name, index_value, bit_change, res, new_file);
                     cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
                 }
                 x_encrypted[index_value] = x_encrypted_original[index_value];
@@ -168,18 +149,20 @@ int main()
         cout << "c0 done" <<endl;
         modulus_index = 0;
         res = 0;
-        for (int index_value=x_plain_size; index_value<2*x_plain_size; index_value++){
+        //for (int index_value=x_plain_size; index_value<2*x_plain_size; index_value++){
+        for (int index_value=x_plain_size; index_value<2*x_plain_size; index_value+=50){
             modulus_index = int((index_value/2+1)/poly_modulus_degree);
             // Para cada elemento le cambio un bit. Se supone que cada coefficiente tiene tantos
             // bits como su numero primo asociado que esta en el vector modulus.
             cout<< index_value<< endl;
-            for (int bit_change=0; bit_change<modulus[modulus_index]-2; bit_change++){
+            //for (int bit_change=0; bit_change<modulus[modulus_index]-2; bit_change++){
+            for (int bit_change=0; bit_change<modulus[modulus_index]-2; bit_change+=4){
                 x_encrypted[index_value] = bit_flip(x_encrypted[index_value], bit_change);
                 decryptor.decrypt(x_encrypted, plain_result);
                 encoder.decode(plain_result, result);
                 res = diff_vec(input, result);
                 if (res < 1000){
-                    saveData(index_value, bit_change, res);
+                    saveDataLog(file_name, index_value, bit_change, res, new_file);
                     cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
                 }
                 x_encrypted[index_value] = x_encrypted_original[index_value];

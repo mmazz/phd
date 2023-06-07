@@ -4,7 +4,6 @@
 #pragma once
 
 #include "seal/seal.h"
-//#include "/home/mmazz/phd/fhe/SEAL_hardcode/native/src/seal/seal.h"
 #include <algorithm>
 #include <chrono>
 #include <cstddef>
@@ -214,3 +213,81 @@ inline std::string uint64_to_hex_string(std::uint64_t value)
 {
     return seal::util::uint_to_hex_string(&value, std::size_t(1));
 }
+
+inline void saveDataLog(std::string file_name, int index_value, int bit_change, float res, int new_file)
+{
+    std::fstream logFile;
+    // Open File
+    if (new_file==1){
+        logFile.open("/home/mmazz/phd/fhe/sealProfile/"+file_name+".txt", std::ios::out);
+        logFile << "New file: " << std::endl ;
+    }
+    else{
+        logFile.open("/home/mmazz/phd/fhe/sealProfile/"+file_name+".txt", std::ios::app);
+        logFile << "Diff: " << res << " index_value: "<< index_value << " bit_changed: " << bit_change << std::endl ;
+    }
+    //Write data into log file
+    logFile << "Diff: :" << res << " index_value: "<< index_value << " bit_changed: " << bit_change << std::endl ;
+    // close file stream
+    logFile.close();
+
+}
+
+
+inline float diff_vec(std::vector<double> v1, std::vector<double> v2){
+    //vector<double> res(v1.size());
+    float res = 0;
+
+    if (v1.size()==v2.size()){
+        for (int i=0; i<v1.size(); i++){
+            res += abs(v1[i]-v2[i]);
+        }
+        res = res/v1.size();
+    }
+    else{
+        std::cout << "Vectores de diferente tamaño!!!" << std::endl;
+    }
+    return res;
+}
+
+inline uint64_t bit_flip(uint64_t original, ushort bit){
+    uint64_t mask = (1ULL << bit); // I set the bit to flip. 1ULL is for a one of 64bits
+    uint64_t res = 0;
+    res =  mask^original; // I flip the bit using xor with the mask.
+    return res;
+}
+inline int check_equality(seal::Plaintext &x_plain, seal::Plaintext &x_plain2, int size_x){
+    int res=0;
+    for(int i=0;i<size_x; i++){
+        if(x_plain[i]!=x_plain2[i])
+            res+=1;
+    }
+    if (res == 0)
+        std::cout<< "Equality check is: Passed, " << res << std::endl;
+    else
+        std::cout<< "Equality check is: Failed, " << res << std::endl;
+    return res;
+}
+
+inline void  reset_values(seal::Plaintext &x_plain){
+    // Me traigo los valores de x_plain antes de aplicarle  NTT
+    std::string file_name = "/home/mmazz/phd/fhe/sealProfile/SEALlog_nonNTT_plaintextValues.txt";
+    std::ifstream file(file_name);
+    std::vector<uint64_t>  data(std::istream_iterator<uint64_t>{file},
+                        std::istream_iterator<uint64_t>{});
+
+    uint64_t i_max = data[0];
+    for (uint64_t i=0; i < i_max; i++){
+        x_plain[i] = data[i+1];
+    }
+}
+
+inline void ntt_transformation(seal::Plaintext &x_plain, size_t coeff_modulus_size, size_t coeff_count, const seal::util::NTTTables* ntt_tables){
+    for (size_t i = 0; i < coeff_modulus_size; i++)
+    {
+        seal::util::ntt_negacyclic_harvey(x_plain.data(i * coeff_count), ntt_tables[i]);
+    }
+}
+
+
+

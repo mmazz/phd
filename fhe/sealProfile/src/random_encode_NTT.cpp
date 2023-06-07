@@ -35,75 +35,6 @@ using namespace std;
         +---------------------+------------------------------+
 */
 
-void saveData(int index_value, int bit_change, float res, int new_file)
-{
-    std::fstream logFile;
-    // Open File
-    if (new_file==1){
-        logFile.open("/home/mmazz/phd/fhe/sealProfile/log_encode_nonNTT.txt", std::ios::out);
-        logFile << "New file: " << endl ;
-    }
-    else{
-        logFile.open("/home/mmazz/phd/fhe/sealProfile/log_encode.txt", std::ios::app);
-        logFile << "Diff: " << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
-    }
-    logFile.close();
-}
-
-
-float diff_vec(vector<double> &v1, vector<double> &v2){
-    float res = 0;
-
-    if (v1.size()==v2.size()){
-        for (int i=0; i<v1.size(); i++){
-            res += abs(v1[i]-v2[i]);
-        }
-        res = res/v1.size();
-    }
-    else{
-        cout << "Vectores de diferente tamaño!!!" << endl;
-    }
-    return res;
-}
-
-int check_equality(Plaintext &x_plain, Plaintext &x_plain2, int size_x){
-    int res=0;
-    for(int i=0;i<size_x; i++){
-        if(x_plain[i]!=x_plain2[i])
-            res+=1;
-    }
-    if (res == 0)
-        cout<< "Equality check is: Passed, " << res <<endl;
-    else
-        cout<< "Equality check is: Failed, " << res <<endl;
-    return res;
-}
-
-void  reset_values(Plaintext &x_plain){
-    // Me traigo los valores de x_plain antes de aplicarle  NTT
-    std::string file_name = "/home/mmazz/phd/fhe/sealProfile/log_values_plainText_nonNTT_ckks.txt";
-    std::ifstream file(file_name);
-    std::vector<uint64_t>  data(std::istream_iterator<uint64_t>{file},
-                        std::istream_iterator<uint64_t>{});
-
-    uint64_t i_max = data[0];
-    for (uint64_t i=0; i < i_max; i++){
-        x_plain[i] = data[i+1];
-    }
-}
-
-void ntt_transformation(Plaintext &x_plain, size_t coeff_modulus_size, size_t coeff_count, const seal::util::NTTTables* ntt_tables){
-    for (size_t i = 0; i < coeff_modulus_size; i++)
-    {
-        util::ntt_negacyclic_harvey(x_plain.data(i * coeff_count), ntt_tables[i]);
-    }
-}
-
-    // Confirmado!
-uint64_t bit_flip(uint64_t original, ushort bit){
-    uint64_t mask = (1ULL << bit); // I set the bit to flip. 1ULL is for a one of 64bits
-    return mask^original; // I flip the bit using xor with the mask.
-}
 
 
 int main()
@@ -155,10 +86,10 @@ int main()
     std::size_t coeff_modulus_size = coeff_modulus.size();
     std::size_t coeff_count = parms.poly_modulus_degree();
     auto ntt_tables = context_data.small_ntt_tables();
-
     encoder.encode(input, scale, x_plain_original);
     encoder.encode(input, scale, x_plain);
 
+    cout << "coeff_modulus_size: " <<  coeff_modulus_size <<endl;
     // Mete los valores previos a ser transormados con NTT
     reset_values(x_plain);
 
@@ -181,29 +112,35 @@ int main()
         vector<double> result;
         float res = 0;
         int new_file = 1;
-        saveData(new_file, new_file, res, new_file); // simplemente crea el archivo
+        std::string file_name = "encode_ntt";
+        saveDataLog(file_name, 0, 0, res, new_file); // simplemente crea el archivo
         new_file = 0;
         // Lupeo todo el vector, Son K polynomios con K = len(modulus)-1.
         // Cada uno tiene N = poly_modulus_degree coefficientes.
         // Estan pegados uno al lado del otro, entonces es un vector de N*K elementos.
-        for (int index_value=0; index_value<x_plain_size; index_value++){
+        //for (int index_value=0; index_value<x_plain_size; index_value++){
+        for (int index_value=4100; index_value<x_plain_size; index_value+=100){
             cout << index_value << endl;
             // el modulo cambia por polynomio:
             int modulus_index = int((index_value+1)/poly_modulus_degree);
             // Para cada elemento le cambio un bit. Se supone que cada coefficiente tiene tantos
             // bits como su numero primo asociado que esta en el vector modulus.
-            //for (int bit_change=0; bit_change<modulus[modulus_index]; bit_change++){
-            for (int bit_change=0; bit_change<modulus[modulus_index]-2; bit_change++){
+            uint64_t modulus_k = coeff_modulus[modulus_index].value();
+            for (int bit_change=0; bit_change<modulus[modulus_index]; bit_change++){
+            //for (int bit_change=0; bit_change<modulus[modulus_index]-2; bit_change++){
                 reset_values(x_plain);
                 x_plain[index_value] = bit_flip(x_plain[index_value], bit_change);
                 ntt_transformation(x_plain, coeff_modulus_size, coeff_count, ntt_tables);
+                if (x_plain[index_value] >= modulus_k){
+                    cout<< "Mas grande que el modulo!" << modulus_k << endl;
+                }
                 encryptor.encrypt(x_plain, x_encrypted);
                 decryptor.decrypt(x_encrypted, plain_result);
                 encoder.decode(plain_result, result);
                 res = diff_vec(input, result);
              //   cout << res << endl;
                 if (res < 10000){
-                    saveData(index_value, bit_change, res, new_file);
+                    saveDataLog(file_name, index_value, bit_change, res, new_file);
                     cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
                 }
             }
