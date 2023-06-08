@@ -214,20 +214,18 @@ inline std::string uint64_to_hex_string(std::uint64_t value)
     return seal::util::uint_to_hex_string(&value, std::size_t(1));
 }
 
-inline void saveDataLog(std::string file_name, int index_value, int bit_change, float res, int new_file)
+inline void saveDataLog(std::string file_name, int index_value, int bit_change, float res, bool new_file)
 {
     std::fstream logFile;
     // Open File
     if (new_file==1){
-        logFile.open("/home/mmazz/phd/fhe/sealProfile/"+file_name+".txt", std::ios::out);
+        logFile.open("/home/mmazz/phd/fhe/sealProfile/log_"+file_name+".txt", std::ios::out);
         logFile << "New file: " << std::endl ;
     }
     else{
         logFile.open("/home/mmazz/phd/fhe/sealProfile/"+file_name+".txt", std::ios::app);
         logFile << "Diff: " << res << " index_value: "<< index_value << " bit_changed: " << bit_change << std::endl ;
     }
-    //Write data into log file
-    logFile << "Diff: :" << res << " index_value: "<< index_value << " bit_changed: " << bit_change << std::endl ;
     // close file stream
     logFile.close();
 

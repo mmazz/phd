@@ -93,84 +93,88 @@ int main()
     encryptor.encrypt(x_plain, x_encrypted);
     encryptor.encrypt(x_plain, x_encrypted_original);
 
+    cout << x_encrypted_original[4095] << endl;
+    cout << x_encrypted_original[4096] << endl;
+
     std::string file_name = "encryption";
-    int new_file = 1;
-    saveDataLog(file_name, 0,0,0,new_file);
-    new_file = 0;
+    bool new_file = 1;
+    saveDataLog(file_name, 0,0,0, new_file);
     if(TESTING){
         Plaintext plain_result;
         vector<double> result;
-        // chequear que es algo analogo a encoding...
-        //for (int index_value=0; index_value<2*x_plain_size; index_value++){
         int modulus_index = 0;
         float res = 0;
         int mod_change = 0;
         int mod = 0;
-        //for (int index_value=0; index_value<x_plain_size; index_value++){
-        for (int index_value=4200; index_value<x_plain_size; index_value+=50){
+        uint64_t modulus_k = 0;
+
+        cout << "Starting bitflips with x_plain_size of: " << x_plain_size << endl;
+        for (int index_value=0; index_value<x_plain_size; index_value++){
             modulus_index = int((index_value+1)/poly_modulus_degree);
-            // Para cada elemento le cambio un bit. Se supone que cada coefficiente tiene tantos
-            // bits como su numero primo asociado que esta en el vector modulus.
             mod = modulus[modulus_index];
             if(mod!= mod_change){
                 mod_change = mod;
                 cout << "Mod: " << mod << " index " << index_value<< endl;
+                modulus_k = coeff_modulus[modulus_index].value();
             }
-            cout<< index_value<< endl;
-            uint64_t modulus_k = coeff_modulus[modulus_index].value();
-           // cout << "original: " << x_encrypted[index_value]  << endl;
-            //for (int bit_change=0; bit_change<mod-2; bit_change++){
-            for (int bit_change=0; bit_change<mod-2; bit_change+=4){
-               // cout << index_value << " " << bit_change << endl;
-              //  cout << x_encrypted[index_value]  << endl;
-                x_encrypted[index_value] = bit_flip(x_encrypted[index_value], bit_change);
 
-            //    cout <<  "validity ntt form: " << x_encrypted.is_ntt_form() << ", valid for:  ";
-            //    cout <<is_valid_for(x_encrypted, context)<< ", buffer valid: " << is_buffer_valid(x_encrypted);
-            //    cout << ",  data valid for: " <<  is_data_valid_for(x_encrypted, context)<< ", metadata valid for:  ";
-            //    cout << is_metadata_valid_for(x_encrypted, context)<<endl;
+            cout <<index_value << ", "<< std::flush;
+
+            for (int bit_change=0; bit_change<mod; bit_change++){
+                x_encrypted[index_value] = bit_flip(x_encrypted[index_value], bit_change);
                 if (x_encrypted[index_value] >= modulus_k){
                     cout<< "Mas grande que el modulo!" << modulus_k << endl;
                     x_encrypted[index_value] = x_encrypted_original[index_value];
                     break;
                 }
-              //  cout << x_encrypted[index_value]  << endl;
                 decryptor.decrypt(x_encrypted, plain_result);
                 encoder.decode(plain_result, result);
                 res = diff_vec(input, result);
                 if (res < 1000){
-                    saveDataLog(file_name, index_value, bit_change, res, new_file);
+                    saveDataLog(file_name, index_value, bit_change, res, !new_file);
                     cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
                 }
                 x_encrypted[index_value] = x_encrypted_original[index_value];
-             //   cout<< x_encrypted[index_value] << " = " << x_encrypted_original[index_value]<< endl;
             }
         }
+        saveDataLog(file_name, 1000000000, 10000000, 100, !new_file);
         cout << "c0 done" <<endl;
         modulus_index = 0;
         res = 0;
-        //for (int index_value=x_plain_size; index_value<2*x_plain_size; index_value++){
-        for (int index_value=x_plain_size; index_value<2*x_plain_size; index_value+=50){
-            modulus_index = int((index_value/2+1)/poly_modulus_degree);
-            // Para cada elemento le cambio un bit. Se supone que cada coefficiente tiene tantos
-            // bits como su numero primo asociado que esta en el vector modulus.
-            cout<< index_value<< endl;
-            //for (int bit_change=0; bit_change<modulus[modulus_index]-2; bit_change++){
-            for (int bit_change=0; bit_change<modulus[modulus_index]-2; bit_change+=4){
+
+        // rompio en index = 16398
+        for (int index_value=x_plain_size; index_value<2*x_plain_size; index_value++){
+            modulus_index = int(((index_value-x_plain_size)+1)/poly_modulus_degree);
+            mod = modulus[modulus_index];
+            if(mod!= mod_change){
+                mod_change = mod;
+                modulus_k = coeff_modulus[modulus_index].value();
+                cout << "Mod: " << mod << " index " << index_value<< endl;
+            }
+            cout <<index_value << ", "<< std::flush;
+            for (int bit_change=0; bit_change<modulus[modulus_index]; bit_change++){
                 x_encrypted[index_value] = bit_flip(x_encrypted[index_value], bit_change);
+                if (x_encrypted[index_value] >= modulus_k){
+                    cout<< "Mas grande que el modulo!" << modulus_k << endl;
+                    x_encrypted[index_value] = x_encrypted_original[index_value];
+                    break;
+                }
                 decryptor.decrypt(x_encrypted, plain_result);
                 encoder.decode(plain_result, result);
                 res = diff_vec(input, result);
                 if (res < 1000){
-                    saveDataLog(file_name, index_value, bit_change, res, new_file);
+                    saveDataLog(file_name, index_value, bit_change, res, !new_file);
                     cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
                 }
                 x_encrypted[index_value] = x_encrypted_original[index_value];
-               // cout<< x_encrypted[index_value] << " = " << x_encrypted_original[index_value]<< endl;
             }
         }
 
     }
 
        return 0;
+       //    cout <<  "validity ntt form: " << x_encrypted.is_ntt_form() << ", valid for:  ";
+       //    cout <<is_valid_for(x_encrypted, context)<< ", buffer valid: " << is_buffer_valid(x_encrypted);
+       //    cout << ",  data valid for: " <<  is_data_valid_for(x_encrypted, context)<< ", metadata valid for:  ";
+       //    cout << is_metadata_valid_for(x_encrypted, context)<<endl;
 }
