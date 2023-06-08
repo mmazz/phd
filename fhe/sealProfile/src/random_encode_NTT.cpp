@@ -74,9 +74,6 @@ int main()
     Decryptor decryptor(context, secret_key);
     CKKSEncoder encoder(context);
 
-    Plaintext x_plain_original;
-    Plaintext x_plain;
-
     auto context_data_ptr = context.get_context_data(context.first_parms_id());
     auto &context_data = *context_data_ptr;
 
@@ -86,6 +83,10 @@ int main()
     std::size_t coeff_modulus_size = coeff_modulus.size();
     std::size_t coeff_count = parms.poly_modulus_degree();
     auto ntt_tables = context_data.small_ntt_tables();
+
+    Plaintext x_plain_original;
+    Plaintext x_plain;
+
     encoder.encode(input, scale, x_plain_original);
     encoder.encode(input, scale, x_plain);
 
@@ -118,8 +119,7 @@ int main()
         // Lupeo todo el vector, Son K polynomios con K = len(modulus)-1.
         // Cada uno tiene N = poly_modulus_degree coefficientes.
         // Estan pegados uno al lado del otro, entonces es un vector de N*K elementos.
-        //for (int index_value=0; index_value<x_plain_size; index_value++){
-        for (int index_value=4100; index_value<x_plain_size; index_value+=100){
+        for (int index_value=0; index_value<x_plain_size; index_value++){
             cout << index_value << endl;
             // el modulo cambia por polynomio:
             int modulus_index = int((index_value+1)/poly_modulus_degree);
@@ -127,10 +127,9 @@ int main()
             // bits como su numero primo asociado que esta en el vector modulus.
             uint64_t modulus_k = coeff_modulus[modulus_index].value();
             for (int bit_change=0; bit_change<modulus[modulus_index]; bit_change++){
-            //for (int bit_change=0; bit_change<modulus[modulus_index]-2; bit_change++){
                 reset_values(x_plain);
                 x_plain[index_value] = bit_flip(x_plain[index_value], bit_change);
-                ntt_transformation(x_plain, coeff_modulus_size, coeff_count, ntt_tables);
+                ntt_transformation(x_plain, coeff_modulus_size, coeff_count, ntt_tables, modulus_index);
                 if (x_plain[index_value] >= modulus_k){
                     cout<< "Mas grande que el modulo!" << modulus_k << endl;
                 }

@@ -15,6 +15,7 @@
 #include <mutex>
 #include <numeric>
 #include <random>
+#include <seal/ciphertext.h>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -267,6 +268,18 @@ inline int check_equality(seal::Plaintext &x_plain, seal::Plaintext &x_plain2, i
     return res;
 }
 
+inline int check_equality(seal::Ciphertext &x_encrypted, seal::Ciphertext &x_encrypted2, int size_x){
+    int res=0;
+    for(int i=0;i<size_x; i++){
+        if(x_encrypted[i]!=x_encrypted2[i])
+            res+=1;
+    }
+    if (res != 0)
+        std::cout<< "Equality check is: Failed, " << res << std::endl;
+   // else
+        //std::cout<< "Equality check is: Passed, " << res << std::endl;
+    return res;
+}
 inline void  reset_values(seal::Plaintext &x_plain){
     // Me traigo los valores de x_plain antes de aplicarle  NTT
     std::string file_name = "/home/mmazz/phd/fhe/sealProfile/SEALlog_nonNTT_plaintextValues.txt";
@@ -287,5 +300,35 @@ inline void ntt_transformation(seal::Plaintext &x_plain, size_t coeff_modulus_si
     }
 }
 
+// para que solo haga uno valor de k.
+inline void ntt_transformation(seal::Plaintext &x_plain, size_t coeff_modulus_size, size_t coeff_count, const seal::util::NTTTables* ntt_tables, int modulus_index){
+    seal::util::ntt_negacyclic_harvey(x_plain.data(modulus_index * coeff_count), ntt_tables[modulus_index]);
+}
+
+// solo cambio en el modulo que me interesa.
+inline void ntt_transformation(seal::Ciphertext &x_encrypted, size_t coeff_modulus_size, size_t coeff_count, const seal::util::NTTTables* ntt_tables, int modulus_index, int cipher_index){
+    if (cipher_index==0)
+        seal::util::ntt_negacyclic_harvey(x_encrypted.data() + (modulus_index * coeff_count), ntt_tables[modulus_index]);
+    if (cipher_index==1)
+        seal::util::ntt_negacyclic_harvey(x_encrypted.data(1) + (modulus_index * coeff_count), ntt_tables[modulus_index]);
+}
 
 
+inline void restoreCiphertext(seal::Ciphertext &x_encrypted, seal::Ciphertext &x_encrypted_original, int modulus_index, int poly_size){
+    for(int i=0; i<poly_size ; i++){
+        x_encrypted[i + modulus_index*poly_size] = x_encrypted_original[i + modulus_index*poly_size];
+    }
+}
+
+
+
+inline void input_creator(std::vector<double> input, int poly_modulus_degree){
+    size_t slot_count = poly_modulus_degree/2;
+    double curr_point = 0;
+    double step_size = 1. / (static_cast<double>(slot_count) - 1);
+    for (size_t i = 0; i < slot_count; i++)
+    {
+        input.push_back(curr_point);
+        curr_point += step_size;
+    }
+}
