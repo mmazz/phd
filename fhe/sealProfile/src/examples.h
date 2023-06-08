@@ -233,7 +233,7 @@ inline void saveDataLog(std::string file_name, int index_value, int bit_change, 
 }
 
 
-inline float diff_vec(std::vector<double> v1, std::vector<double> v2){
+inline float diff_vec(std::vector<double>  &v1, std::vector<double> &v2){
     //vector<double> res(v1.size());
     float res = 0;
 
@@ -268,17 +268,21 @@ inline int check_equality(seal::Plaintext &x_plain, seal::Plaintext &x_plain2, i
     return res;
 }
 
-inline int check_equality(seal::Ciphertext &x_encrypted, seal::Ciphertext &x_encrypted2, int size_x){
+inline bool check_equality(seal::Ciphertext &x_encrypted, seal::Ciphertext &x_encrypted2, int size_x){
     int res=0;
+    bool res_bool=0;
     for(int i=0;i<size_x; i++){
         if(x_encrypted[i]!=x_encrypted2[i])
             res+=1;
     }
-    if (res != 0)
+    if (res != 0){
         std::cout<< "Equality check is: Failed, " << res << std::endl;
+    }
+    else
+        res_bool = 1;
    // else
         //std::cout<< "Equality check is: Passed, " << res << std::endl;
-    return res;
+    return res_bool;
 }
 inline void  reset_values(seal::Plaintext &x_plain){
     // Me traigo los valores de x_plain antes de aplicarle  NTT
@@ -322,7 +326,7 @@ inline void restoreCiphertext(seal::Ciphertext &x_encrypted, seal::Ciphertext &x
 
 
 
-inline void input_creator(std::vector<double> input, int poly_modulus_degree){
+inline void input_creator(std::vector<double> &input, int poly_modulus_degree){
     size_t slot_count = poly_modulus_degree/2;
     double curr_point = 0;
     double step_size = 1. / (static_cast<double>(slot_count) - 1);

@@ -39,7 +39,7 @@ void Bitflip_ci(seal::Ciphertext &x_encrypted, seal::Ciphertext &x_encrypted_ori
     int modulus_value_last = 0;
     int modulus_index = 0;
     int modulus_k = 0;
-    int res = 0;
+    float res = 0;
     Plaintext plain_result;
     vector<double> result;
     auto context_data_ptr = context.get_context_data(context.first_parms_id());
@@ -56,6 +56,23 @@ void Bitflip_ci(seal::Ciphertext &x_encrypted, seal::Ciphertext &x_encrypted_ori
         starting_index = x_plain_size;
         final_index= 2*x_plain_size;
     }
+    bool res_ntt = 0;
+    bool res_ntt1 = 0;
+    cout << "Checking good inverse ntt and ntt" <<endl;
+    for (int modulus_index=0; modulus_index<coeff_modulus_size; modulus_index++){
+        util::inverse_ntt_negacyclic_harvey(x_encrypted.data()+(modulus_index * coeff_count), ntt_tables[modulus_index]);
+        ntt_transformation(x_encrypted, coeff_modulus_size, coeff_count, ntt_tables, modulus_index, 0);
+        res_ntt = check_equality(x_encrypted, x_encrypted_original, 2*x_plain_size);
+    }
+    for (int modulus_index=0; modulus_index<coeff_modulus_size; modulus_index++){
+        util::inverse_ntt_negacyclic_harvey(x_encrypted.data(1)+(modulus_index * coeff_count), ntt_tables[modulus_index]);
+        ntt_transformation(x_encrypted, coeff_modulus_size, coeff_count, ntt_tables, modulus_index, 1);
+        res_ntt1 = check_equality(x_encrypted, x_encrypted_original, 2*x_plain_size);
+    }
+    cout << "Result: " << (res_ntt&res_ntt1) << endl;
+
+
+        cout<< "Starting with index = "<< starting_index << " ending at: " << final_index<< endl;
     for (int index_value=starting_index; index_value<final_index ; index_value++){
         if(ci==0)
             modulus_index = int((index_value+1)/poly_modulus_degree);
@@ -67,6 +84,7 @@ void Bitflip_ci(seal::Ciphertext &x_encrypted, seal::Ciphertext &x_encrypted_ori
             cout << "Mod: " << modulus_value << " index " << index_value<< endl;
             modulus_k = coeff_modulus[modulus_index].value();
         }
+
         cout <<index_value << ", "<< std::flush;
         cout<< "Testing values" << x_encrypted[0]<< endl;
         for (int bit_change=0; bit_change<modulus_value; bit_change++){
@@ -109,6 +127,7 @@ int main()
     size_t slot_count = poly_modulus_degree/2;
     input.reserve(slot_count);
     input_creator(input, poly_modulus_degree);
+
 
     print_example_banner("Example: CKKS Basics");
 
