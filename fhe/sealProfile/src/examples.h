@@ -268,20 +268,26 @@ inline int check_equality(seal::Plaintext &x_plain, seal::Plaintext &x_plain2, i
     return res;
 }
 
-inline bool check_equality(seal::Ciphertext &x_encrypted, seal::Ciphertext &x_encrypted2, int size_x){
+inline bool check_equality(seal::Ciphertext &x_encrypted, seal::Ciphertext &x_encrypted2){
     int res=0;
     bool res_bool=0;
-    for(int i=0;i<size_x; i++){
+
+    size_t size_x = x_encrypted.size();
+    int poly_degree =  x_encrypted.poly_modulus_degree();
+    int k_rns =  x_encrypted.coeff_modulus_size();
+    int total_num_coeff = size_x*poly_degree*k_rns;
+    for(int i=0;i<total_num_coeff; i++){
         if(x_encrypted[i]!=x_encrypted2[i])
+        {
             res+=1;
+            //std::cout <<x_encrypted[i]<< " != " << x_encrypted2[i] << std::endl;
+        }
     }
     if (res != 0){
         std::cout<< "Equality check is: Failed, " << res << std::endl;
     }
     else
         res_bool = 1;
-   // else
-        //std::cout<< "Equality check is: Passed, " << res << std::endl;
     return res_bool;
 }
 inline void  reset_values(seal::Plaintext &x_plain){
@@ -297,7 +303,8 @@ inline void  reset_values(seal::Plaintext &x_plain){
     }
 }
 
-inline void ntt_transformation(seal::Plaintext &x_plain, size_t coeff_modulus_size, size_t coeff_count, const seal::util::NTTTables* ntt_tables){
+inline void ntt_transformation(seal::Plaintext &x_plain, size_t coeff_modulus_size,
+                               size_t coeff_count, const seal::util::NTTTables* ntt_tables){
     for (size_t i = 0; i < coeff_modulus_size; i++)
     {
         seal::util::ntt_negacyclic_harvey(x_plain.data(i * coeff_count), ntt_tables[i]);
@@ -305,16 +312,18 @@ inline void ntt_transformation(seal::Plaintext &x_plain, size_t coeff_modulus_si
 }
 
 // para que solo haga uno valor de k.
-inline void ntt_transformation(seal::Plaintext &x_plain, size_t coeff_modulus_size, size_t coeff_count, const seal::util::NTTTables* ntt_tables, int modulus_index){
+inline void ntt_transformation(seal::Plaintext &x_plain, size_t coeff_modulus_size,
+                               size_t coeff_count, const seal::util::NTTTables* ntt_tables, int modulus_index){
     seal::util::ntt_negacyclic_harvey(x_plain.data(modulus_index * coeff_count), ntt_tables[modulus_index]);
 }
-
 // solo cambio en el modulo que me interesa.
-inline void ntt_transformation(seal::Ciphertext &x_encrypted, size_t coeff_modulus_size, size_t coeff_count, const seal::util::NTTTables* ntt_tables, int modulus_index, int cipher_index){
+//
+inline void ntt_transformation(seal::Ciphertext &x_encrypted, const seal::util::NTTTables* ntt_tables, int modulus_index, int cipher_index){
+    size_t poly_degree =  x_encrypted.poly_modulus_degree();
     if (cipher_index==0)
-        seal::util::ntt_negacyclic_harvey(x_encrypted.data() + (modulus_index * coeff_count), ntt_tables[modulus_index]);
-    if (cipher_index==1)
-        seal::util::ntt_negacyclic_harvey(x_encrypted.data(1) + (modulus_index * coeff_count), ntt_tables[modulus_index]);
+        seal::util::ntt_negacyclic_harvey(x_encrypted.data() + (modulus_index * poly_degree), ntt_tables[modulus_index]);
+    if (cipher_index==1) // start at c1.
+        seal::util::ntt_negacyclic_harvey(x_encrypted.data(1) + (modulus_index * poly_degree), ntt_tables[modulus_index]);
 }
 
 
@@ -326,10 +335,10 @@ inline void restoreCiphertext(seal::Ciphertext &x_encrypted, seal::Ciphertext &x
 
 
 
-inline void input_creator(std::vector<double> &input, int poly_modulus_degree){
+inline void input_creator(std::vector<double> &input, int poly_modulus_degree, double curr_point, double max_value){
     size_t slot_count = poly_modulus_degree/2;
-    double curr_point = 0;
-    double step_size = 1. / (static_cast<double>(slot_count) - 1);
+    std::cout << "Creating array, starting at " << curr_point << " and ending at " << max_value << std::endl;
+    double step_size = max_value / (static_cast<double>(slot_count) - 1);
     for (size_t i = 0; i < slot_count; i++)
     {
         input.push_back(curr_point);

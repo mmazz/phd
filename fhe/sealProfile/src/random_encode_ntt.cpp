@@ -17,8 +17,6 @@
 #include <fstream>
 #include <algorithm> // for std::copy
 
-// bool TESTING = false;
-bool TESTING = true;
 
 using namespace seal;
 using namespace std;
@@ -37,24 +35,35 @@ using namespace std;
 
 
 
-int main()
+int main(int argc, char * argv[])
 {
-    int poly_degree = 2;
+    bool TESTING = true;
+    double curr_point = 0;
+    double max_value = 1.;
+    if (argc==1)
+        cout << "Starting in default test mode: true" << endl;
+    if(argc >= 2){
+        if(atoi(argv[1])==1)
+            TESTING = true;
+        else
+            TESTING = false;
+        cout << "Starting in test mode: " << std::boolalpha << TESTING << endl;
+    }
+    if (argc>=3)
+        curr_point = atoi(argv[2]);
+    if (argc>=4)
+        max_value = atoi(argv[3])-curr_point;
+
     size_t poly_modulus_degree = 4096;
-    size_t slot_count = poly_modulus_degree/2;
     vector<int> modulus;
     modulus ={ 40, 20, 20, 20};
     double scale = pow(2.0, 39);
 
+    size_t slot_count = poly_modulus_degree/2;
     vector<double> input;
     input.reserve(slot_count);
-    double curr_point = 0;
-    double step_size = 1. / (static_cast<double>(slot_count) - 1);
-    for (size_t i = 0; i < slot_count; i++)
-    {
-        input.push_back(curr_point);
-        curr_point += step_size;
-    }
+    input_creator(input, poly_modulus_degree, curr_point, max_value);
+    print_vector(input, 3, 7);
 
     print_example_banner("Example: CKKS Basics");
     EncryptionParameters parms(scheme_type::ckks);
@@ -73,7 +82,8 @@ int main()
     Evaluator evaluator(context);
     Decryptor decryptor(context, secret_key);
     CKKSEncoder encoder(context);
-
+// Hasta aca es igual en todos los ejemplos
+//
     auto context_data_ptr = context.get_context_data(context.first_parms_id());
     auto &context_data = *context_data_ptr;
 
@@ -92,28 +102,19 @@ int main()
 
     cout << "coeff_modulus_size: " <<  coeff_modulus_size <<endl;
     // Mete los valores previos a ser transormados con NTT
-    reset_values(x_plain);
 
-    // Confirmado! Mapea bien!
     int x_plain_size = (modulus.size()-1)*poly_modulus_degree;
-    ntt_transformation(x_plain, coeff_modulus_size, coeff_count, ntt_tables);
-    int result = check_equality(x_plain_original, x_plain, x_plain_size);
 
-    if(result!=0)
-        cout << "Error en la transformacion ntt"<< endl;
-
-    reset_values(x_plain);
-
-    int index_value = 0;
     // Este es el experimento que quiero, pero antes quiero chequear que los elementos
     // que estoy tocando del encoding sean los correctos.
+    Ciphertext x_encrypted;
+    Plaintext plain_result;
+    vector<double> result;
+    float res = 0;
+
     if(TESTING){
-        Ciphertext x_encrypted;
-        Plaintext plain_result;
-        vector<double> result;
-        float res = 0;
         int new_file = 1;
-        std::string file_name = "encode_ntt";
+        std::string file_name = "encoding_nonNTT";
         saveDataLog(file_name, 0, 0, res, new_file); // simplemente crea el archivo
         new_file = 0;
         // Lupeo todo el vector, Son K polynomios con K = len(modulus)-1.
@@ -145,6 +146,25 @@ int main()
             }
         }
         cout << x_encrypted[x_plain_size*2-1] << endl;
+    }
+    else{
+        encryptor.encrypt(x_plain, x_encrypted);
+        decryptor.decrypt(x_encrypted, plain_result);
+        encoder.decode(plain_result, result);
+        res = diff_vec(input, result);
+        if (res<1)
+            cout << "Good decryption" << endl;
+        // Meto los valores previos a ntt
+        reset_values(x_plain);
+        // Confirmado! Mapea bien!
+        ntt_transformation(x_plain, coeff_modulus_size, coeff_count, ntt_tables);
+        int result = check_equality(x_plain_original, x_plain, x_plain_size);
+
+        if(result!=0)
+            cout << "Error en la transformacion ntt"<< endl;
+        else
+            cout << "Correcta transformacion ntt"<< endl;
+        reset_values(x_plain);
     }
        return 0;
 }

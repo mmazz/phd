@@ -28,50 +28,54 @@ using namespace std;
         | 32768               | 881                          |
         +---------------------+------------------------------+
 */
-
-int main()
+int main(int argc, char * argv[])
 {
-    int poly_degree = 2;
-    size_t poly_modulus_degree = 4096;
-    size_t slot_count = poly_modulus_degree/2;
-
-    vector<double> input;
-    input.reserve(slot_count);
+    bool TESTING = true;
     double curr_point = 0;
-    double step_size = 1. / (static_cast<double>(slot_count) - 1);
-    for (size_t i = 0; i < slot_count; i++)
-    {
-        input.push_back(curr_point);
-        curr_point += step_size;
+    double max_value = 1.;
+    if (argc==1)
+        cout << "Starting in default test mode: true" << endl;
+    if(argc >= 2){
+        if(atoi(argv[1])==1)
+            TESTING = true;
+        else
+            TESTING = false;
+        cout << "Starting in test mode: " << std::boolalpha << TESTING << endl;
     }
+    if (argc>=3)
+        curr_point = atoi(argv[2]);
+    if (argc>=4)
+        max_value = atoi(argv[3])-curr_point;
 
-
+    size_t poly_modulus_degree = 4096;
     vector<int> modulus;
     modulus ={ 40, 20, 20, 20};
     double scale = pow(2.0, 39);
 
+    size_t slot_count = poly_modulus_degree/2;
+    vector<double> input;
+    input.reserve(slot_count);
+    input_creator(input, poly_modulus_degree, curr_point, max_value);
+    print_vector(input, 3, 7);
 
     print_example_banner("Example: CKKS Basics");
-
     EncryptionParameters parms(scheme_type::ckks);
     parms.set_poly_modulus_degree(poly_modulus_degree);
     parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulus));
-
     SEALContext context(parms);
     print_parameters(context);
     cout << endl;
+
     KeyGenerator keygen(context);
     auto secret_key = keygen.secret_key();
     PublicKey public_key;
-    // Tiene una long de poly_degree por 8
     keygen.create_public_key(public_key);
-
 
     Encryptor encryptor(context, public_key);
     Evaluator evaluator(context);
     Decryptor decryptor(context, secret_key);
-
     CKKSEncoder encoder(context);
+
     auto context_data_ptr = context.get_context_data(context.first_parms_id());
     auto &context_data = *context_data_ptr;
 
