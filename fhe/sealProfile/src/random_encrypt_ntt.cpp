@@ -109,21 +109,17 @@ int main(int argc, char * argv[])
     if (TESTING)
     {
         bool new_file = 1;
-        std::string file_name_c0;
-        std::string file_name_c1;
+        std::string file_name_c;
         if (RNS){
-            file_name_c0 = "encryption_c0_nonNTT_withRNS";
-            file_name_c1 = "encryption_c1_nonNTT_withRNS";
+            file_name_c = "encryption_c_nonNTT_withRNS";
         }
         else
         {
-            file_name_c0 = "encryption_c0_nonNTT_nonRNS";
-            file_name_c1 = "encryption_c1_nonNTT_nonRNS";
+            file_name_c = "encryption_c_nonNTT_nonRNS";
         }
  //       saveDataLog(file_name_c0, 0, 0, res, new_file);
  //       saveDataLog(file_name_c1, 0, 0, res, new_file);
-        saveDataLog(file_name_c0, res, new_file);
-        saveDataLog(file_name_c1, res, new_file);
+        saveDataLog(file_name_c, res, new_file);
         int modulus_index = 0;
         int modulus_bits = 0;
         uint64_t k_rns_prime = 0;
@@ -164,18 +160,12 @@ int main(int argc, char * argv[])
                 res = diff_vec(input, result);
                 if (res < MAX_DIFF)
                 {
-                    if (index_value<x_plain_size)
-                        //saveDataLog(file_name_c0, index_value, bit_change, res, !new_file);
-                        saveDataLog(file_name_c0, 1, !new_file);
-                    else
-                        //saveDataLog(file_name_c1, index_value, bit_change, res, !new_file);
-                        saveDataLog(file_name_c1, 1, !new_file);
+                    saveDataLog(file_name_c, 1, !new_file);
                    // cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
                 }
                 else
                 {
-                    saveDataLog(file_name_c0, 0, !new_file);
-                    saveDataLog(file_name_c1, 0, !new_file);
+                    saveDataLog(file_name_c, 0, !new_file);
                 }
                 x_encrypted = x_encrypted_original;
                 // Hacen lo mismo, pero el de abajo solo restaura el polinomio modificado... pero ante la duda...
