@@ -109,11 +109,11 @@ int main(int argc, char * argv[])
 
 
 
-        for (int index_value=0; index_value<2*x_plain_size; index_value++){
+        for (int index_value=2*x_plain_size-2; index_value<2*x_plain_size; index_value++){
             if (index_value>=x_plain_size)
-                modulus_index = int(((index_value-x_plain_size)+1)/poly_modulus_degree);
+                modulus_index = int((index_value-x_plain_size)/poly_modulus_degree);
             else
-                modulus_index = int((index_value+1)/poly_modulus_degree);
+                modulus_index = int((index_value)/poly_modulus_degree);
 
             modulus_bits = modulus[modulus_index];
             k_rns_prime = coeff_modulus[modulus_index].value();

@@ -225,7 +225,7 @@ inline void saveDataLog(std::string file_name, int index_value, int bit_change, 
         logFile << "New file: " << std::endl ;
     }
     else{
-        logFile.open("/home/mmazz/phd/fhe/sealProfile/"+file_name+".txt", std::ios::app);
+        logFile.open("/home/mmazz/phd/fhe/sealProfile/log_"+file_name+".txt", std::ios::app);
         logFile << "Diff: " << res << " index_value: "<< index_value << " bit_changed: " << bit_change << std::endl ;
     }
     // close file stream

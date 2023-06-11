@@ -50,7 +50,7 @@ int main(int argc, char * argv[])
     size_t poly_modulus_degree = 4096;
     vector<int> modulus;
     modulus ={ 40, 20, 20, 20};
-    double scale = pow(2.0, 39);
+    double scale = pow(2.0, 40);
 
     size_t slot_count = poly_modulus_degree/2;
     vector<double> input;
