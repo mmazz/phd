@@ -20,6 +20,7 @@
 
 using namespace seal;
 using namespace std;
+int MAX_DIFF = 1000;
 /*
      +----------------------------------------------------+
         | poly_modulus_degree | max coeff_modulus bit-length |
@@ -58,6 +59,7 @@ int main(int argc, char * argv[])
     vector<int> modulus;
     modulus ={ 40, 20, 20, 20};
     double scale = pow(2.0, 39);
+    int coeff_modulus_size = modulus.size()-1;
 
     size_t slot_count = poly_modulus_degree/2;
     vector<double> input;
@@ -86,12 +88,7 @@ int main(int argc, char * argv[])
 //
     auto context_data_ptr = context.get_context_data(context.first_parms_id());
     auto &context_data = *context_data_ptr;
-
-    auto &parms2 = context_data.parms();
-    auto &coeff_modulus = parms2.coeff_modulus();
-
-    std::size_t coeff_modulus_size = coeff_modulus.size();
-    std::size_t coeff_count = parms.poly_modulus_degree();
+    auto &coeff_modulus = parms.coeff_modulus();
     auto ntt_tables = context_data.small_ntt_tables();
 
     Plaintext x_plain_original;
@@ -100,7 +97,6 @@ int main(int argc, char * argv[])
     encoder.encode(input, scale, x_plain_original);
     encoder.encode(input, scale, x_plain);
 
-    cout << "coeff_modulus_size: " <<  coeff_modulus_size <<endl;
     // Mete los valores previos a ser transormados con NTT
 
     int x_plain_size = (modulus.size()-1)*poly_modulus_degree;
@@ -116,31 +112,37 @@ int main(int argc, char * argv[])
         int new_file = 1;
         std::string file_name = "encoding_nonNTT";
         saveDataLog(file_name, 0, 0, res, new_file); // simplemente crea el archivo
-        new_file = 0;
+        int modulus_index = 0;
+        int modulus_bits = 0;
+        uint64_t k_rns_prime = 0;
         // Lupeo todo el vector, Son K polynomios con K = len(modulus)-1.
         // Cada uno tiene N = poly_modulus_degree coefficientes.
         // Estan pegados uno al lado del otro, entonces es un vector de N*K elementos.
         for (int index_value=0; index_value<x_plain_size; index_value++){
-            cout << index_value << endl;
             // el modulo cambia por polynomio:
-            int modulus_index = int((index_value+1)/poly_modulus_degree);
+            modulus_index = int((index_value+1)/poly_modulus_degree);
             // Para cada elemento le cambio un bit. Se supone que cada coefficiente tiene tantos
             // bits como su numero primo asociado que esta en el vector modulus.
-            uint64_t modulus_k = coeff_modulus[modulus_index].value();
+            k_rns_prime = coeff_modulus[modulus_index].value();
+            cout <<index_value << ", "<< std::flush;
             for (int bit_change=0; bit_change<modulus[modulus_index]; bit_change++){
-                reset_values(x_plain);
+                util::inverse_ntt_negacyclic_harvey(x_plain.data(0) + (modulus_index * poly_modulus_degree),
+                                                    ntt_tables[modulus_index]);
                 x_plain[index_value] = bit_flip(x_plain[index_value], bit_change);
-                ntt_transformation(x_plain, coeff_modulus_size, coeff_count, ntt_tables, modulus_index);
-                if (x_plain[index_value] >= modulus_k){
-                    cout<< "Mas grande que el modulo!" << modulus_k << endl;
+                x_plain[index_value] = bit_flip(x_plain[index_value], bit_change);
+                ntt_transformation(x_plain, ntt_tables, modulus_index, poly_modulus_degree);
+                if (x_plain[index_value] >= k_rns_prime){
+                    cout<< "Mas grande que el modulo!" << k_rns_prime << endl;
+                    x_plain[index_value] = x_plain_original[index_value];
+                    break;
                 }
                 encryptor.encrypt(x_plain, x_encrypted);
                 decryptor.decrypt(x_encrypted, plain_result);
                 encoder.decode(plain_result, result);
                 res = diff_vec(input, result);
              //   cout << res << endl;
-                if (res < 10000){
-                    saveDataLog(file_name, index_value, bit_change, res, new_file);
+                if (res < MAX_DIFF){
+                    saveDataLog(file_name, index_value, bit_change, res, !new_file);
                     cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
                 }
             }
@@ -154,17 +156,36 @@ int main(int argc, char * argv[])
         res = diff_vec(input, result);
         if (res<1)
             cout << "Good decryption" << endl;
-        // Meto los valores previos a ntt
-        reset_values(x_plain);
-        // Confirmado! Mapea bien!
-        ntt_transformation(x_plain, coeff_modulus_size, coeff_count, ntt_tables);
-        int result = check_equality(x_plain_original, x_plain, x_plain_size);
+        bool ntt_res = true;
+        bool ntt_temp = false;
+        x_plain = x_plain_original;
+        for (size_t modulus_index = 0; modulus_index < coeff_modulus_size; modulus_index++)
+        {
+            util::inverse_ntt_negacyclic_harvey(x_plain.data(0) + (modulus_index * poly_modulus_degree),
+                                                ntt_tables[modulus_index]);
+            ntt_transformation(x_plain, ntt_tables, modulus_index, poly_modulus_degree);
+            ntt_temp = check_equality(x_plain, x_plain_original);
+            ntt_res = ntt_res&ntt_temp;
+        }
+        cout << "plain text inverse ntt and ntt: " << std::boolalpha << ntt_res <<endl;
+        x_plain = x_plain_original;
+        int modulus_index = 0;
+        for (int index_value=0; index_value<x_plain_size; index_value+=200)
+        {
+            modulus_index = int((index_value+1)/poly_modulus_degree);
+            for (int bit_change=0; bit_change<modulus[modulus_index]; bit_change+=8)
+            {
+                util::inverse_ntt_negacyclic_harvey(x_plain.data(0) + (modulus_index * poly_modulus_degree),
+                        ntt_tables[modulus_index]);
+                x_plain[index_value] = bit_flip(x_plain[index_value], bit_change);
+                x_plain[index_value] = bit_flip(x_plain[index_value], bit_change);
+                ntt_transformation(x_plain, ntt_tables, modulus_index, poly_modulus_degree);
+                ntt_temp = check_equality(x_plain, x_plain_original);
+                ntt_res = ntt_res&ntt_temp;
+            }
+        }
+        cout << "plain text inverse ntt and ntt with double bitflitp : " << std::boolalpha << ntt_res <<endl;
+        }
 
-        if(result!=0)
-            cout << "Error en la transformacion ntt"<< endl;
-        else
-            cout << "Correcta transformacion ntt"<< endl;
-        reset_values(x_plain);
-    }
        return 0;
 }

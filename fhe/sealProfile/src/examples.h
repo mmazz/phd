@@ -220,6 +220,7 @@ inline void saveDataLog(std::string file_name, int index_value, int bit_change, 
     std::fstream logFile;
     // Open File
     if (new_file==1){
+        std::cout<< " New log: " << std::endl;
         logFile.open("/home/mmazz/phd/fhe/sealProfile/log_"+file_name+".txt", std::ios::out);
         logFile << "New file: " << std::endl ;
     }
@@ -255,17 +256,19 @@ inline uint64_t bit_flip(uint64_t original, ushort bit){
     res =  mask^original; // I flip the bit using xor with the mask.
     return res;
 }
-inline int check_equality(seal::Plaintext &x_plain, seal::Plaintext &x_plain2, int size_x){
+inline bool check_equality(seal::Plaintext &x_plain, seal::Plaintext &x_plain2){
     int res=0;
-    for(int i=0;i<size_x; i++){
+    bool res_bool=0;
+    int total_num_coeff = x_plain.coeff_count();
+    for(int i=0;i<total_num_coeff; i++){
         if(x_plain[i]!=x_plain2[i])
             res+=1;
     }
-    if (res == 0)
-        std::cout<< "Equality check is: Passed, " << res << std::endl;
-    else
+    if (res != 0)
         std::cout<< "Equality check is: Failed, " << res << std::endl;
-    return res;
+    else
+        res_bool = 1;
+    return res_bool;
 }
 
 inline bool check_equality(seal::Ciphertext &x_encrypted, seal::Ciphertext &x_encrypted2){
@@ -312,9 +315,8 @@ inline void ntt_transformation(seal::Plaintext &x_plain, size_t coeff_modulus_si
 }
 
 // para que solo haga uno valor de k.
-inline void ntt_transformation(seal::Plaintext &x_plain, size_t coeff_modulus_size,
-                               size_t coeff_count, const seal::util::NTTTables* ntt_tables, int modulus_index){
-    seal::util::ntt_negacyclic_harvey(x_plain.data(modulus_index * coeff_count), ntt_tables[modulus_index]);
+inline void ntt_transformation(seal::Plaintext &x_plain, const seal::util::NTTTables* ntt_tables, int modulus_index, int poly_degree){
+    seal::util::ntt_negacyclic_harvey(x_plain.data() + (modulus_index * poly_degree), ntt_tables[modulus_index]);
 }
 // solo cambio en el modulo que me interesa.
 //

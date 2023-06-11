@@ -20,88 +20,6 @@ using namespace seal;
 using namespace std;
 int MAX_DIFF = 1000;
 
-void Bitflip_ci(seal::Ciphertext &x_encrypted,
-                seal::Ciphertext &x_encrypted_original, int ci,
-                seal::SEALContext &context, seal::Decryptor &decryptor,
-                vector<double> &input, seal::CKKSEncoder &encoder,
-                std::string file_name, int poly_modulus_degree,
-                vector<int> modulus) {
-    int x_plain_size = (modulus.size() - 1) * poly_modulus_degree;
-    bool new_file = 1;
-    int modulus_value = 0;
-    int modulus_value_last = 0;
-    int modulus_index = 0;
-    int modulus_k = 0;
-    float res = 0;
-    Plaintext plain_result;
-    vector<double> result;
-
-    auto context_data_ptr = context.get_context_data(context.first_parms_id());
-    auto &context_data = *context_data_ptr;
-    auto &parms2 = context_data.parms();
-    auto &coeff_modulus = parms2.coeff_modulus();
-    std::size_t coeff_modulus_size = coeff_modulus.size();
-    std::size_t coeff_count = parms2.poly_modulus_degree();
-    auto ntt_tables = context_data.small_ntt_tables();
-
-    saveDataLog(file_name, 0, 0, 0, new_file);
-    int starting_index = 0;
-    int final_index = x_plain_size;
-    if (ci == 1)
-    {
-        starting_index = x_plain_size;
-        final_index = 2 * x_plain_size;
-    }
-    bool res_ntt = 0;
-    bool res_ntt1 = 0;
-    cout << "Starting with index = " << starting_index << " ending at: " << final_index << endl;
-    for (int index_value = starting_index; index_value < final_index; index_value += 100)
-    {
-        if (ci == 0)
-            modulus_index = int((index_value + 1) / poly_modulus_degree);
-        if (ci == 1)
-            modulus_index = int(((index_value - x_plain_size) + 1) / poly_modulus_degree);
-
-        modulus_value = modulus[modulus_index];
-        if (modulus_value != modulus_value_last)
-        {
-          modulus_value_last = modulus_value;
-          cout << "Mod: " << modulus_value << " index " << index_value << endl;
-          modulus_k = coeff_modulus[modulus_index].value();
-        }
-
-        // cout <<index_value << ", "<< std::flush;
-        for (int bit_change = 0; bit_change < modulus_value; bit_change += 10)
-        {
-            if (ci == 0)
-                util::inverse_ntt_negacyclic_harvey(x_encrypted.data() + (modulus_index * coeff_count),
-                                                    ntt_tables[modulus_index]);
-            if (ci == 1)
-                util::inverse_ntt_negacyclic_harvey(x_encrypted.data(1) + (modulus_index * coeff_count),
-                                                    ntt_tables[modulus_index]);
-            x_encrypted[index_value] = bit_flip(x_encrypted[index_value], bit_change);
-            cout << "encript non func:  " << index_value << " = " << x_encrypted[index_value] << endl;
-            ntt_transformation(x_encrypted, ntt_tables, modulus_index, ci);
-            if (x_encrypted[index_value] >= modulus_k)
-            {
-                cout << "Mas grande que el modulo!" << modulus_k << endl;
-                x_encrypted[index_value] = x_encrypted_original[index_value];
-                break;
-            }
-            decryptor.decrypt(x_encrypted, plain_result);
-            encoder.decode(plain_result, result);
-            res = diff_vec(input, result);
-            if (res < MAX_DIFF)
-            {
-                saveDataLog(file_name, index_value, bit_change, res, !new_file);
-                cout << res << " index_value: " << index_value  << " bit_changed: " << bit_change << endl;
-            }
-            restoreCiphertext(x_encrypted, x_encrypted_original, modulus_index,
-                            poly_modulus_degree);
-        }
-    }
-}
-
 int main(int argc, char * argv[])
 {
     bool TESTING = true;
@@ -125,8 +43,8 @@ int main(int argc, char * argv[])
     size_t poly_modulus_degree = 4096;
     vector<int> modulus;
     modulus ={ 40, 20, 20, 20};
-    int coeff_modulus_size = modulus.size();
     double scale = pow(2.0, 40);
+    int coeff_modulus_size = modulus.size()-1;
 
     size_t slot_count = poly_modulus_degree/2;
     vector<double> input;
@@ -139,7 +57,6 @@ int main(int argc, char * argv[])
     parms.set_poly_modulus_degree(poly_modulus_degree);
     parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulus));
     SEALContext context(parms);
-
     print_parameters(context);
     cout << endl;
 
@@ -156,6 +73,7 @@ int main(int argc, char * argv[])
     //auto context_data_ptr = context.get_context_data(context.first_parms_id());
     auto context_data_ptr = context.get_context_data(parms.parms_id());
     auto &context_data = *context_data_ptr;
+    auto &coeff_modulus = parms.coeff_modulus();
     auto ntt_tables = context_data.small_ntt_tables();
 
     Plaintext x_plain;
@@ -173,108 +91,66 @@ int main(int argc, char * argv[])
     encryptor.encrypt(x_plain, x_encrypted);
     encryptor.encrypt(x_plain, x_encrypted_original);
 
-    std::string file_name_c0 = "encryption_nonNTT_c0";
-    std::string file_name_c1 = "encryption_nonNTT_c1";
     bool new_file = 1;
     Plaintext plain_result;
     vector<double> result;
     float res = 0;
     if (TESTING)
     {
+        std::string file_name_c0 = "encryption_nonNTT_c0";
+        std::string file_name_c1 = "encryption_nonNTT_c1";
         saveDataLog(file_name_c0, 0, 0, 0, new_file);
+        saveDataLog(file_name_c1, 0, 0, 0, new_file);
         int modulus_index = 0;
-        int mod_change = 0;
-        int modulus_name = 0;
-        uint64_t modulus_k = 0;
+        int modulus_bits = 0;
+        uint64_t k_rns_prime = 0;
 
         cout << "Starting bitflips with x_plain_size of: " << x_plain_size << endl;
 
-        cout << "starting c0" << endl;
-        Bitflip_ci(x_encrypted, x_encrypted_original, 0, context, decryptor, input,
-                   encoder, file_name_c0, poly_modulus_degree, modulus);
-        cout << "c0 done, starting c1" << endl;
-        Bitflip_ci(x_encrypted, x_encrypted_original, 1, context, decryptor,
-                   input,  encoder, file_name_c1,  poly_modulus_degree, modulus);
-        cout <<"c1 done" << endl;
+
+
+        for (int index_value=0; index_value<2*x_plain_size; index_value++){
+            if (index_value>=x_plain_size)
+                modulus_index = int(((index_value-x_plain_size)+1)/poly_modulus_degree);
+            else
+                modulus_index = int((index_value+1)/poly_modulus_degree);
+
+            modulus_bits = modulus[modulus_index];
+            k_rns_prime = coeff_modulus[modulus_index].value();
+            cout <<index_value << ", "<< std::flush;
+            for (int bit_change=0; bit_change<modulus_bits; bit_change++){
+
+                if (index_value<x_plain_size)
+                    util::inverse_ntt_negacyclic_harvey(x_encrypted.data(0)+(modulus_index * poly_modulus_degree), ntt_tables[modulus_index]);
+                else
+                    util::inverse_ntt_negacyclic_harvey(x_encrypted.data(1)+(modulus_index * poly_modulus_degree), ntt_tables[modulus_index]);
+                // probe con doble bit flip del mismo y da bien.
+                x_encrypted[index_value] = bit_flip(x_encrypted[index_value], bit_change);
+             //   cout << "encript non func:  "<< index_value << " = " << x_encrypted[index_value] << endl;
+
+                if (index_value<x_plain_size)
+                    ntt_transformation(x_encrypted, ntt_tables, modulus_index, 0);
+                else
+                    ntt_transformation(x_encrypted, ntt_tables, modulus_index, 1);
+                if (x_encrypted[index_value] >=  k_rns_prime){
+                    cout<< "Mas grande que el modulo!" << k_rns_prime << endl;
+                    x_encrypted[index_value] = x_encrypted_original[index_value];
+                    break;
+                }
+                decryptor.decrypt(x_encrypted, plain_result);
+                encoder.decode(plain_result, result);
+                res = diff_vec(input, result);
+                if (res < MAX_DIFF){
+                    if (index_value<x_plain_size)
+                        saveDataLog(file_name_c0, index_value, bit_change, res, !new_file);
+                    else
+                        saveDataLog(file_name_c1, index_value, bit_change, res, !new_file);
+                    cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
+                }
+                restoreCiphertext(x_encrypted, x_encrypted_original, modulus_index, poly_modulus_degree);
+            }
+        }
     }
-    // for (int index_value=0; index_value<x_plain_size; index_value+=100){
-    //     modulus_index = int((index_value+1)/poly_modulus_degree);
-    //     modulus_name = modulus[modulus_index];
-    //     if(modulus_name!= mod_change){
-    //         mod_change = modulus_name;
-    //         cout << "Mod: " << modulus_name << " index " << index_value<<
-    //         endl; modulus_k = coeff_modulus[modulus_index].value();
-    //     }
-    //     cout <<index_value << ", "<< std::flush;
-    //     for (int bit_change=0; bit_change<modulus_name; bit_change+=10){
-    //         util::inverse_ntt_negacyclic_harvey(x_encrypted.data()+(modulus_index
-    //         * coeff_count), ntt_tables[modulus_index]);
-    //         x_encrypted[index_value] = bit_flip(x_encrypted[index_value],
-    //         bit_change); cout << "encript non func:  "<< index_value << " = "
-    //         << x_encrypted[index_value] << endl;
-    //         ntt_transformation(x_encrypted, coeff_modulus_size, coeff_count,
-    //         ntt_tables, modulus_index, 0); if (x_encrypted[index_value] >=
-    //         modulus_k){
-    //             cout<< "Mas grande que el modulo!" << modulus_k << endl;
-    //             x_encrypted[index_value] = x_encrypted_original[index_value];
-    //             break;
-    //         }
-    //         decryptor.decrypt(x_encrypted, plain_result);
-    //         encoder.decode(plain_result, result);
-    //         res = diff_vec(input, result);
-    //         if (res < 1000){
-    //             saveDataLog(file_name_c0, index_value, bit_change, res,
-    //             !new_file); cout << res << " index_value: "<< index_value <<
-    //             " bit_changed: " << bit_change << endl ;
-    //         }
-    //         restoreCiphertext(x_encrypted, x_encrypted_original,
-    //         modulus_index, poly_modulus_degree);
-    //     }
-    // }
-    //         cout << "c0 done" <<endl;
-    //       modulus_index = 0;
-    //       res = 0;
-
-    //      saveDataLog(file_name_c1, 0, 0, 0, new_file);
-    //      // segundo cifrado.
-    //      for (int index_value=x_plain_size; index_value<2*x_plain_size;
-    //      index_value++){
-    //          modulus_index =
-    //          int(((index_value-x_plain_size)+1)/poly_modulus_degree);
-    //          modulus_name = modulus[modulus_index];
-    //          if(modulus_name!= mod_change){
-    //              mod_change = modulus_name;
-    //              modulus_k = coeff_modulus[modulus_index].value();
-    //              cout << "Mod: " << modulus_name << " index " <<
-    //              index_value<< endl;
-    //          }
-    //          cout <<index_value << ", "<< std::flush;
-    //          for (int bit_change=0; bit_change<modulus[modulus_index];
-    //          bit_change++){
-    //              util::inverse_ntt_negacyclic_harvey(x_encrypted.data(1)+(modulus_index
-    //              * coeff_count), ntt_tables[modulus_index]);
-    //              x_encrypted[index_value] =
-    //              bit_flip(x_encrypted[index_value], bit_change);
-    //              ntt_transformation(x_encrypted, coeff_modulus_size,
-    //              coeff_count, ntt_tables, modulus_index, 0); if
-    //              (x_encrypted[index_value] >= modulus_k){
-    //                  cout<< "Mas grande que el modulo!" << modulus_k << endl;
-    //                  x_encrypted[index_value] =
-    //                  x_encrypted_original[index_value]; break;
-    //              }
-    //              decryptor.decrypt(x_encrypted, plain_result);
-    //              encoder.decode(plain_result, result);
-    //              res = diff_vec(input, result);
-    //              if (res < 1000){
-    //                  saveDataLog(file_name_c1, index_value, bit_change, res,
-    //                  !new_file); cout << res << " index_value: "<<
-    //                  index_value << " bit_changed: " << bit_change << endl ;
-    //              }
-    //              restoreCiphertext(x_encrypted, x_encrypted_original,
-    //              modulus_index, poly_modulus_degree);
-    //          }
-    //      }
-
 
     else
     {
@@ -287,7 +163,7 @@ int main(int argc, char * argv[])
         bool ntt_res = true;
         bool ntt_temp = false;
         x_encrypted = x_encrypted_original;
-        for (size_t modulus_index = 0; modulus_index < coeff_modulus_size-1; modulus_index++)
+        for (size_t modulus_index = 0; modulus_index < coeff_modulus_size; modulus_index++)
         {
             util::inverse_ntt_negacyclic_harvey(x_encrypted.data(0) + (modulus_index * poly_modulus_degree),
                                                 ntt_tables[modulus_index]);
@@ -296,9 +172,14 @@ int main(int argc, char * argv[])
             ntt_res = ntt_res&ntt_temp;
         }
         cout << "c0 inverse ntt and ntt: " << std::boolalpha << ntt_res <<endl;
+        decryptor.decrypt(x_encrypted, plain_result);
+        encoder.decode(plain_result, result);
+        res = diff_vec(input, result);
+        if (res<1)
+            cout << "Good decryption after first test" << endl;
+
         ntt_res = true;
         ntt_temp = false;
-
         x_encrypted = x_encrypted_original;
         for (int modulus_index = 0; modulus_index < coeff_modulus_size-1; modulus_index++)
         {
@@ -309,12 +190,60 @@ int main(int argc, char * argv[])
             ntt_res = ntt_res&ntt_temp;
         }
         cout << "c1 inverse ntt and ntt: " << std::boolalpha << ntt_res <<endl;
-    }
+        decryptor.decrypt(x_encrypted, plain_result);
+        encoder.decode(plain_result, result);
+        res = diff_vec(input, result);
+        if (res<1)
+            cout << "Good decryption after second  test" << endl;
 
+        ntt_res = true;
+        ntt_temp = false;
+        x_encrypted = x_encrypted_original;
+        int modulus_index = 0;
+        for (int index_value=0; index_value<x_plain_size; index_value+=200)
+        {
+            modulus_index = int((index_value+1)/poly_modulus_degree);
+            for (int bit_change=0; bit_change<modulus[modulus_index]; bit_change+=8)
+            {
+                util::inverse_ntt_negacyclic_harvey(x_encrypted.data(0) + (modulus_index * poly_modulus_degree),
+                        ntt_tables[modulus_index]);
+                x_encrypted[index_value] = bit_flip(x_encrypted[index_value],bit_change);
+                x_encrypted[index_value] = bit_flip(x_encrypted[index_value],bit_change);
+                ntt_transformation(x_encrypted, ntt_tables, modulus_index, 0);
+                ntt_temp = check_equality(x_encrypted, x_encrypted_original);
+                ntt_res = ntt_res&ntt_temp;
+            }
+        }
+        cout << "c0 inverse ntt and ntt with double bitflitp : " << std::boolalpha << ntt_res <<endl;
+        decryptor.decrypt(x_encrypted, plain_result);
+        encoder.decode(plain_result, result);
+        res = diff_vec(input, result);
+        if (res<1)
+            cout << "Good decryption after third test" << endl;
+
+        ntt_res = true;
+        ntt_temp = false;
+        x_encrypted = x_encrypted_original;
+        for (int index_value=x_plain_size; index_value<2*x_plain_size; index_value+=200)
+        {
+            modulus_index = int(((index_value-x_plain_size)+1)/poly_modulus_degree);
+            for (int bit_change=0; bit_change<modulus[modulus_index]; bit_change+=8)
+            {
+                util::inverse_ntt_negacyclic_harvey(x_encrypted.data(1) + (modulus_index * poly_modulus_degree),
+                                                    ntt_tables[modulus_index]);
+                x_encrypted[index_value] = bit_flip(x_encrypted[index_value],bit_change);
+                x_encrypted[index_value] = bit_flip(x_encrypted[index_value],bit_change);
+                ntt_transformation(x_encrypted, ntt_tables, modulus_index, 1);
+                ntt_temp = check_equality(x_encrypted, x_encrypted_original);
+                ntt_res = ntt_res&ntt_temp;
+            }
+        }
+        cout << "c1 inverse ntt and ntt with double bitflitp : " << std::boolalpha << ntt_res <<endl;
+        decryptor.decrypt(x_encrypted, plain_result);
+        encoder.decode(plain_result, result);
+        res = diff_vec(input, result);
+        if (res<1)
+            cout << "Good decryption after fourth test" << endl;
+    }
   return 0;
-  //    cout <<  "validity ntt form: " << x_encrypted.is_ntt_form() << ", valid
-  //    for:  "; cout <<is_valid_for(x_encrypted, context)<< ", buffer valid: "
-  //    << is_buffer_valid(x_encrypted); cout << ",  data valid for: " <<
-  //    is_data_valid_for(x_encrypted, context)<< ", metadata valid for:  ";
-  //    cout << is_metadata_valid_for(x_encrypted, context)<<endl;
 }
