@@ -233,16 +233,32 @@ inline void saveDataLog(std::string file_name, int index_value, int bit_change, 
 
 }
 
+inline void saveDataLog(std::string file_name, int  res, bool new_file)
+{
+    std::fstream logFile;
+    // Open File
+    if (new_file==1){
+        std::cout<< " New log: " << std::endl;
+        logFile.open("/home/mmazz/phd/fhe/sealProfile/log_"+file_name+".txt", std::ios::out);
+        logFile << "New file: " << std::endl ;
+    }
+    else{
+        logFile.open("/home/mmazz/phd/fhe/sealProfile/log_"+file_name+".txt", std::ios::app);
+        logFile << res << std::endl ;
+    }
+    // close file stream
+    logFile.close();
 
+}
 inline float diff_vec(std::vector<double>  &v1, std::vector<double> &v2){
-    //vector<double> res(v1.size());
     float res = 0;
-
+    double diff = 0;
     if (v1.size()==v2.size()){
         for (int i=0; i<v1.size(); i++){
-            res += abs(v1[i]-v2[i]);
+            diff = v1[i] - v2[i];
+            res += pow(diff, 2);
         }
-        res = res/v1.size();
+        res = sqrt(res)/v1.size();
     }
     else{
         std::cout << "Vectores de diferente tamaño!!!" << std::endl;
@@ -329,9 +345,10 @@ inline void ntt_transformation(seal::Ciphertext &x_encrypted, const seal::util::
 }
 
 
-inline void restoreCiphertext(seal::Ciphertext &x_encrypted, seal::Ciphertext &x_encrypted_original, int modulus_index, int poly_size){
-    for(int i=0; i<poly_size ; i++){
-        x_encrypted[i + modulus_index*poly_size] = x_encrypted_original[i + modulus_index*poly_size];
+inline void restoreCiphertext(seal::Ciphertext &x_encrypted, seal::Ciphertext &x_encrypted_original, int modulus_index){
+    size_t poly_degree =  x_encrypted.poly_modulus_degree();
+    for(int i=0; i<poly_degree; i++){
+        x_encrypted[i + modulus_index*poly_degree] = x_encrypted_original[i + modulus_index*poly_degree];
     }
 }
 

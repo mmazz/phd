@@ -18,11 +18,12 @@
 
 using namespace seal;
 using namespace std;
-int MAX_DIFF = 1000;
+int MAX_DIFF = 1;
 
 int main(int argc, char * argv[])
 {
     bool TESTING = true;
+    bool RNS = true;
     double curr_point = 0;
     double max_value = 1.;
     if (argc==1)
@@ -36,13 +37,25 @@ int main(int argc, char * argv[])
         cout << "Starting in test mode: " << std::boolalpha << TESTING << endl;
     }
     if (argc>=3)
-        curr_point = atoi(argv[2]);
+    {
+        if(atoi(argv[2])==1)
+            RNS = true;
+        else
+            RNS = false;
+        cout << "Starting in RNS mode: " << std::boolalpha << RNS << endl;
+    }
     if (argc>=4)
-        max_value = atoi(argv[3])-curr_point;
+        curr_point = atoi(argv[3]);
+    if (argc>=5)
+        max_value = atoi(argv[4])-curr_point;
+
 
     size_t poly_modulus_degree = 4096;
     vector<int> modulus;
-    modulus ={ 40, 20, 20, 20};
+    if(RNS)
+        modulus ={ 40, 20, 20, 20};
+    else
+        modulus ={ 60, 20};
     double scale = pow(2.0, 40);
     int coeff_modulus_size = modulus.size()-1;
 
@@ -52,7 +65,7 @@ int main(int argc, char * argv[])
     input_creator(input, poly_modulus_degree, curr_point, max_value);
     print_vector(input, 3, 7);
 
-    print_example_banner("Example: CKKS Basics");
+    print_example_banner("Example: CKKS random encryption with ntt");
     EncryptionParameters parms(scheme_type::ckks);
     parms.set_poly_modulus_degree(poly_modulus_degree);
     parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulus));
@@ -65,7 +78,6 @@ int main(int argc, char * argv[])
     PublicKey public_key;
     keygen.create_public_key(public_key);
 
-    cout << "params vs 2    " << parms.parms_id() << endl;
     Encryptor encryptor(context, public_key);
     Evaluator evaluator(context);
     Decryptor decryptor(context, secret_key);
@@ -91,35 +103,45 @@ int main(int argc, char * argv[])
     encryptor.encrypt(x_plain, x_encrypted);
     encryptor.encrypt(x_plain, x_encrypted_original);
 
-    bool new_file = 1;
     Plaintext plain_result;
     vector<double> result;
     float res = 0;
     if (TESTING)
     {
-        std::string file_name_c0 = "encryption_nonNTT_c0";
-        std::string file_name_c1 = "encryption_nonNTT_c1";
-        saveDataLog(file_name_c0, 0, 0, 0, new_file);
-        saveDataLog(file_name_c1, 0, 0, 0, new_file);
+        bool new_file = 1;
+        std::string file_name_c0;
+        std::string file_name_c1;
+        if (RNS){
+            file_name_c0 = "encryption_c0_nonNTT_withRNS";
+            file_name_c1 = "encryption_c1_nonNTT_withRNS";
+        }
+        else
+        {
+            file_name_c0 = "encryption_c0_nonNTT_nonRNS";
+            file_name_c1 = "encryption_c1_nonNTT_nonRNS";
+        }
+ //       saveDataLog(file_name_c0, 0, 0, res, new_file);
+ //       saveDataLog(file_name_c1, 0, 0, res, new_file);
+        saveDataLog(file_name_c0, res, new_file);
+        saveDataLog(file_name_c1, res, new_file);
         int modulus_index = 0;
         int modulus_bits = 0;
         uint64_t k_rns_prime = 0;
 
         cout << "Starting bitflips with x_plain_size of: " << x_plain_size << endl;
 
-
-
-        for (int index_value=2*x_plain_size-2; index_value<2*x_plain_size; index_value++){
+        for (int index_value=0; index_value<2*x_plain_size; index_value++)
+        {
             if (index_value>=x_plain_size)
                 modulus_index = int((index_value-x_plain_size)/poly_modulus_degree);
             else
-                modulus_index = int((index_value)/poly_modulus_degree);
+                modulus_index = int(index_value/poly_modulus_degree);
 
             modulus_bits = modulus[modulus_index];
             k_rns_prime = coeff_modulus[modulus_index].value();
             cout <<index_value << ", "<< std::flush;
-            for (int bit_change=0; bit_change<modulus_bits; bit_change++){
-
+            for (int bit_change=0; bit_change<modulus_bits; bit_change++)
+            {
                 if (index_value<x_plain_size)
                     util::inverse_ntt_negacyclic_harvey(x_encrypted.data(0)+(modulus_index * poly_modulus_degree), ntt_tables[modulus_index]);
                 else
@@ -134,20 +156,30 @@ int main(int argc, char * argv[])
                     ntt_transformation(x_encrypted, ntt_tables, modulus_index, 1);
                 if (x_encrypted[index_value] >=  k_rns_prime){
                     cout<< "Mas grande que el modulo!" << k_rns_prime << endl;
-                    x_encrypted[index_value] = x_encrypted_original[index_value];
+                    x_encrypted = x_encrypted_original;
                     break;
                 }
                 decryptor.decrypt(x_encrypted, plain_result);
                 encoder.decode(plain_result, result);
                 res = diff_vec(input, result);
-                if (res < MAX_DIFF){
+                if (res < MAX_DIFF)
+                {
                     if (index_value<x_plain_size)
-                        saveDataLog(file_name_c0, index_value, bit_change, res, !new_file);
+                        //saveDataLog(file_name_c0, index_value, bit_change, res, !new_file);
+                        saveDataLog(file_name_c0, 1, !new_file);
                     else
-                        saveDataLog(file_name_c1, index_value, bit_change, res, !new_file);
+                        //saveDataLog(file_name_c1, index_value, bit_change, res, !new_file);
+                        saveDataLog(file_name_c1, 1, !new_file);
                     cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
                 }
-                restoreCiphertext(x_encrypted, x_encrypted_original, modulus_index, poly_modulus_degree);
+                else
+                {
+                    saveDataLog(file_name_c0, 0, !new_file);
+                    saveDataLog(file_name_c1, 0, !new_file);
+                }
+                x_encrypted = x_encrypted_original;
+                // Hacen lo mismo, pero el de abajo solo restaura el polinomio modificado... pero ante la duda...
+                //restoreCiphertext(x_encrypted, x_encrypted_original, modulus_index);
             }
         }
     }

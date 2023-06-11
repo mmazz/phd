@@ -4,26 +4,14 @@
 #include <seal/keygenerator.h>
 #include "examples.h"
 
-//bool TESTING = false;
-bool TESTING = true;
-
 using namespace seal;
 using namespace std;
-/*
-     +----------------------------------------------------+
-        | poly_modulus_degree | max coeff_modulus bit-length |
-        +---------------------+------------------------------+
-        | 1024                | 27                           |
-        | 2048                | 54                           |
-        | 4096                | 109                          |
-        | 8192                | 218                          |
-        | 16384               | 438                          |
-        | 32768               | 881                          |
-        +---------------------+------------------------------+
-*/
+int MAX_DIFF = 1000;
+
 int main(int argc, char * argv[])
 {
     bool TESTING = true;
+    bool RNS = true;
     double curr_point = 0;
     double max_value = 1.;
     if (argc==1)
@@ -36,14 +24,24 @@ int main(int argc, char * argv[])
         cout << "Starting in test mode: " << std::boolalpha << TESTING << endl;
     }
     if (argc>=3)
-        curr_point = atoi(argv[2]);
+    {
+        if(atoi(argv[2])==1)
+            RNS = true;
+        else
+            RNS = false;
+        cout << "Starting in RNS mode: " << std::boolalpha << RNS << endl;
+    }
     if (argc>=4)
-        max_value = atoi(argv[3])-curr_point;
-
+        curr_point = atoi(argv[3]);
+    if (argc>=5)
+        max_value = atoi(argv[4])-curr_point;
     size_t poly_modulus_degree = 4096;
     vector<int> modulus;
-    modulus ={ 40, 20, 20, 20};
-    double scale = pow(2.0, 39);
+    if(RNS)
+        modulus ={ 40, 20, 20, 20};
+    else
+        modulus ={ 60, 20};
+    double scale = pow(2.0, 40);
 
     size_t slot_count = poly_modulus_degree/2;
     vector<double> input;
@@ -51,7 +49,7 @@ int main(int argc, char * argv[])
     input_creator(input, poly_modulus_degree, curr_point, max_value);
     print_vector(input, 3, 7);
 
-    print_example_banner("Example: CKKS Basics");
+    print_example_banner("Example: CKKS random encoding without ntt");
     EncryptionParameters parms(scheme_type::ckks);
     parms.set_poly_modulus_degree(poly_modulus_degree);
     parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulus));
@@ -69,18 +67,17 @@ int main(int argc, char * argv[])
     Decryptor decryptor(context, secret_key);
     CKKSEncoder encoder(context);
 
-
+    auto &coeff_modulus = parms.coeff_modulus();
     Plaintext x_plain;
     Plaintext x_plain_original;
     encoder.encode(input, scale, x_plain);
     encoder.encode(input, scale, x_plain_original);
-    int x_plain_size = poly_modulus_degree + 2*poly_modulus_degree;
-    int bits = 2;
+    int x_plain_size = (modulus.size() - 1) * poly_modulus_degree;
 
-    std::string file_name = "encoding";
-    int new_file = 1;
-    saveDataLog(file_name, 0, 0, 0, new_file);
-    new_file = 0;
+    Ciphertext x_encrypted;
+    Plaintext plain_result;
+    vector<double> result;
+    float res = 0;
     // Este es el experimento que quiero, pero antes quiero chequear que los elementos
     // que estoy tocando del encoding sean los correctos.
     if(TESTING){
@@ -88,32 +85,47 @@ int main(int argc, char * argv[])
         // ejemplo coeff 4100 al cambiar el bit 19.
         // parece que se rompe el is_data_valid_for(x_plain, context)
         // como esta en forma de ntt, en valcheck.cpp linea 263, chequea ahi.
-        Ciphertext x_encrypted;
-        Plaintext plain_result;
-        vector<double> result;
+
+        bool new_file = 1;
+        std::string file_name;
+        if (RNS)
+            file_name = "encoding_withRNS";
+        else
+            file_name = "encoding_nonRNS";
+
+        saveDataLog(file_name, 0, 0, res, new_file); // simplemente crea el archivo
+        int modulus_index = 0;
+        int modulus_bits = 0;
+        uint64_t k_rns_prime = 0;
+        cout << "Starting bitflips with x_plain_size of: " << x_plain_size << endl;
         // Lupeo todo el vector, Son K polynomios con K = len(modulus)-1.
         // Cada uno tiene N = poly_modulus_degree coefficientes.
         // Estan pegados uno al lado del otro, entonces es un vector de N*K elementos.
-        for (int index_value=0; index_value<x_plain_size; index_value++){
-            cout << index_value << endl;
-            int modulus_index = int(index_value/poly_modulus_degree)+1;
+        for (int index_value=0; index_value<x_plain_size; index_value++)
+        {
+            modulus_index = int(index_value/poly_modulus_degree);
             // Para cada elemento le cambio un bit. Se supone que cada coefficiente tiene tantos
             // bits como su numero primo asociado que esta en el vector modulus.
-            for (short bit_change=0; bit_change<modulus[modulus_index]-2; bit_change++){
-                //cout << bit_change << endl;
-               // cout << x_plain[index_value]<< endl;
+            modulus_bits = modulus[modulus_index];
+            k_rns_prime = coeff_modulus[modulus_index].value();
+            cout <<index_value << ", "<< std::flush;
+            for (short bit_change=0; bit_change<modulus[modulus_index]; bit_change++)
+            {
                 x_plain[index_value] = bit_flip(x_plain[index_value], bit_change);
-              //  cout << x_plain[index_value] << endl;
-               // cout <<  "validity " <<x_plain.is_ntt_form() << " " <<is_valid_for(x_plain, context)<< " " << is_buffer_valid(x_plain)<< " " <<  is_data_valid_for(x_plain, context)<< " " << is_metadata_valid_for(x_plain, context)<<endl;
+                if (x_plain[index_value] >= k_rns_prime){
+                    cout<< "Mas grande que el modulo!" << k_rns_prime << endl;
+                    x_plain[index_value]= x_plain_original[index_value] ;
+                    break;
+                }
                 encryptor.encrypt(x_plain, x_encrypted);
                 decryptor.decrypt(x_encrypted, plain_result);
-              //  cout << "decode?" << endl;
                 encoder.decode(plain_result, result);
-                float res = diff_vec(input, result);
-                if (res < 10000){
+                res = diff_vec(input, result);
+                if (res < MAX_DIFF){
                     saveDataLog(file_name,index_value, bit_change, res, new_file);
                     cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
                 }
+                // aca si puedo solo recuperar el valor ya que no hubo ntt ni nada
                 x_plain[index_value]= x_plain_original[index_value] ;
             }
         }

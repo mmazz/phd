@@ -20,30 +20,18 @@
 
 using namespace seal;
 using namespace std;
-int MAX_DIFF = 1000;
-/*
-     +----------------------------------------------------+
-        | poly_modulus_degree | max coeff_modulus bit-length |
-        +---------------------+------------------------------+
-        | 1024                | 27                           |
-        | 2048                | 54                           |
-        | 4096                | 109                          |
-        | 8192                | 218                          |
-        | 16384               | 438                          |
-        | 32768               | 881                          |
-        +---------------------+------------------------------+
-*/
-
-
+int MAX_DIFF = 1;
 
 int main(int argc, char * argv[])
 {
     bool TESTING = true;
+    bool RNS = true;
     double curr_point = 0;
     double max_value = 1.;
     if (argc==1)
         cout << "Starting in default test mode: true" << endl;
-    if(argc >= 2){
+    if(argc >= 2)
+    {
         if(atoi(argv[1])==1)
             TESTING = true;
         else
@@ -51,14 +39,25 @@ int main(int argc, char * argv[])
         cout << "Starting in test mode: " << std::boolalpha << TESTING << endl;
     }
     if (argc>=3)
-        curr_point = atoi(argv[2]);
+    {
+        if(atoi(argv[2])==1)
+            RNS = true;
+        else
+            RNS = false;
+        cout << "Starting in RNS mode: " << std::boolalpha << RNS << endl;
+    }
     if (argc>=4)
-        max_value = atoi(argv[3])-curr_point;
+        curr_point = atoi(argv[3]);
+    if (argc>=5)
+        max_value = atoi(argv[4])-curr_point;
 
     size_t poly_modulus_degree = 4096;
     vector<int> modulus;
-    modulus ={ 40, 20, 20, 20};
-    double scale = pow(2.0, 39);
+    if(RNS)
+        modulus ={ 40, 20, 20, 20};
+    else
+        modulus ={ 60, 20};
+    double scale = pow(2.0, 40);
     int coeff_modulus_size = modulus.size()-1;
 
     size_t slot_count = poly_modulus_degree/2;
@@ -67,7 +66,7 @@ int main(int argc, char * argv[])
     input_creator(input, poly_modulus_degree, curr_point, max_value);
     print_vector(input, 3, 7);
 
-    print_example_banner("Example: CKKS Basics");
+    print_example_banner("Example: CKKS random encoding with ntt");
     EncryptionParameters parms(scheme_type::ckks);
     parms.set_poly_modulus_degree(poly_modulus_degree);
     parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulus));
@@ -85,7 +84,6 @@ int main(int argc, char * argv[])
     Decryptor decryptor(context, secret_key);
     CKKSEncoder encoder(context);
 // Hasta aca es igual en todos los ejemplos
-//
     auto context_data_ptr = context.get_context_data(context.first_parms_id());
     auto &context_data = *context_data_ptr;
     auto &coeff_modulus = parms.coeff_modulus();
@@ -99,7 +97,7 @@ int main(int argc, char * argv[])
 
     // Mete los valores previos a ser transormados con NTT
 
-    int x_plain_size = (modulus.size()-1)*poly_modulus_degree;
+    int x_plain_size = (modulus.size() - 1) * poly_modulus_degree;
 
     // Este es el experimento que quiero, pero antes quiero chequear que los elementos
     // que estoy tocando del encoding sean los correctos.
@@ -107,47 +105,58 @@ int main(int argc, char * argv[])
     Plaintext plain_result;
     vector<double> result;
     float res = 0;
-
     if(TESTING){
-        int new_file = 1;
-        std::string file_name = "encoding_nonNTT";
-        saveDataLog(file_name, 0, 0, res, new_file); // simplemente crea el archivo
+        bool new_file = 1;
+        std::string file_name;
+        if (RNS)
+            file_name = "encoding_nonNTT_withRNS";
+        else
+            file_name = "encoding_nonNTT_nonRNS";
+        saveDataLog(file_name, res, new_file); // simplemente crea el archivo
+        //saveDataLog(file_name, 0, 0, res, new_file); // simplemente crea el archivo
         int modulus_index = 0;
         int modulus_bits = 0;
         uint64_t k_rns_prime = 0;
+        cout << "Starting bitflips with x_plain_size of: " << x_plain_size << endl;
         // Lupeo todo el vector, Son K polynomios con K = len(modulus)-1.
         // Cada uno tiene N = poly_modulus_degree coefficientes.
         // Estan pegados uno al lado del otro, entonces es un vector de N*K elementos.
         for (int index_value=0; index_value<x_plain_size; index_value++){
             // el modulo cambia por polynomio:
-            modulus_index = int((index_value+1)/poly_modulus_degree);
+            modulus_index = int(index_value/poly_modulus_degree);
             // Para cada elemento le cambio un bit. Se supone que cada coefficiente tiene tantos
             // bits como su numero primo asociado que esta en el vector modulus.
+            modulus_bits = modulus[modulus_index];
             k_rns_prime = coeff_modulus[modulus_index].value();
             cout <<index_value << ", "<< std::flush;
-            for (int bit_change=0; bit_change<modulus[modulus_index]; bit_change++){
+            for (int bit_change=0; bit_change<modulus[modulus_index]; bit_change++)
+            {
                 util::inverse_ntt_negacyclic_harvey(x_plain.data(0) + (modulus_index * poly_modulus_degree),
                                                     ntt_tables[modulus_index]);
-                x_plain[index_value] = bit_flip(x_plain[index_value], bit_change);
                 x_plain[index_value] = bit_flip(x_plain[index_value], bit_change);
                 ntt_transformation(x_plain, ntt_tables, modulus_index, poly_modulus_degree);
                 if (x_plain[index_value] >= k_rns_prime){
                     cout<< "Mas grande que el modulo!" << k_rns_prime << endl;
-                    x_plain[index_value] = x_plain_original[index_value];
+                    x_plain = x_plain_original;
                     break;
                 }
                 encryptor.encrypt(x_plain, x_encrypted);
                 decryptor.decrypt(x_encrypted, plain_result);
                 encoder.decode(plain_result, result);
                 res = diff_vec(input, result);
-             //   cout << res << endl;
                 if (res < MAX_DIFF){
-                    saveDataLog(file_name, index_value, bit_change, res, !new_file);
-                    cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
+                    //saveDataLog(file_name, index_value, bit_change, res, !new_file);
+                    //cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
+                    saveDataLog(file_name, 1, new_file); // simplemente crea el archivo
                 }
+                if(res>=MAX_DIFF)
+                {
+                    //cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
+                    saveDataLog(file_name, 0, new_file); // simplemente crea el archivo
+                }
+                x_plain = x_plain_original;
             }
         }
-        cout << x_encrypted[x_plain_size*2-1] << endl;
     }
     else{
         encryptor.encrypt(x_plain, x_encrypted);
