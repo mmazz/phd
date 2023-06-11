@@ -170,7 +170,7 @@ int main(int argc, char * argv[])
                     else
                         //saveDataLog(file_name_c1, index_value, bit_change, res, !new_file);
                         saveDataLog(file_name_c1, 1, !new_file);
-                    cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
+                   // cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
                 }
                 else
                 {

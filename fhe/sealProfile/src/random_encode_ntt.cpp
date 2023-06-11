@@ -147,12 +147,12 @@ int main(int argc, char * argv[])
                 if (res < MAX_DIFF){
                     //saveDataLog(file_name, index_value, bit_change, res, !new_file);
                     //cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
-                    saveDataLog(file_name, 1, new_file); // simplemente crea el archivo
+                    saveDataLog(file_name, 1, !new_file); // simplemente crea el archivo
                 }
                 if(res>=MAX_DIFF)
                 {
                     //cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
-                    saveDataLog(file_name, 0, new_file); // simplemente crea el archivo
+                    saveDataLog(file_name, 0, !new_file); // simplemente crea el archivo
                 }
                 x_plain = x_plain_original;
             }
