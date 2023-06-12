@@ -116,7 +116,7 @@ for (int i =0; i<num_stats; i++)
 
     cout << "Starting stat: " << i << endl;
     cout <<i << ": "<< std::endl;
-    for (int index_value=0; index_value<2*x_plain_size; index_value+=)
+    for (int index_value=0; index_value<2*x_plain_size; index_value++)
     {
         if((index_value%200)==0)
             cout <<index_value << ", "<< std::flush;
