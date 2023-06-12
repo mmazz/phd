@@ -244,8 +244,7 @@ inline void saveDataLog(std::string file_name, int  res, bool new_file)
     }
     else{
         logFile.open("/home/mmazz/phd/fhe/sealProfile/log_"+file_name+".txt", std::ios::app);
-        //logFile << res << std::endl ;
-        logFile << res << ", " ;
+        logFile << res << std::endl ;
     }
     // close file stream
     logFile.close();

@@ -150,6 +150,8 @@ int main(int argc, char * argv[])
                     ntt_transformation(x_encrypted, ntt_tables, modulus_index, 0);
                 else
                     ntt_transformation(x_encrypted, ntt_tables, modulus_index, 1);
+                // ver si mejor agrego 0 en los casos estos, por que si no
+                // hay valores que me cambian de tamaño y es dificl de traquear en u grafico.
                 if (x_encrypted[index_value] >=  k_rns_prime){
                     cout<< "Mas grande que el modulo!" << k_rns_prime << endl;
                     x_encrypted = x_encrypted_original;
