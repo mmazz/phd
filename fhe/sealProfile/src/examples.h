@@ -364,3 +364,13 @@ inline void input_creator(std::vector<double> &input, int poly_modulus_degree, d
         curr_point += step_size;
     }
 }
+inline void input_refill(std::vector<double> &input, int poly_modulus_degree, double curr_point, double max_value){
+    size_t slot_count = poly_modulus_degree/2;
+    std::cout << "Creating array, starting at " << curr_point << " and ending at " << max_value << std::endl;
+    double step_size = max_value / (static_cast<double>(slot_count) - 1);
+    for (size_t i = 0; i < slot_count; i++)
+    {
+        input[i] = curr_point;
+        curr_point += step_size;
+    }
+}

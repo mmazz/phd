@@ -4,7 +4,8 @@ import random
 """ Diferentes distributions used in the ckkks implementation."""
 arith64bits = True
 
-def sampleRing(ql, N):
+def sampleRing(ql, N, seed=0):
+    np.random.seed(seed)
     """ Samples a vector in the ring space."""
     ql2 = np.rint(ql/2)
     coef = np.random.randint(-ql2+1,ql2+1, N, dtype=np.int64)
@@ -18,22 +19,24 @@ def hammingWeight(coef: np.array):
             h+=1
     return h
 
-def sample_Sparce_ternary(h, N):
+def sample_Sparce_ternary(h, N, seed=0):
     """ Set of signed binary vector whose Hamming weight is exactly h.
     This implementation is by brute force...
     """
     h_test = 0
+    np.random.seed(seed)
     while(h_test!=h):
         coef = np.random.randint(-1, 1, N, dtype=np.int64)
         h_test = hammingWeight(coef)
     return coef
 
-def sample_Uniform_ternary(N):
+def sample_Uniform_ternary(N,seed=0):
+    np.random.seed(seed)
     """ Set of signed binary uniformly distributed."""
     coef = np.random.randint(-1, 2, N, dtype=np.int64)
     return coef
 
-def sampleSecret(h, N, sparce_ternary=False):
+def sampleSecret(h, N, sparce_ternary=False, seed=0):
     """ Samples a signed binary vector.
     The original paper used a sparce ternary distribution, but for security
     reason it change to a uniform ternary distribution.
@@ -45,8 +48,9 @@ def sampleSecret(h, N, sparce_ternary=False):
     return coef
 
 
-def sampleDG(sigma, N):
+def sampleDG(sigma, N, seed=0):
     """ Samples to a discrete gaussian of variance sigma^2."""
+    np.random.seed(seed)
     coef = np.int64(np.random.normal(loc=0.0, scale=sigma, size=N))
     return np.rint(coef)
 
@@ -59,12 +63,13 @@ def bad_v(v):
         i+=1
     return bad_v
 
-def sampleZO(N, rho=0.5):
+def sampleZO(N, seed=0, rho=0.5):
     """ Samples a distribution that has a probability 1-rho to be zero
     and a probability rho/2 for each of  1 and -1.
     Where 0<= rho <= 1.
     In this version its hardcoded to rho=0.5 like the paper.
     """
+    random.seed(seed)
     coef = np.zeros(N)
     for i in range(len(coef)):
         a = random.randint(0, 1)

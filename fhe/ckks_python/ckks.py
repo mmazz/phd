@@ -178,10 +178,10 @@ class CKKSScheme:
         return pi_z_unpadding
 
 
-    def _pub_keygen(self, ql, s, poly_mod):
+    def _pub_keygen(self, ql, s, poly_mod, seed=0):
         """ generates the public key."""
-        a = self.dist.sampleRing(ql, self.N)
-        e = self.dist.sampleDG(self.sigma, self.N)
+        a = self.dist.sampleRing(ql, self.N, seed)
+        e = self.dist.sampleDG(self.sigma, self.N, seed)
         neg_a = self.arithmetic.mul_cte(a, -1)
         axs = self.arithmetic.polyMul(neg_a, s, ql, poly_mod)
         b = self.arithmetic.polyAdd(axs, e, ql)
@@ -189,12 +189,12 @@ class CKKSScheme:
         return pub
 
 
-    def _evk_keygen(self,ql ,s, poly_mod):
+    def _evk_keygen(self,ql ,s, poly_mod, seed=0):
         """ generates the evaluation key."""
         p = self.P
         pql = p*ql
-        aprim = self.dist.sampleRing(pql, self.N)
-        eprim = self.dist.sampleDG(self.sigma, self.N)
+        aprim = self.dist.sampleRing(pql, self.N, seed)
+        eprim = self.dist.sampleDG(self.sigma, self.N, seed)
         neg_aprim = self.arithmetic.mul_cte(aprim, -1)
         axsprim = self.arithmetic.polyMul(neg_aprim, s, pql, poly_mod)
         ps = self.arithmetic.mul_cte(s, p)
@@ -206,7 +206,7 @@ class CKKSScheme:
         return evk
 
 
-    def keyGen(self, sparce_ternary=False):#, _lambda=0):
+    def keyGen(self, sparce_ternary=False, seed=0):#, _lambda=0):
         """ generates the public, secret and evaluation key.
         the security parameter lambda is not implemented.
         """
@@ -214,26 +214,26 @@ class CKKSScheme:
         poly_mod = self.poly_mod
 
         # secret key
-        s = self.dist.sampleSecret(self.h, self.N, sparce_ternary=sparce_ternary)
+        s = self.dist.sampleSecret(self.h, self.N, sparce_ternary=sparce_ternary, seed=seed)
         secret = (1, s)
 
         # pub key
-        self.pub = self._pub_keygen(ql=ql, s=s, poly_mod=poly_mod)
+        self.pub = self._pub_keygen(ql=ql, s=s, poly_mod=poly_mod, seed=seed)
 
         # evaluation key
-        self.evk = self._evk_keygen(ql=ql, s=s, poly_mod=poly_mod)
+        self.evk = self._evk_keygen(ql=ql, s=s, poly_mod=poly_mod, seed=seed)
         return secret
 
 
-    def encrypt(self, m, nu):
+    def encrypt(self, m, nu, seed=0):
         ql = self.new_mod(self.level_max)
         poly_mod = self.poly_mod
         pub = self.pub
-        e0 = self.dist.sampleDG(self.sigma, self.N)
-        e1 = self.dist.sampleDG(self.sigma, self.N)
+        e0 = self.dist.sampleDG(self.sigma, self.N, seed)
+        e1 = self.dist.sampleDG(self.sigma, self.N, seed)
 
 
-        v = self.dist.sampleZO(self.N, 0.5)
+        v = self.dist.sampleZO(self.N, seed, 0.5)
         # Pasaba que si v era todo cero habia problemas con el c1
         # hacia que tenga menos valores
 
