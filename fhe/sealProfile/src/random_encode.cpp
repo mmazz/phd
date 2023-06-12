@@ -38,7 +38,8 @@ int main(int argc, char * argv[])
     size_t poly_modulus_degree = 4096;
     vector<int> modulus;
     if(RNS)
-        modulus ={ 40, 20, 20, 20};
+       // modulus ={ 40, 20, 20, 20};
+        modulus ={ 30, 30, 20};
     else
         modulus ={ 60, 20};
     double scale = pow(2.0, 40);
@@ -138,14 +139,20 @@ int main(int argc, char * argv[])
     // Queda la duda si la sensibilidad viene de parte de NTT y por eso cambiando un
     // unico bit da todo mal.
     if(!TESTING){
-        int index_value = 0;
-        for(int i=0; i<poly_modulus_degree; i++){
-            for(int j=0; j<modulus.size()-1; j++){
-                index_value = i + (j*poly_modulus_degree);
-                cout << index_value << ": " << x_plain[index_value] << endl;
-                //cout << index_value << ": " << x_plain.data()[index_value] <<endl;
-            }
-        }
+        //int index_value = 0;
+        //for(int i=0; i<poly_modulus_degree; i++){
+        //    for(int j=0; j<modulus.size()-1; j++){
+        //        index_value = i + (j*poly_modulus_degree);
+        //        cout << index_value << ": " << x_plain[index_value] << endl;
+        //        //cout << index_value << ": " << x_plain.data()[index_value] <<endl;
+        //    }
+        //}
+        encryptor.encrypt(x_plain, x_encrypted);
+        decryptor.decrypt(x_encrypted, plain_result);
+        encoder.decode(plain_result, result);
+        res = diff_vec(input, result);
+        if (res<1)
+            cout << "Good decryption" << endl;
     }
 
        return 0;

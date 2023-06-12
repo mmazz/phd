@@ -47,7 +47,8 @@ int main(int argc, char * argv[])
     size_t poly_modulus_degree = 4096;
     vector<int> modulus;
     if(RNS)
-        modulus ={ 40, 20, 20, 20};
+        //modulus ={ 40, 20, 20, 20};
+        modulus ={ 30, 30, 20};
     else
         modulus ={ 60, 20};
     double scale = pow(2.0, 40);
