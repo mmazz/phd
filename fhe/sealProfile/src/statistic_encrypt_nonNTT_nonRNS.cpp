@@ -22,11 +22,10 @@ int MAX_DIFF = 1;
 
 int main(int argc, char * argv[])
 {
-    int num_stats = 0;
+    int num_stats = 1;
     double curr_point = 0;
     double max_value = 1.;
-    if (argc==1)
-        cout << "Starting in default test mode: true" << endl;
+
     if(argc >= 2)
     {
         num_stats = atoi(argv[1]);
@@ -86,30 +85,41 @@ int main(int argc, char * argv[])
 
     Plaintext plain_result;
     vector<double> result;
+    float res = 0;
+
     bool new_file = 1;
     std::string file_name_c;
 
-    file_name_c = "encryption_c_nonNTT_nonRNS_";
+    file_name_c = "log_nonRNS_nonNTT/encryption_c_nonNTT_nonRNS_";
 
     cout << "Starting bitflips with x_plain_size of: " << x_plain_size << endl;
 
 for (int i =0; i<num_stats; i++)
 {
-    float res = 0;
+    res = 0;
     encoder.encode(input, scale, x_plain);
-    cout << "encode" << x_plain[0] << endl;
     encryptor.encrypt(x_plain, x_encrypted);
     encryptor.encrypt(x_plain, x_encrypted_original);
+    decryptor.decrypt(x_encrypted, plain_result);
+    encoder.decode(plain_result, result);
+    res = diff_vec(input, result);
+    cout <<  endl;
+    if (res < MAX_DIFF)
+        cout << "Decription correct "<< endl;
+    else
+        cout << "Decription incorrect "<< endl;
+    cout << "encode " << x_plain[0] << endl;
     saveDataLog(file_name_c+std::to_string(i), res, new_file);
     int modulus_index = 0;
     int modulus_bits = 0;
     uint64_t k_rns_prime = 0;
 
     cout << "Starting stat: " << i << endl;
-    cout <<i << ", "<< std::flush;
-    for (int index_value=0; index_value<2*x_plain_size; index_value+=550)
-    //for (int index_value=0; index_value<2*x_plain_size; index_value++)
+    cout <<i << ": "<< std::endl;
+    for (int index_value=0; index_value<2*x_plain_size; index_value+=)
     {
+        if((index_value%200)==0)
+            cout <<index_value << ", "<< std::flush;
         if (index_value>=x_plain_size)
             modulus_index = int((index_value-x_plain_size)/poly_modulus_degree);
         else
@@ -117,8 +127,7 @@ for (int i =0; i<num_stats; i++)
 
         modulus_bits = modulus[modulus_index];
         k_rns_prime = coeff_modulus[modulus_index].value();
-        //for (int bit_change=0; bit_change<modulus_bits; bit_change++)
-        for (int bit_change=0; bit_change<modulus_bits; bit_change+=10)
+       for (int bit_change=0; bit_change<modulus_bits; bit_change++)
         {
             if (index_value<x_plain_size)
                 util::inverse_ntt_negacyclic_harvey(x_encrypted.data(0)+(modulus_index * poly_modulus_degree), ntt_tables[modulus_index]);
@@ -150,6 +159,7 @@ for (int i =0; i<num_stats; i++)
 
         }
     }
+    cout<<"\n Finish lap " <<endl;
     curr_point += 1.5;
     max_value += 3;
     input_refill(input, poly_modulus_degree, curr_point, max_value);
