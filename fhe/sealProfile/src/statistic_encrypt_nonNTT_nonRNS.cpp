@@ -35,7 +35,7 @@ int main(int argc, char * argv[])
     size_t poly_modulus_degree = 4096;
     vector<int> modulus;
 
-    modulus ={ 60, 20};
+    modulus ={ 50, 20};
     double scale = pow(2.0, 40);
     int coeff_modulus_size = modulus.size()-1;
 
@@ -88,82 +88,97 @@ int main(int argc, char * argv[])
     float res = 0;
 
     bool new_file = 1;
+    std::string file_name;
     std::string file_name_c;
+    std::string dir_name;
 
-    file_name_c = "log_nonRNS_nonNTT/encryption_c_nonNTT_nonRNS_";
+    file_name = "encryption_c_nonNTT_nonRNS_";
+    dir_name = "log_nonRNS_nonNTT/";
+
 
     cout << "Starting bitflips with x_plain_size of: " << x_plain_size << endl;
 
-for (int i =0; i<num_stats; i++)
+
+// Puedo hacer otro loop en el cual cambie el seed desde el archivo
+for (int k =0; k<num_stats; k++)
 {
-    res = 0;
-    encoder.encode(input, scale, x_plain);
-    encryptor.encrypt(x_plain, x_encrypted);
-    encryptor.encrypt(x_plain, x_encrypted_original);
-    decryptor.decrypt(x_encrypted, plain_result);
-    encoder.decode(plain_result, result);
-    res = diff_vec(input, result);
-    cout <<  endl;
-    if (res < MAX_DIFF)
-        cout << "Decription correct "<< endl;
-    else
-        cout << "Decription incorrect "<< endl;
-    cout << "encode " << x_plain[0] << endl;
-    saveDataLog(file_name_c+std::to_string(i), res, new_file);
-    int modulus_index = 0;
-    int modulus_bits = 0;
-    uint64_t k_rns_prime = 0;
-
-    cout << "Starting stat: " << i << endl;
-    cout <<i << ": "<< std::endl;
-    for (int index_value=0; index_value<2*x_plain_size; index_value++)
+    for (int i =0; i<num_stats; i++)
     {
-        if((index_value%200)==0)
-            cout <<index_value << ", "<< std::flush;
-        if (index_value>=x_plain_size)
-            modulus_index = int((index_value-x_plain_size)/poly_modulus_degree);
+        res = 0;
+        encoder.encode(input, scale, x_plain);
+        encryptor.encrypt(x_plain, x_encrypted);
+        encryptor.encrypt(x_plain, x_encrypted_original);
+        decryptor.decrypt(x_encrypted, plain_result);
+        encoder.decode(plain_result, result);
+        res = diff_vec(input, result);
+        cout <<  endl;
+        if (res < MAX_DIFF)
+            cout << "Decription correct "<< endl;
         else
-            modulus_index = int(index_value/poly_modulus_degree);
+            cout << "Decription incorrect "<< endl;
+        cout << "encode " << x_plain[0] << endl;
+        file_name_c = dir_name+file_name+std::to_string(k)+"_"+std::to_string(i);
+        saveDataLog(file_name_c, res, new_file);
+        cout << file_name_c << endl;
+        int modulus_index = 0;
+        int modulus_bits = 0;
+        uint64_t k_rns_prime = 0;
 
-        modulus_bits = modulus[modulus_index];
-        k_rns_prime = coeff_modulus[modulus_index].value();
-       for (int bit_change=0; bit_change<modulus_bits; bit_change++)
+        cout << "Starting stat: " << i << endl;
+        cout <<i << ": "<< std::endl;
+        for (int index_value=0; index_value<2*x_plain_size; index_value++)
         {
-            if (index_value<x_plain_size)
-                util::inverse_ntt_negacyclic_harvey(x_encrypted.data(0)+(modulus_index * poly_modulus_degree), ntt_tables[modulus_index]);
+            if((index_value%200)==0)
+                cout <<index_value << ", "<< std::flush;
+            if (index_value>=x_plain_size)
+                modulus_index = int((index_value-x_plain_size)/poly_modulus_degree);
             else
-                util::inverse_ntt_negacyclic_harvey(x_encrypted.data(1)+(modulus_index * poly_modulus_degree), ntt_tables[modulus_index]);
-            x_encrypted[index_value] = bit_flip(x_encrypted[index_value], bit_change);
+                modulus_index = int(index_value/poly_modulus_degree);
 
-            if (index_value<x_plain_size)
-                ntt_transformation(x_encrypted, ntt_tables, modulus_index, 0);
-            else
-                ntt_transformation(x_encrypted, ntt_tables, modulus_index, 1);
-            if (x_encrypted[index_value] >=  k_rns_prime){
-                cout<< "Mas grande que el modulo!" << k_rns_prime << endl;
-                x_encrypted = x_encrypted_original;
-                break;
-            }
-            decryptor.decrypt(x_encrypted, plain_result);
-            encoder.decode(plain_result, result);
-            res = diff_vec(input, result);
-            if (res < MAX_DIFF)
+            modulus_bits = modulus[modulus_index];
+            k_rns_prime = coeff_modulus[modulus_index].value();
+           for (int bit_change=0; bit_change<modulus_bits; bit_change++)
             {
-                saveDataLog(file_name_c, 1, !new_file);
-            }
-            else
-            {
-                saveDataLog(file_name_c, 0, !new_file);
-            }
-            x_encrypted = x_encrypted_original;
+                if (index_value<x_plain_size)
+                    util::inverse_ntt_negacyclic_harvey(x_encrypted.data(0)+(modulus_index * poly_modulus_degree), ntt_tables[modulus_index]);
+                else
+                    util::inverse_ntt_negacyclic_harvey(x_encrypted.data(1)+(modulus_index * poly_modulus_degree), ntt_tables[modulus_index]);
+                x_encrypted[index_value] = bit_flip(x_encrypted[index_value], bit_change);
 
+                if (index_value<x_plain_size)
+                    ntt_transformation(x_encrypted, ntt_tables, modulus_index, 0);
+                else
+                    ntt_transformation(x_encrypted, ntt_tables, modulus_index, 1);
+                if (x_encrypted[index_value] >=  k_rns_prime)
+                {
+                    cout<< "Mas grande que el modulo!" << k_rns_prime << endl;
+                    x_encrypted = x_encrypted_original;
+                    saveDataLog(file_name_c, 0, !new_file);
+                }
+                else
+                {
+                    decryptor.decrypt(x_encrypted, plain_result);
+                    encoder.decode(plain_result, result);
+                    res = diff_vec(input, result);
+                    if (res < MAX_DIFF)
+                        saveDataLog(file_name_c, 1, !new_file);
+                    else
+                        saveDataLog(file_name_c, 0, !new_file);
+                    x_encrypted = x_encrypted_original;
+                }
+
+            }
         }
+        cout<<"\n Finish lap " <<endl;
+        curr_point += 1.5;
+        max_value += 3;
+        input_refill(input, poly_modulus_degree, curr_point, max_value);
+        print_vector(input,3,7);
     }
-    cout<<"\n Finish lap " <<endl;
-    curr_point += 1.5;
-    max_value += 3;
-    input_refill(input, poly_modulus_degree, curr_point, max_value);
-    print_vector(input,3,7);
+    std::ofstream ofs;
+    ofs.open("test.txt", std::ofstream::out | std::ofstream::trunc);
+    ofs<<k;
+    ofs.close();
 }
   return 0;
 }

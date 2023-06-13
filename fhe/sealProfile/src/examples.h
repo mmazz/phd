@@ -239,11 +239,11 @@ inline void saveDataLog(std::string file_name, int  res, bool new_file)
     // Open File
     if (new_file==1){
         std::cout<< " New log: " << std::endl;
-        logFile.open("/home/mmazz/phd/fhe/sealProfile/log_"+file_name+".txt", std::ios::out);
+        logFile.open("/home/mmazz/phd/fhe/sealProfile/"+file_name+".txt", std::ios::out);
         logFile << "New file: " << std::endl ;
     }
     else{
-        logFile.open("/home/mmazz/phd/fhe/sealProfile/log_"+file_name+".txt", std::ios::app);
+        logFile.open("/home/mmazz/phd/fhe/sealProfile/"+file_name+".txt", std::ios::app);
         logFile << res << std::endl ;
     }
     // close file stream
