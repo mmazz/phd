@@ -19,13 +19,16 @@
 using namespace seal;
 using namespace std;
 int MAX_DIFF = 1;
-
+float threshold = 0.1;
+double CURR_POINT = 1;
+double MAX_VALUE = 2.;
+int size_input= 2048;
 int main(int argc, char * argv[])
 {
     bool TESTING = true;
     bool RNS = true;
-    double curr_point = 0;
-    double max_value = 1.;
+    double curr_point = CURR_POINT;
+    double max_value = MAX_VALUE;
     if (argc==1)
         cout << "Starting in default test mode: true" << endl;
     if(argc >= 2)
@@ -56,7 +59,7 @@ int main(int argc, char * argv[])
         //modulus ={ 40, 20, 20, 20};
         modulus ={ 30, 30, 20};
     else
-        modulus ={ 60, 20};
+        modulus ={ 50, 20};
     double scale = pow(2.0, 40);
     int coeff_modulus_size = modulus.size()-1;
 
@@ -107,16 +110,21 @@ int main(int argc, char * argv[])
     Plaintext plain_result;
     vector<double> result;
     float res = 0;
+    float res_elem = 0;
     if (TESTING)
     {
         bool new_file = 1;
+        std::string dir_name = "log_encrypt_nonNTT/";
         std::string file_name_c;
+        std::string file_name_c_elem;
         if (RNS){
             file_name_c = "encryption_c_nonNTT_withRNS";
+            file_name_c_elem = "encryption_c_elemDiff_nonNTT_withRNS";
         }
         else
         {
             file_name_c = "encryption_c_nonNTT_nonRNS";
+            file_name_c_elem = "encryption_c_elemDiff_nonNTT_nonRNS";
         }
  //       saveDataLog(file_name_c0, 0, 0, res, new_file);
  //       saveDataLog(file_name_c1, 0, 0, res, new_file);
@@ -156,21 +164,21 @@ int main(int argc, char * argv[])
                 if (x_encrypted[index_value] >=  k_rns_prime){
                     cout<< "Mas grande que el modulo!" << k_rns_prime << endl;
                     x_encrypted = x_encrypted_original;
-                    break;
-                }
-                decryptor.decrypt(x_encrypted, plain_result);
-                encoder.decode(plain_result, result);
-                res = diff_vec(input, result);
-                if (res < MAX_DIFF)
-                {
-                    saveDataLog(file_name_c, 1, !new_file);
-                   // cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
+                    saveDataLog(dir_name+file_name_c, 0, !new_file);
+                    saveDataLog(dir_name+file_name_c_elem, 0, !new_file);
                 }
                 else
                 {
-                    saveDataLog(file_name_c, 0, !new_file);
+                    decryptor.decrypt(x_encrypted, plain_result);
+                    encoder.decode(plain_result, result);
+                    res = diff_vec(input, result, MAX_DIFF);
+                    saveDataLog(dir_name+file_name_c, res, !new_file);
+
+                    res_elem = diff_elem(input, result, threshold, size_input);
+                    saveDataLog(dir_name+file_name_c_elem, res_elem, !new_file);
+
+                    x_encrypted = x_encrypted_original;
                 }
-                x_encrypted = x_encrypted_original;
                 // Hacen lo mismo, pero el de abajo solo restaura el polinomio modificado... pero ante la duda...
                 //restoreCiphertext(x_encrypted, x_encrypted_original, modulus_index);
             }
@@ -181,7 +189,7 @@ int main(int argc, char * argv[])
     {
         decryptor.decrypt(x_encrypted, plain_result);
         encoder.decode(plain_result, result);
-        res = diff_vec(input, result);
+        res = diff_vec(input, result, MAX_DIFF);
         if (res<1)
             cout << "Good decryption" << endl;
 
@@ -199,7 +207,7 @@ int main(int argc, char * argv[])
         cout << "c0 inverse ntt and ntt: " << std::boolalpha << ntt_res <<endl;
         decryptor.decrypt(x_encrypted, plain_result);
         encoder.decode(plain_result, result);
-        res = diff_vec(input, result);
+        res = diff_vec(input, result, MAX_DIFF);
         if (res<1)
             cout << "Good decryption after first test" << endl;
 
@@ -217,7 +225,7 @@ int main(int argc, char * argv[])
         cout << "c1 inverse ntt and ntt: " << std::boolalpha << ntt_res <<endl;
         decryptor.decrypt(x_encrypted, plain_result);
         encoder.decode(plain_result, result);
-        res = diff_vec(input, result);
+        res = diff_vec(input, result, MAX_DIFF);
         if (res<1)
             cout << "Good decryption after second  test" << endl;
 
@@ -242,7 +250,7 @@ int main(int argc, char * argv[])
         cout << "c0 inverse ntt and ntt with double bitflitp : " << std::boolalpha << ntt_res <<endl;
         decryptor.decrypt(x_encrypted, plain_result);
         encoder.decode(plain_result, result);
-        res = diff_vec(input, result);
+        res = diff_vec(input, result, MAX_DIFF);
         if (res<1)
             cout << "Good decryption after third test" << endl;
 
@@ -266,7 +274,7 @@ int main(int argc, char * argv[])
         cout << "c1 inverse ntt and ntt with double bitflitp : " << std::boolalpha << ntt_res <<endl;
         decryptor.decrypt(x_encrypted, plain_result);
         encoder.decode(plain_result, result);
-        res = diff_vec(input, result);
+        res = diff_vec(input, result, MAX_DIFF);
         if (res<1)
             cout << "Good decryption after fourth test" << endl;
     }

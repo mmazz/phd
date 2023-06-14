@@ -21,13 +21,16 @@
 using namespace seal;
 using namespace std;
 int MAX_DIFF = 1;
-
+float threshold = 0.1;
+double CURR_POINT = 1;
+double MAX_VALUE = 2.;
+int size_input= 2048;
 int main(int argc, char * argv[])
 {
     bool TESTING = true;
     bool RNS = true;
-    double curr_point = 0;
-    double max_value = 1.;
+    double curr_point = CURR_POINT;
+    double max_value = MAX_VALUE;
     if (argc==1)
         cout << "Starting in default test mode: true" << endl;
     if(argc >= 2)
@@ -57,7 +60,7 @@ int main(int argc, char * argv[])
         //modulus ={ 40, 20, 20, 20};
         modulus ={ 30, 30, 20};
     else
-        modulus ={ 60, 20};
+        modulus ={ 50, 20};
     double scale = pow(2.0, 40);
     int coeff_modulus_size = modulus.size()-1;
 
@@ -106,14 +109,22 @@ int main(int argc, char * argv[])
     Plaintext plain_result;
     vector<double> result;
     float res = 0;
+    float res_elem = 0;
     if(TESTING){
         bool new_file = 1;
+        std::string dir_name = "log_encode_nonNTT/";
         std::string file_name;
-        if (RNS)
+        std::string file_name_elem;
+        if (RNS){
             file_name = "encoding_nonNTT_withRNS";
-        else
+            file_name_elem = "encoding_elemDiff_nonNTT_withRNS";
+        }
+        else{
             file_name = "encoding_nonNTT_nonRNS";
-        saveDataLog(file_name, res, new_file); // simplemente crea el archivo
+            file_name_elem = "encoding_elemDiff_nonNTT_nonRNS";
+        }
+        saveDataLog(dir_name+file_name, res, new_file); // simplemente crea el archivo
+        saveDataLog(dir_name+file_name_elem, 0, 0, res_elem, new_file);
         //saveDataLog(file_name, 0, 0, res, new_file); // simplemente crea el archivo
         int modulus_index = 0;
         int modulus_bits = 0;
@@ -139,23 +150,22 @@ int main(int argc, char * argv[])
                 if (x_plain[index_value] >= k_rns_prime){
                     cout<< "Mas grande que el modulo!" << k_rns_prime << endl;
                     x_plain = x_plain_original;
-                    break;
+                    saveDataLog(dir_name+file_name, 0, !new_file);
+                    saveDataLog(dir_name+file_name_elem, 0, !new_file);
                 }
-                encryptor.encrypt(x_plain, x_encrypted);
-                decryptor.decrypt(x_encrypted, plain_result);
-                encoder.decode(plain_result, result);
-                res = diff_vec(input, result);
-                if (res < MAX_DIFF){
-                    //saveDataLog(file_name, index_value, bit_change, res, !new_file);
-                    //cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
-                    saveDataLog(file_name, 1, !new_file); // simplemente crea el archivo
-                }
-                if(res>=MAX_DIFF)
+                else
                 {
-                    //cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
-                    saveDataLog(file_name, 0, !new_file); // simplemente crea el archivo
+                    encryptor.encrypt(x_plain, x_encrypted);
+                    decryptor.decrypt(x_encrypted, plain_result);
+                    encoder.decode(plain_result, result);
+                    res = diff_vec(input, result, MAX_DIFF);
+                    saveDataLog(dir_name+file_name, res, !new_file);
+
+                    res_elem = diff_elem(input, result, threshold, size_input);
+                    saveDataLog(dir_name+file_name_elem, res_elem, !new_file);
+
+                    x_plain = x_plain_original;
                 }
-                x_plain = x_plain_original;
             }
         }
     }
@@ -163,7 +173,7 @@ int main(int argc, char * argv[])
         encryptor.encrypt(x_plain, x_encrypted);
         decryptor.decrypt(x_encrypted, plain_result);
         encoder.decode(plain_result, result);
-        res = diff_vec(input, result);
+        res = diff_vec(input, result,MAX_DIFF);
         if (res<1)
             cout << "Good decryption" << endl;
         bool ntt_res = true;

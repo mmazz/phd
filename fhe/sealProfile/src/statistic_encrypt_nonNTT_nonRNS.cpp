@@ -19,12 +19,15 @@
 using namespace seal;
 using namespace std;
 int MAX_DIFF = 1;
-
+float threshold = 0.1;
+double CURR_POINT = 1;
+double MAX_VALUE = 2.;
+int size_input= 2048;
 int main(int argc, char * argv[])
 {
     int num_stats = 1;
-    double curr_point = 0;
-    double max_value = 1.;
+    double curr_point = CURR_POINT;
+    double max_value = MAX_VALUE;
 
     if(argc >= 2)
     {
@@ -42,7 +45,7 @@ int main(int argc, char * argv[])
     size_t slot_count = poly_modulus_degree/2;
     vector<double> input;
     input.reserve(slot_count);
-    input_creator(input, poly_modulus_degree, curr_point, max_value);
+    input_creator(input, poly_modulus_degree, curr_point, max_value, size_input);
     print_vector(input, 3, 7);
 
     print_example_banner("Example: CKKS random encryption with ntt");
@@ -85,19 +88,24 @@ int main(int argc, char * argv[])
 
     Plaintext plain_result;
     vector<double> result;
-    float res = 0;
+    int res = 0;
+    int res_elem = 0;
 
     bool new_file = 1;
-    std::string file_name;
+    std::string seed_file = "/home/mmazz/phd/fhe/sealProfile/hardcoded_random.txt";
     std::string file_name_c;
-    std::string dir_name;
+    std::string file_name_c_elem;
 
-    file_name = "encryption_c_nonNTT_nonRNS_";
-    dir_name = "log_nonRNS_nonNTT/";
+    std::string file_name = "encryption_c_nonNTT_nonRNS_";
+    std::string dir_name = "log_nonRNS_nonNTT/";
+    std::string dir_name_elem = "log_nonRNS_nonNTT_elem/";
 
 
     cout << "Starting bitflips with x_plain_size of: " << x_plain_size << endl;
-
+    std::ofstream ofs;
+    ofs.open(seed_file, std::ofstream::out | std::ofstream::trunc);
+    ofs<<"0";
+    ofs.close();
 
 // Puedo hacer otro loop en el cual cambie el seed desde el archivo
 for (int k =0; k<num_stats; k++)
@@ -105,20 +113,24 @@ for (int k =0; k<num_stats; k++)
     for (int i =0; i<num_stats; i++)
     {
         res = 0;
+        res_elem = 0;
         encoder.encode(input, scale, x_plain);
         encryptor.encrypt(x_plain, x_encrypted);
         encryptor.encrypt(x_plain, x_encrypted_original);
         decryptor.decrypt(x_encrypted, plain_result);
         encoder.decode(plain_result, result);
-        res = diff_vec(input, result);
+        res = diff_vec(input, result, MAX_DIFF);
+        res_elem = diff_elem(input, result, threshold, size_input);
         cout <<  endl;
-        if (res < MAX_DIFF)
+        if ((res == 1 )&(res_elem==1))
             cout << "Decription correct "<< endl;
         else
             cout << "Decription incorrect "<< endl;
         cout << "encode " << x_plain[0] << endl;
         file_name_c = dir_name+file_name+std::to_string(k)+"_"+std::to_string(i);
+        file_name_c_elem = dir_name_elem+file_name+std::to_string(k)+"_"+std::to_string(i);
         saveDataLog(file_name_c, res, new_file);
+        saveDataLog(file_name_c_elem, res, new_file);
         cout << file_name_c << endl;
         int modulus_index = 0;
         int modulus_bits = 0;
@@ -154,16 +166,17 @@ for (int k =0; k<num_stats; k++)
                     cout<< "Mas grande que el modulo!" << k_rns_prime << endl;
                     x_encrypted = x_encrypted_original;
                     saveDataLog(file_name_c, 0, !new_file);
+                    saveDataLog(file_name_c_elem, 0, !new_file);
                 }
                 else
                 {
                     decryptor.decrypt(x_encrypted, plain_result);
                     encoder.decode(plain_result, result);
-                    res = diff_vec(input, result);
-                    if (res < MAX_DIFF)
-                        saveDataLog(file_name_c, 1, !new_file);
-                    else
-                        saveDataLog(file_name_c, 0, !new_file);
+                    res = diff_vec(input, result, MAX_DIFF);
+                    saveDataLog(file_name_c, res, !new_file);
+
+                    res_elem = diff_elem(input, result, threshold, size_input);
+                    saveDataLog(file_name_c_elem, res_elem, !new_file);
                     x_encrypted = x_encrypted_original;
                 }
 
@@ -175,8 +188,10 @@ for (int k =0; k<num_stats; k++)
         input_refill(input, poly_modulus_degree, curr_point, max_value);
         print_vector(input,3,7);
     }
+    curr_point = CURR_POINT;
+    max_value = MAX_VALUE;
     std::ofstream ofs;
-    ofs.open("test.txt", std::ofstream::out | std::ofstream::trunc);
+    ofs.open(seed_file, std::ofstream::out | std::ofstream::trunc);
     ofs<<k;
     ofs.close();
 }

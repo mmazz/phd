@@ -250,22 +250,51 @@ inline void saveDataLog(std::string file_name, int  res, bool new_file)
     logFile.close();
 
 }
-inline float diff_vec(std::vector<double>  &v1, std::vector<double> &v2){
+inline float diff_vec(std::vector<double>  &v1, std::vector<double> &v2, int DIFF){
     float res = 0;
     double diff = 0;
+    for (int i=0; i<v2.size(); i++)
+    {
+        diff = v1[i] - v2[i];
+        res += pow(diff, 2);
+    }
+    if (res>DIFF)
+        res = 0;
+    else
+        res = 1;
+
+    return res;
+}
+inline float diff_elem(std::vector<double>  &v1, std::vector<double> &v2, float threshold, int size){
+    float res = 1;
+    double diff = 0;
+    double diff_thresh = 0;
     if (v1.size()==v2.size()){
-        for (int i=0; i<v1.size(); i++){
-            diff = v1[i] - v2[i];
-            res += pow(diff, 2);
+        for (int i=0; i<size; i++){
+            diff = abs(v1[i] - v2[i]);
+            diff_thresh = abs(v1[i]*threshold);
+            if(diff>diff_thresh)
+            {
+               // std::cout << diff << " > " << diff_thresh<< std::endl;
+                res = 0;
+                break;
+            }
         }
-        res = sqrt(res)/v1.size();
     }
     else{
-        std::cout << "Vectores de diferente tamaño!!!" << std::endl;
+        for (int i=0; i<size; i++){
+            diff = abs(v1[i] - v2[i]);
+            diff_thresh = abs(v1[i]*threshold);
+            if(diff>diff_thresh)
+            {
+                //std::cout << v1[i] << ": " << diff << " > " << diff_thresh<< std::endl;
+                res = 0;
+                break;
+            }
+        }
     }
     return res;
 }
-
 inline uint64_t bit_flip(uint64_t original, ushort bit){
     uint64_t mask = (1ULL << bit); // I set the bit to flip. 1ULL is for a one of 64bits
     uint64_t res = 0;
@@ -352,13 +381,21 @@ inline void restoreCiphertext(seal::Ciphertext &x_encrypted, seal::Ciphertext &x
     }
 }
 
-
-
 inline void input_creator(std::vector<double> &input, int poly_modulus_degree, double curr_point, double max_value){
     size_t slot_count = poly_modulus_degree/2;
     std::cout << "Creating array, starting at " << curr_point << " and ending at " << max_value << std::endl;
     double step_size = max_value / (static_cast<double>(slot_count) - 1);
     for (size_t i = 0; i < slot_count; i++)
+    {
+        input.push_back(curr_point);
+        curr_point += step_size;
+    }
+}
+
+inline void input_creator(std::vector<double> &input, int poly_modulus_degree, double curr_point, double max_value, int size){
+    std::cout << "Creating array, starting at " << curr_point << " and ending at " << max_value << std::endl;
+    double step_size = max_value / (static_cast<double>(size) - 1);
+    for (size_t i = 0; i < size; i++)
     {
         input.push_back(curr_point);
         curr_point += step_size;

@@ -13,14 +13,17 @@
 
 using namespace seal;
 using namespace std;
-int MAX_DIFF = 1000;
-
+int MAX_DIFF = 1;
+float threshold = 0.1;
+double CURR_POINT = 1;
+double MAX_VALUE = 2.;
+int size_input= 2048;
 int main(int argc, char * argv[])
 {
     bool TESTING = true;
     bool RNS = true;
-    double curr_point = 0;
-    double max_value = 1.;
+    double curr_point = CURR_POINT;
+    double max_value = MAX_VALUE;
     if (argc==1)
         cout << "Starting in default test mode: true" << endl;
     if(argc >= 2)
@@ -50,7 +53,7 @@ int main(int argc, char * argv[])
         //modulus ={ 40, 20, 20, 20};
         modulus ={ 30, 30, 20};
     else
-        modulus ={ 60, 20};
+        modulus ={ 50, 20};
     double scale = pow(2.0, 40);
     int coeff_modulus_size = modulus.size()-1;
 
@@ -96,22 +99,24 @@ int main(int argc, char * argv[])
     Plaintext plain_result;
     vector<double> result;
     float res = 0;
+    float res_elem = 0;
     if(TESTING)
     {
         bool new_file = 1;
-        std::string file_name_c0;
-        std::string file_name_c1;
+        std::string file_name_c;
+        std::string file_name_c_elem;
+        std::string dir_name = "log_encrypt_NTT/";
         if (RNS){
-            file_name_c0 = "encryption_c0_withRNS";
-            file_name_c1 = "encryption_c1_withRNS";
+            file_name_c = "encryption_c_withRNS";
+            file_name_c_elem = "encryption_c_elemDiff_withRNS";
         }
         else
         {
-            file_name_c0 = "encryption_c0_nonRNS";
-            file_name_c1 = "encryption_c1_nonRNS";
+            file_name_c = "encryption_c_nonRNS";
+            file_name_c_elem = "encryption_c_elemDiff_nonRNS";
         }
-        saveDataLog(file_name_c0, 0, 0, res, new_file);
-        saveDataLog(file_name_c1, 0, 0, res, new_file);
+        saveDataLog(dir_name+file_name_c, 0, 0, res, new_file);
+        saveDataLog(dir_name+file_name_c_elem, 0, 0, res_elem, new_file);
         int modulus_index = 0;
         int modulus_bits = 0;
         uint64_t k_rns_prime = 0;
@@ -133,19 +138,20 @@ int main(int argc, char * argv[])
                 if (x_encrypted[index_value] >= k_rns_prime){
                     cout<< "Mas grande que el modulo!" << k_rns_prime << endl;
                     x_encrypted[index_value] = x_encrypted_original[index_value];
-                    break;
+                    saveDataLog(dir_name+file_name_c, 0, !new_file);
+                    saveDataLog(dir_name+file_name_c_elem, 0, !new_file);
                 }
-                decryptor.decrypt(x_encrypted, plain_result);
-                encoder.decode(plain_result, result);
-                res = diff_vec(input, result);
-                if (res < MAX_DIFF){
-                    if (index_value<x_plain_size)
-                        saveDataLog(file_name_c0, index_value, bit_change, res, !new_file);
-                    else
-                        saveDataLog(file_name_c1, index_value, bit_change, res, !new_file);
-                    cout << res << " index_value: "<< index_value << " bit_changed: " << bit_change << endl ;
+                else
+                {
+                    decryptor.decrypt(x_encrypted, plain_result);
+                    encoder.decode(plain_result, result);
+                    res = diff_vec(input, result,MAX_DIFF);
+                    saveDataLog(dir_name+file_name_c, res, !new_file);
+
+                    res_elem = diff_elem(input, result, threshold, size_input);
+                    saveDataLog(dir_name+file_name_c_elem, res_elem, !new_file);
+                    x_encrypted[index_value] = x_encrypted_original[index_value];
                 }
-                x_encrypted[index_value] = x_encrypted_original[index_value];
             }
         }
 
