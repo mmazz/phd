@@ -401,6 +401,16 @@ inline void input_creator(std::vector<double> &input, int poly_modulus_degree, d
         curr_point += step_size;
     }
 }
+
+inline void input_creator(std::vector<double> &input, int poly_modulus_degree, int seed, double max_value, int size){
+    float random_value = 0;
+    srand(seed);
+    for (size_t i = 0; i < size; i++)
+    {
+        random_value = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/max_value));
+        input.push_back(random_value);
+    }
+}
 inline void input_refill(std::vector<double> &input, int poly_modulus_degree, double curr_point, double max_value){
     size_t slot_count = poly_modulus_degree/2;
     std::cout << "Creating array, starting at " << curr_point << " and ending at " << max_value << std::endl;
@@ -409,5 +419,15 @@ inline void input_refill(std::vector<double> &input, int poly_modulus_degree, do
     {
         input[i] = curr_point;
         curr_point += step_size;
+    }
+}
+
+inline void input_refill(std::vector<double> &input, int poly_modulus_degree, int seed, double max_value){
+    float random_value = 0;
+    srand(seed);
+    for (size_t i = 0; i < input.size(); i++)
+    {
+        random_value = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/max_value));
+        input[i] = random_value;
     }
 }

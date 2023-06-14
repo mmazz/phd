@@ -28,12 +28,19 @@ int main(int argc, char * argv[])
     int num_stats = 1;
     double curr_point = CURR_POINT;
     double max_value = MAX_VALUE;
+    int seed = 0;
 
     if(argc >= 2)
     {
         num_stats = atoi(argv[1]);
         cout << "Starting with " << num_stats << " numbers of stats" << endl;
     }
+    if(argc >= 3)
+    {
+        seed = atoi(argv[2]);
+        cout << "Starting with seed " << num_stats  << endl;
+    }
+
 
     size_t poly_modulus_degree = 4096;
     vector<int> modulus;
@@ -44,8 +51,8 @@ int main(int argc, char * argv[])
 
     size_t slot_count = poly_modulus_degree/2;
     vector<double> input;
-    input.reserve(slot_count);
-    input_creator(input, poly_modulus_degree, curr_point, max_value, size_input);
+    input.reserve(size_input);
+    input_creator(input, poly_modulus_degree, seed, max_value, size_input);
     print_vector(input, 3, 7);
 
     print_example_banner("Example: CKKS random encryption with ntt");
@@ -91,11 +98,11 @@ int main(int argc, char * argv[])
     int res_elem = 0;
 
     bool new_file = 1;
-    std::string seed_file = "/home/mmazz/phd/fhe/sealProfile/hardcoded_random.txt";
+    std::string seed_file = "/home/mmazz/phd/fhe/sealProfile/hardcoded_random_seed"+std::to_string(seed)+".txt";
     std::string file_name_c;
     std::string file_name_c_elem;
 
-    std::string file_name = "encryption_c_nonNTT_nonRNS_";
+    std::string file_name = std::to_string(seed)+"encryption_c_nonNTT_nonRNS_";
     std::string dir_name = "log_nonRNS_nonNTT/";
     std::string dir_name_elem = "log_nonRNS_nonNTT_elem/";
 
@@ -103,13 +110,10 @@ int main(int argc, char * argv[])
     cout << "Starting bitflips with x_plain_size of: " << x_plain_size << endl;
     std::ofstream ofs;
     ofs.open(seed_file, std::ofstream::out | std::ofstream::trunc);
-    ofs<<0;
+    ofs<<seed;
     ofs.close();
 
 // Puedo hacer otro loop en el cual cambie el seed desde el archivo
-for (int k =0; k<(num_stats+2); k++)
-{
-    curr_point = CURR_POINT;
     max_value = MAX_VALUE;
 
     for (int i =0; i<num_stats; i++)
@@ -128,9 +132,9 @@ for (int k =0; k<(num_stats+2); k++)
             cout << "Decription correct "<< endl;
         else
             cout << "Decription incorrect "<< endl;
-    cout << endl;
-        file_name_c = dir_name+file_name+std::to_string(k)+"_"+std::to_string(i);
-        file_name_c_elem = dir_name_elem+file_name+std::to_string(k)+"_"+std::to_string(i);
+        cout << endl;
+        file_name_c = dir_name+file_name+"_"+std::to_string(i);
+        file_name_c_elem = dir_name_elem+file_name+"_"+std::to_string(i);
         saveDataLog(file_name_c, res, new_file);
         saveDataLog(file_name_c_elem, res, new_file);
         int modulus_index = 0;
@@ -183,15 +187,11 @@ for (int k =0; k<(num_stats+2); k++)
             }
         }
         cout<<"\n Finish lap " <<endl;
-        curr_point += 1.5;
-        max_value += 3;
-        input_refill(input, poly_modulus_degree, curr_point, max_value);
+        max_value += 163;
+        input_refill(input, poly_modulus_degree, seed+1, max_value);
         print_vector(input,3,7);
     }
-    std::ofstream ofs;
-    ofs.open(seed_file, std::ofstream::out | std::ofstream::trunc);
-    ofs<<k;
-    ofs.close();
-}
+
+
   return 0;
 }
