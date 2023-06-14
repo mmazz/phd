@@ -22,7 +22,7 @@ int MAX_DIFF = 1;
 float threshold = 0.1;
 double CURR_POINT = 1;
 double MAX_VALUE = 2.;
-int size_input= 2048;
+int size_input= 100;
 int main(int argc, char * argv[])
 {
     int num_stats = 1;
@@ -54,7 +54,6 @@ int main(int argc, char * argv[])
     parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulus));
     SEALContext context(parms);
     print_parameters(context);
-    cout << endl;
 
     KeyGenerator keygen(context);
     auto secret_key = keygen.secret_key();
@@ -104,12 +103,15 @@ int main(int argc, char * argv[])
     cout << "Starting bitflips with x_plain_size of: " << x_plain_size << endl;
     std::ofstream ofs;
     ofs.open(seed_file, std::ofstream::out | std::ofstream::trunc);
-    ofs<<"0";
+    ofs<<0;
     ofs.close();
 
 // Puedo hacer otro loop en el cual cambie el seed desde el archivo
 for (int k =0; k<num_stats; k++)
 {
+    curr_point = CURR_POINT;
+    max_value = MAX_VALUE;
+
     for (int i =0; i<num_stats; i++)
     {
         res = 0;
@@ -126,17 +128,15 @@ for (int k =0; k<num_stats; k++)
             cout << "Decription correct "<< endl;
         else
             cout << "Decription incorrect "<< endl;
-        cout << "encode " << x_plain[0] << endl;
+    cout << endl;
         file_name_c = dir_name+file_name+std::to_string(k)+"_"+std::to_string(i);
         file_name_c_elem = dir_name_elem+file_name+std::to_string(k)+"_"+std::to_string(i);
         saveDataLog(file_name_c, res, new_file);
         saveDataLog(file_name_c_elem, res, new_file);
-        cout << file_name_c << endl;
         int modulus_index = 0;
         int modulus_bits = 0;
         uint64_t k_rns_prime = 0;
 
-        cout << "Starting stat: " << i << endl;
         cout <<i << ": "<< std::endl;
         for (int index_value=0; index_value<2*x_plain_size; index_value++)
         {
@@ -188,8 +188,6 @@ for (int k =0; k<num_stats; k++)
         input_refill(input, poly_modulus_degree, curr_point, max_value);
         print_vector(input,3,7);
     }
-    curr_point = CURR_POINT;
-    max_value = MAX_VALUE;
     std::ofstream ofs;
     ofs.open(seed_file, std::ofstream::out | std::ofstream::trunc);
     ofs<<k;

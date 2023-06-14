@@ -238,7 +238,7 @@ inline void saveDataLog(std::string file_name, int  res, bool new_file)
     std::fstream logFile;
     // Open File
     if (new_file==1){
-        std::cout<< " New log: " << std::endl;
+        //std::cout<< " New log: " << std::endl;
         logFile.open("/home/mmazz/phd/fhe/sealProfile/"+file_name+".txt", std::ios::out);
         logFile << "New file: " << std::endl ;
     }
