@@ -107,7 +107,7 @@ int main(int argc, char * argv[])
     ofs.close();
 
 // Puedo hacer otro loop en el cual cambie el seed desde el archivo
-for (int k =0; k<num_stats; k++)
+for (int k =0; k<(num_stats+2); k++)
 {
     curr_point = CURR_POINT;
     max_value = MAX_VALUE;

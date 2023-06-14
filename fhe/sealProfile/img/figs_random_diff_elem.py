@@ -38,12 +38,14 @@ plt.ylim((0,101))
 plt.xlabel('Polynomail cofficient')
 plt.ylabel('Correct decryption(\%)')
 plt.savefig("by_coeff_diff.png", dpi=800, format="png",bbox_inches="tight")
-plt.show()
+
+#plt.show()
 plt.clf()
+
 plt.plot(by_bits, color='steelblue',linewidth=5.0)
 plt.ylim((-1,105))
 plt.xlabel('Number of Bit in cofficient')
 plt.ylabel('Correct decryption(\%)')
 plt.savefig("by_bits_diff.png", dpi=800, format="png", bbox_inches="tight")
-plt.show()
+#plt.show()
 
