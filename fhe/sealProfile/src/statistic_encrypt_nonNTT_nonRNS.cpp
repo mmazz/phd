@@ -133,8 +133,8 @@ int main(int argc, char * argv[])
         else
             cout << "Decription incorrect "<< endl;
         cout << endl;
-        file_name_c = dir_name+file_name+"_"+std::to_string(i);
-        file_name_c_elem = dir_name_elem+file_name+"_"+std::to_string(i);
+        file_name_c = dir_name+file_name+std::to_string(i);
+        file_name_c_elem = dir_name_elem+file_name+std::to_string(i);
         saveDataLog(file_name_c, res, new_file);
         saveDataLog(file_name_c_elem, res, new_file);
         int modulus_index = 0;

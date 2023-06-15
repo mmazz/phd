@@ -9,43 +9,90 @@ plt.rcParams.update({
 matplotlib.rcParams.update({'font.size': 20})
 plt.rc('xtick',labelsize=16)
 plt.rc('ytick',labelsize=16)
-matplotlib.rcParams['text.usetex'] = False
-dir = "../Random_data/log_nonRNS_nonNTT_elem/encryption_c_nonNTT_nonRNS_"
-df = pd.read_csv(dir+"0_0"+'.txt', header=None,  skip_blank_lines=False)
+#matplotlib.rcParams['text.usetex'] = False
+
+norm2 = False
+num_bits_coeff = 50
+num_seeds = 3
+num_inputs = 20
+total_runs = num_seeds * num_inputs
+if(norm2):
+    dir = "../log_nonRNS_nonNTT/"
+else:
+    dir = "../log_nonRNS_nonNTT_elem/"
+file = "encryption_c_nonNTT_nonRNS_"
+df = pd.read_csv(dir+str(10)+file+str(0)+'.txt', header=None,  skip_blank_lines=False)
 
 df = df.iloc[1:,:]
 temp = df[df.columns[0]].to_numpy()
 bitflip = np.zeros(len(temp))
+seeds = ["10", "11", "12"]
+
+
+size_df = 0
+for i in range(num_seeds):
+    for j in range(num_inputs):
+        path = dir+seeds[i]+file+str(j)+'.txt'
+        print(path)
+        df = pd.read_csv(path, header=None,  skip_blank_lines=False)
+        df = df.iloc[1:,:]
+        encoding = df[df.columns[0]].to_numpy(dtype='float')
+        if size_df != len(encoding):
+            size_df = len(encoding)
+        bitflip = bitflip + encoding
+
+# agrego estas 9 corridas extras tambien
 for i in range(3):
     for j in range(3):
-        path = dir+str(i)+"_"+str(0)+'.txt'
+        path = dir+file+str(i)+"_"+str(j)+'.txt'
         print(path)
         df = pd.read_csv(path, header=None,  skip_blank_lines=False)
         df = df.iloc[1:,:]
         encoding = df[df.columns[0]].to_numpy(dtype='float')
         bitflip = bitflip + encoding
-bitflip = bitflip/9*100
 
-bitflip_split = bitflip.reshape(int(len(bitflip)/50),50)
+# Aca tengo el promedio de todas las corridas por cada bit
+bitflip = bitflip/(total_runs+3*3) # agrego las 9 corridas extras que tenia
 
+# Lo paso a una representacion matricial, donde cada fila son los bits de un coefficiente.
+rows = int(len(bitflip)/num_bits_coeff)
+cols = num_bits_coeff
+bitflip_split = np.reshape(bitflip, (rows, cols))
+
+# Sumo por filas y columnas
 by_coeff = bitflip_split.sum(axis=1)
 by_bits = bitflip_split.sum(axis=0)
-by_coeff = by_coeff/by_coeff.max()*100
-by_bits = by_bits/by_bits.max()*100
+
+
+
+by_ceff = (by_coeff/np.shape(bitflip_split)[1])*100
+by_bits = (by_bits/np.shape(bitflip_split)[0])*100
+
+#by_coeff = by_coeff/by_coeff.max()*100
+#by_bits = by_bits/by_bits.max()*100
 
 plt.plot(by_coeff, color='steelblue',linewidth=5.0)
-plt.ylim((0,101))
+plt.ylim(0,100)
+plt.xlim(0,8000)
+plt.axvline(x=int(4096), color='k', ls='--', label="Polynomial separation", linewidth=2)
 plt.xlabel('Polynomail cofficient')
-plt.ylabel('Correct decryption(\%)')
-plt.savefig("by_coeff_diff.png", dpi=800, format="png",bbox_inches="tight")
-
-#plt.show()
+plt.ylabel('Correct decryption (\%)')
+if(norm2):
+    plt.savefig("by_coeff.png", dpi=800, format="png",bbox_inches="tight")
+else:
+    plt.savefig("by_coeff_diff.png", dpi=800, format="png",bbox_inches="tight")
+plt.legend()
+plt.show()
 plt.clf()
 
 plt.plot(by_bits, color='steelblue',linewidth=5.0)
-plt.ylim((-1,105))
+plt.xlim(0,50)
+plt.ylim(0,100)
 plt.xlabel('Number of Bit in cofficient')
 plt.ylabel('Correct decryption(\%)')
-plt.savefig("by_bits_diff.png", dpi=800, format="png", bbox_inches="tight")
-#plt.show()
+if(norm2):
+    plt.savefig("by_bits.png", dpi=800, format="png", bbox_inches="tight")
+else:
+    plt.savefig("by_bits_diff.png", dpi=800, format="png", bbox_inches="tight")
+plt.show()
 
