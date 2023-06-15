@@ -38,6 +38,7 @@ for i in range(num_seeds):
         df = df.iloc[1:,:]
         encoding = df[df.columns[0]].to_numpy(dtype='float')
         if size_df != len(encoding):
+            print("Change of bit lenth ", size_df)
             size_df = len(encoding)
         bitflip = bitflip + encoding
 
@@ -53,9 +54,14 @@ for i in range(3):
 
 # Aca tengo el promedio de todas las corridas por cada bit
 bitflip = bitflip/(total_runs+3*3) # agrego las 9 corridas extras que tenia
+#plt.plot(bitflip)
+#plt.show()
+#
+#plt.clf()
 
 # Lo paso a una representacion matricial, donde cada fila son los bits de un coefficiente.
-rows = int(len(bitflip)/num_bits_coeff)
+print("Total bits: ", len(bitflip))
+rows = int(len(bitflip)/num_bits_coeff) # Es N*2...
 cols = num_bits_coeff
 bitflip_split = np.reshape(bitflip, (rows, cols))
 
@@ -65,13 +71,10 @@ by_bits = bitflip_split.sum(axis=0)
 
 
 
-by_ceff = (by_coeff/np.shape(bitflip_split)[1])*100
-by_bits = (by_bits/np.shape(bitflip_split)[0])*100
+by_coeff_av = (by_coeff/cols)*100
+by_bits_av = (by_bits/rows)*100
 
-#by_coeff = by_coeff/by_coeff.max()*100
-#by_bits = by_bits/by_bits.max()*100
-
-plt.plot(by_coeff, color='steelblue',linewidth=5.0)
+plt.plot(by_coeff_av, color='steelblue',linewidth=5.0)
 plt.ylim(0,100)
 plt.xlim(0,8000)
 plt.axvline(x=int(4096), color='k', ls='--', label="Polynomial separation", linewidth=2)
@@ -85,9 +88,9 @@ plt.legend()
 plt.show()
 plt.clf()
 
-plt.plot(by_bits, color='steelblue',linewidth=5.0)
+plt.plot(by_bits_av, color='steelblue',linewidth=5.0)
 plt.xlim(0,50)
-plt.ylim(0,100)
+plt.ylim(-0.5,102)
 plt.xlabel('Number of Bit in cofficient')
 plt.ylabel('Correct decryption(\%)')
 if(norm2):
