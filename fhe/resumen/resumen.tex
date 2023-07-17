@@ -426,6 +426,30 @@ by performing component-wise modulo operations.
   \item Como lleno el espacio del vector cuando mi input no es N/2?
 \end{enumerate}
 
+\subsection{Ejemplo chico}
+
+Entendamos con un ejemplo chico la codificacion simple de ckks y despues la
+complejisamos un poco.
+
+Vamos a tener un input $z\in \mathbb{C}^{N/2}$, recordando que $N$ va ser el tamaño
+del polinomio que vamos a tener, y $N/2$ el tamaño de nuestro input.
+La codificacion nos va a pasar a un polinomio $m(X)\in \mathbb{Z}[X]/(X^N+1)$.
+
+Toda la codificacion y demas va a usar las raices del polinomio ciclotomico $\Phi_M(X)=
+X^N+1$.
+Estas raices no son mas que potencias de $\xi_M=e^{2i\pi/M}$.
+
+Una de las complicaciones es que queremos un isomorphismo entre $\mathbb{C}^{N/2}$ y
+$\mathbb{Z}[X]/(X^N+1)$.
+Algo que es un poco mas dificil que el caso del isomorfismo
+$\mathbb{C}^{N}$ y $\mathbb{C}[X]/(X^N+1)$, el cual se resuelve simplemente
+al resolver el sistema de ecuaciones lineales $A\alpha=z$, donde $A$ es la
+matriz de vandermonde para las raices de la unidad y $z$ el input.
+$\alpha$ son los coeficientes del polinomio codificado.
+
+Para el caso que nos interesa tenemos que hacer algunos pasos extras.
+Por un lado necesitamos que los coefficientes del polinomio ahora sean numeros enteros.
+Para ello vamos a usar el encaje canonico.
 % https://bit-ml.github.io/blog/post/homomorphic-encryption-toy-implementation-in-python/
 \end{document}
 
