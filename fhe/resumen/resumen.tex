@@ -426,7 +426,7 @@ by performing component-wise modulo operations.
   \item Como lleno el espacio del vector cuando mi input no es N/2?
 \end{enumerate}
 
-\subsection{Ejemplo chico}
+\subsection{Codificacion}
 
 Entendamos con un ejemplo chico la codificacion simple de ckks y despues la
 complejisamos un poco.
@@ -434,22 +434,91 @@ complejisamos un poco.
 Vamos a tener un input $z\in \mathbb{C}^{N/2}$, recordando que $N$ va ser el tamaño
 del polinomio que vamos a tener, y $N/2$ el tamaño de nuestro input.
 La codificacion nos va a pasar a un polinomio $m(X)\in \mathbb{Z}[X]/(X^N+1)$.
+A este espacio polinomial lo vamos a denotar como $R= \mathbb{Z}[X]/(X^N+1)$.
 
 Toda la codificacion y demas va a usar las raices del polinomio ciclotomico $\Phi_M(X)=
 X^N+1$.
 Estas raices no son mas que potencias de $\xi_M=e^{2i\pi/M}$.
+La idea de la decodificacion es que dado nuestro polinomio $m(X)$ lo vamos a evaluar en dichas
+raices, y nos iran dando los diferentes decodificaciones.
+Esto lo vamos a denotar de la siguiente manera $\sigma(m) = (m(\xi), m(\xi^3),...,m(\xi^{2N-1}))=(z_1,...,z_N)$
+
+Algo a destacar es que como trabajamos en  $R$, es decir polinomios con coeficientes enteros,
+vamos a tener la propiedad de $m(\xi^j)=\overline{m(\xi^j)}=m(\overline{\xi^j})$.
+Esto quiere decir que cualquier elemento de $\sigma(R)$ tiene efectivamente dimension
+$N/2$ y no $N$.
 
 Una de las complicaciones es que queremos un isomorphismo entre $\mathbb{C}^{N/2}$ y
 $\mathbb{Z}[X]/(X^N+1)$.
 Algo que es un poco mas dificil que el caso del isomorfismo
 $\mathbb{C}^{N}$ y $\mathbb{C}[X]/(X^N+1)$, el cual se resuelve simplemente
 al resolver el sistema de ecuaciones lineales $A\alpha=z$, donde $A$ es la
-matriz de vandermonde para las raices de la unidad y $z$ el input.
-$\alpha$ son los coeficientes del polinomio codificado.
+matriz de vandermonde para las raices de la unidad y $z$ el input,
+Con $\alpha$ son los coeficientes del polinomio codificado.
 
 Para el caso que nos interesa tenemos que hacer algunos pasos extras.
-Por un lado necesitamos que los coefficientes del polinomio ahora sean numeros enteros.
-Para ello vamos a usar el encaje canonico.
-% https://bit-ml.github.io/blog/post/homomorphic-encryption-toy-implementation-in-python/
+El primer paso va a ser el de expandir nuestro input de forma espejada con el
+complemento conjungado del mismo.
+A dicha operacion la denotamos como $\pi^{-1}(z)$.
+Y lo que sabemos es que este nuevo areglo va a pertenecer al espacio
+$\mathbb{H}=\{z\in\mathbb{C}^N/ \forall j (z_j=\overline{z_j})\}$.
+
+El problema que sigue es poder satisfacer el isomorfismo.
+Ya que no es cierto que cualquier elemento de $\mathbb{H}$,
+esta en $\sigma(R)$.
+Solo sabemos que $\sigma(R)\subseteq \mathbb{H}$.
+Entonces para poder tener el isomorfismo que queremos, de $R$ y $\sigma(R)$,
+se usa el encaje canonico.
+
+Para poder ver que $\mathbb{H}$ y $\sigma(R)$ son distintos, basta con ver que
+el espacio $R$ de los polinomios de grado $N$ con coeficientes enteros son un espacio
+contable (se hace por induccion, no vi como) y por ende $\sigma(R)$ lo es.
+En cambio es facil ver que $\mathbb{H}$ no es contable ya que que es un isomorfismo
+a $\mathbb{C}^{N/2}$.
+
+Entonces para recapitular lo que tenemos por ahora es que al expandir $\pi^{-1}(z)\in\mathbb{H}$,
+pero lo que quiero es $\pi^{-1}(z)\in\sigma(R)$.
+Y para hacer esto, simplemente vamos a que $\pi$ ademas projecte a una base ortogonal  $\sigma(R)$.
+La base de esta es facil, ya que sabemos que $R$ tiene una base de $1, X, X^2, ..., X^{N-1}$.
+Es decir que la base ortogonal de  $\sigma(R)$ es $(\sigma(1), \sigma(X),..., \sigma(X^{N-1}))=(\beta_1,...,\beta^{N-1})$.
+
+Entonces $\pi^{-1}$, lo que hace es que despues de expandirlo, es decir ya un $z\in\mathbb{H}$,
+le hace un cambio de base y lo normaliza.
+\begin{equation*}
+    z_i = \frac{<z,\beta_i>}{\parallel\beta_i\parallel^2}
+    \label{eq:expand}
+\end{equation*}
+
+O escrito de otra manera es escribir la matriz de Vandermonde para las raices de la unidad.
+Donde recordamos que dicha matriz es fija dado el $N$, es decir una matriz de numeros...
+\begin{equation*}
+    A=
+    \begin{pmatrix}
+        1 & \xi &  \xi^2 & ... & \xi^{N-1} \\
+        1 & \xi_3 & \xi_3^2 & ... & \xi_3^{N-1}\\
+        \vdots & \vdots & \vdots & ... & \vdots\\
+        1 & \xi_{2N-1} & \xi_{2N-1}^2 & ... & \xi_{2N-1}^{N-1}
+    \end{pmatrix}
+    \label{eq:vandermonde}
+\end{equation*}
+Donde utilizamos la notacion que $\xi_i^j=\xi^{i*j}$.
+Entonces la projeccion no es otra cosa que $\hat{z} = A^Tz/|A|$ con la division
+elemento a elemento.
+$|A|=diagonal(\parallel A\parallel^2)= diagonal(A*A^\dagger)$, donde basicamente tomamos la diagonal de
+la norma dos de la matriz $A$, y la notacion de daga representa a la transpuesta conjugada de dicha matriz.
+
+
+Teniendo nuestro $\hat{z}$, se aplica un algoritmo de redondeo que lo lleva a al entero mas cercano
+(lo llamaremos $\hat{z}'$) y luego se vuelve a realizar un cambio de base nuevamente (''vuelvo
+para atras''),
+teniendo $z = A\hat{z}'$ y luego queda simplemente resolver un sistema de ecuaciones lineales para
+obtener los coeficientes del polinomio.
+Es decir resolver $A\alpha=z$.
+Con esto tendriamos nuestra codificacion lista.
+Es decir, la codificacion de z quedaria como $\alpha_1 + \alpha_2 X + ... \alpha_{N-1}X^{N-1}$.
+
+\subsubsection{Ejemplo}
+
 \end{document}
+% https://bit-ml.github.io/blog/post/homomorphic-encryption-toy-implementation-in-python/
 
