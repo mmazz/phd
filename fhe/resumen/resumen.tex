@@ -602,6 +602,17 @@ redondeos que suceden.
   \item Cuando realmente tengo un elemento que requiere hacer esa projeccion raro? Por que en principio siempre que pruebo, solo con redondear me da los coeficientes...
   Osea sin multplicar por la matriz dagada, ni resolver el sistemas de ecuaciones para obtener alpha... raro
 \end{itemize}
+Solucion
+
+Creo que la mano viene asi, basicamente al querer resolver $A\alpha=z'$ es resolver $\alpha=A^{-1}z'$. 
+Pero recordemos que era ese $z'$, no es otra cosa que $A\lceil A^{\dagger}(z/norm)\rfloor$.
+Donde ese $norm$ es la normalizacion, que por ser este tipo de matriz, es un mismo valor para cada caso.
+Entonces en el caso general tenemos que $\alpha=A^{-1}A\lceil A^{\dagger}(z/norm)\rfloor$
+
+Ya vemos que la primer parte $A^{-1}A$ es la identidad....
+Entonces nos queda que $\alpha=\lceil A^{\dagger}(z/norm)\rfloor$.
+Entonces no se para que hacen esta cuenta de mas.... simplemente los alphas son 
+los que me dan al realziar esa cuenta.
 
 \end{document}
 % https://bit-ml.github.io/blog/post/homomorphic-encryption-toy-implementation-in-python/
