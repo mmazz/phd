@@ -517,7 +517,87 @@ Es decir resolver $A\alpha=z$.
 Con esto tendriamos nuestra codificacion lista.
 Es decir, la codificacion de z quedaria como $\alpha_1 + \alpha_2 X + ... \alpha_{N-1}X^{N-1}$.
 
+Un paso que no se menciono, es que para evitar la perdida de informacion en los redondeos
+que se hacen durante la codificacion, es que se multiplica por un coeficiente de
+escaleo a nuestro input.
+Antes de decodificar se divide por este mismo y listo.
+
+
 \subsubsection{Ejemplo}
+
+Tomemos un ejemplo chico y hagamos las cuentas!
+Sea $N=4$ y de entrada vamos a usar $z=[3,4]$.
+Sea el factor de escaleo $\Delta=64$.
+
+El primer paso es expandirlo espenandolo y conjugandolo (en este caso es todo real).
+A su vez se lo multiplica por  $\Delta$.
+\begin{equation*}
+    [3,4]\rightarrow [3,4,4,3] \rightarrow [192, 256, 256, 192]
+\end{equation*}
+
+Tenemos que nuestra matriz de Vandermonde $A$ es igual a:
+\begin{equation*}
+    A=
+    \begin{pmatrix}
+        1 & \xi &  \xi^2 &  \xi^3 \\
+        1 & \xi_3 & \xi_3^2 &\xi_3^3\\
+        1 & \xi_5 & \xi_5^2 &\xi_5^3\\
+        1 & \xi_7 & \xi_7^2 &\xi_7^3
+    \end{pmatrix}
+    \label{eq:vandermonde_ej}
+\end{equation*}
+
+La diagonal de esta matriz al cuadrado es siempre 4.
+Entonces tenemos que computar $A\lceil A^\dagger z/4  \rfloor$.
+
+Esto nos da $\lceil(224, -22.62..., -3,5...10^{-15}, 22.62)\rfloor$, y al redondearlo
+con el algoritmo estadistito llegamos por ejemplo a $\hat{z}=(224, -23, 0, 23)$.
+El elemento 1 y 3 pueden ser tambien $-22$ y/o $22$.
+
+
+Ahora queda multiplicar por la matriz $A$, para recuperar el input pero que preserva
+el isomorfismo.
+Realizamos $A\hat{z}$.
+Esto nos da un hermoso vector complejo:
+
+\begin{equation*}
+    z'= A\hat{z}=
+    \begin{pmatrix}
+        191.4730... + 3.5....10^{-15}i \\
+        256.52... - 2.13....10^{-14}i \\
+        256.52... - 3.907....10^{-14}i \\
+        191.4730... + 4.61....10^{-14}i
+    \end{pmatrix}
+    \label{eq:vandermonde_ej}
+\end{equation*}
+
+Para finalizar, hay que resolver $A\alpha = z'$.
+Si metemos en Python y resolvemos y a esto le tomamos parte real y redondeamos
+(esta vez de forma estandar, no con el algoritmo de redondeamiento estadistico).
+La solucion queda
+
+\begin{equation*}
+    \alpha = (224, -23, 0, 23)
+\end{equation*}
+
+Es decir el polinomio que representa la codificacion de nuestro valor de entrada es:
+
+
+\begin{equation*}
+    codificacion(z) = m(X) = 23X^3+0X^0-23X+224
+\end{equation*}
+
+Para recuperar nuestro input, es decir para decodificarlo, lo que se hace es
+evaluar este polinomio en las diferentes racies, es decir $\xi=e^{i2\pi/8 }$.
+
+\begin{equation*}
+    decodificacion(z) = ( m(\xi), m(\xi^3), m(\xi^5), m(\xi^7)) \approx z
+\end{equation*}
+
+Recordamos que es un aproximado ya que el propio esquema lo es debido a las diferentes
+redondeos que suceden.
+
+
 
 \end{document}
 % https://bit-ml.github.io/blog/post/homomorphic-encryption-toy-implementation-in-python/
