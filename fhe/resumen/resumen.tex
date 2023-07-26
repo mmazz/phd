@@ -438,23 +438,30 @@ A este espacio polinomial lo vamos a denotar como $R= \mathbb{Z}[X]/(X^N+1)$.
 
 Toda la codificacion y demas va a usar las raices del polinomio ciclotomico $\Phi_M(X)=
 X^N+1$.
+Con $M=2N$.
 Estas raices no son mas que potencias de $\xi_M=e^{2i\pi/M}$.
 La idea de la decodificacion es que dado nuestro polinomio $m(X)$ lo vamos a evaluar en dichas
 raices, y nos iran dando los diferentes decodificaciones.
-Esto lo vamos a denotar de la siguiente manera $\sigma(m) = (m(\xi), m(\xi^3),...,m(\xi^{2N-1}))=(z_1,...,z_N)$
+Esto lo vamos a denotar de la siguiente manera $\sigma(m) = (m(\xi_M), m(\xi_M^3),...,m(\xi_M^{2N-1}))=(z_1,...,z_N)$.
+Las potencias son $i/gcd(i,M)=1$, con el $M$ del polinomio ciclotomico.
 
+A esta transformacion se la conoce como encaje canonico.
+Que no es otra cosa que dado un polinomio, lo evalua en las distintas raices de la unidad $\xi_M$.
+Por cada evaluacion me genera un valor complejo.
 Algo a destacar es que como trabajamos en  $R$, es decir polinomios con coeficientes enteros,
 vamos a tener la propiedad de $m(\xi^j)=\overline{m(\xi^j)}=m(\overline{\xi^j})$.
 Esto quiere decir que cualquier elemento de $\sigma(R)$ tiene efectivamente dimension
 $N/2$ y no $N$.
 
-Una de las complicaciones es que queremos un isomorphismo entre $\mathbb{C}^{N/2}$ y
-$\mathbb{Z}[X]/(X^N+1)$.
-Algo que es un poco mas dificil que el caso del isomorfismo
-$\mathbb{C}^{N}$ y $\mathbb{C}[X]/(X^N+1)$, el cual se resuelve simplemente
+Esta transformacion es inversible y entonces tenemos el camino inverso, obteniendo asi un
+isomorfismo entre el espacio de los vectores complejos y el espacio de los polinomios de grado
+$M/2 -1$.
+Es decir entre $\mathbb{C}^{N}$ y $\mathbb{C}[X]/(X^N+1)$, el cual se resuelve simplemente
 al resolver el sistema de ecuaciones lineales $A\alpha=z$, donde $A$ es la
 matriz de vandermonde para las raices de la unidad y $z$ el input,
 Con $\alpha$ son los coeficientes del polinomio codificado.
+Aca se busca tener un isomorfismo entre $\mathbb{C}^{N/2}$ y
+$\mathbb{Z}[X]/(X^N+1)$.
 
 Para el caso que nos interesa tenemos que hacer algunos pasos extras.
 El primer paso va a ser el de expandir nuestro input de forma espejada con el
@@ -480,19 +487,39 @@ Entonces para recapitular lo que tenemos por ahora es que al expandir $\pi^{-1}(
 pero lo que quiero es $\pi^{-1}(z)\in\sigma(R)$.
 Y para hacer esto, simplemente vamos a que $\pi$ ademas projecte a una base ortogonal  $\sigma(R)$.
 La base de esta es facil, ya que sabemos que $R$ tiene una base de $1, X, X^2, ..., X^{N-1}$.
-Es decir que la base ortogonal de  $\sigma(R)$ es $(\sigma(1), \sigma(X),..., \sigma(X^{N-1}))=(\beta_1,...,\beta^{N-1})$.
+Es decir que la base ortogonal de  $\sigma(R)$ es $(\sigma(1), \sigma(X),..., \sigma(X^{N-1}))=(\beta_1,...,\beta_{N-1})=\beta$.
 
 Entonces $\pi^{-1}$, lo que hace es que despues de expandirlo, es decir ya un $z\in\mathbb{H}$,
 le hace un cambio de base y lo normaliza.
+Recordemos como hacer una projeccion.
+Para esto usamos la producto interno Hermitiano, el cual no es otra cosa que $<z,w>=\sum z_i\bar{w_i}$.
+Si queremos proyectar un vector $v_1$ sobre un vector $v_2$:
+
+
 \begin{equation*}
-    z_i = \frac{<z,\beta_i>}{\parallel\beta_i\parallel^2}
-    \label{eq:expand}
+    Prject_{v_2}(v_1) = \frac{<v_1,v_2>}{<v_2,v_2>}v_2
+    \label{eq:project}
 \end{equation*}
+
+Si ahora queremos hacerlo a un espacio vectorial, que tiene la base $\beta$, simplemente
+es la sumatoria de lo recien explicado:
+
+\begin{equation*}
+    Prject_{\beta}(z) = \sum_{i=0}^{N-1}\frac{<z,\beta_i>}{<\beta_i,\beta_i>}\beta_i = Az\overline{A}/norm2
+    \label{eq:project}
+\end{equation*}
+
+
 
 O escrito de otra manera es escribir la matriz de Vandermonde para las raices de la unidad.
 Donde recordamos que dicha matriz es fija dado el $N$, es decir una matriz de numeros...
 \begin{equation*}
-    A=
+    A=    \begin{pmatrix}
+        | & | &    & | \\
+        \beta_1 & \beta_2 & ... & \beta_{N-1}\\
+        | & | &    & |
+    \end{pmatrix}
+    =
     \begin{pmatrix}
         1 & \xi &  \xi^2 & ... & \xi^{N-1} \\
         1 & \xi_3 & \xi_3^2 & ... & \xi_3^{N-1}\\
@@ -505,7 +532,9 @@ Donde utilizamos la notacion que $\xi_i^j=\xi^{i*j}$.
 Entonces la projeccion no es otra cosa que $\hat{z} = real(A^Tz/|A|)$ con la division
 elemento a elemento.
 $|A|=diagonal(\parallel A\parallel^2)= diagonal(A*A^\dagger)$, donde basicamente tomamos la diagonal de
-la norma dos de la matriz $A$, y la notacion de daga representa a la transpuesta conjugada de dicha matriz.
+la norma dos de la matriz $A$.
+Esta clase de matrices de $N\times N$ tiene la propiedad que esta normalizacion es simplemente $N$.
+La notacion de daga representa a la transpuesta conjugada de dicha matriz.
 
 
 Teniendo nuestro $\hat{z}$, se aplica un algoritmo de redondeo que lo lleva a al entero mas cercano
@@ -604,21 +633,52 @@ redondeos que suceden.
 \end{itemize}
 Solucion
 
-Creo que la mano viene asi, basicamente al querer resolver $A\alpha=z'$ es resolver $\alpha=A^{-1}z'$. 
+Creo que la mano viene asi, basicamente al querer resolver $A\alpha=z'$ es resolver $\alpha=A^{-1}z'$.
 Pero recordemos que era ese $z'$, no es otra cosa que $A\lceil A^{\dagger}(z/norm)\rfloor$.
 Donde ese $norm$ es la normalizacion, que por ser este tipo de matriz, es un mismo valor para cada caso.
 Entonces en el caso general tenemos que $\alpha=A^{-1}A\lceil A^{\dagger}(z/norm)\rfloor$
 
 Ya vemos que la primer parte $A^{-1}A$ es la identidad....
 Entonces nos queda que $\alpha=\lceil A^{\dagger}(z/norm)\rfloor$.
-Entonces no se para que hacen esta cuenta de mas.... simplemente los alphas son 
+Entonces no se para que hacen esta cuenta de mas.... simplemente los alphas son
 los que me dan al realziar esa cuenta.
 
 Otra cosa que tambien sale, es que la normalizacion de la matriz esta, es simplemente el tamano que tiene...
-La matriz dagada de A dividida por la normalizacion, es justamente la matriz inversa de A, y por eso queda como 
+La matriz dagada de A dividida por la normalizacion, es justamente la matriz inversa de A, y por eso queda como
 resolver directamente... Solo queda de nuevo el algoritmo de aproximizacion.
 
 Se agrega entonces la duda de que es el encaje canonico.....
+
+
+
+\subsection{Aprendice}
+
+Sea nuestro input $z=(i, j)$ y nuestra matriz $A$:
+
+\begin{equation*}
+    A=
+    \begin{pmatrix}
+        a & b  \\
+        c & c
+    \end{pmatrix}
+    \label{eq:ejA}
+\end{equation*}
+
+Entonces hacer $<z,b_i>b_i$ nos quedaria:
+
+\begin{equation*}
+    \begin{split}
+        &<(i,j),(a,c)>(a,c) + <(i,j),(b,d)>(b,d) \\
+        &=(i\overline{a} + j\overline{c})(a,c)+(i\overline{b} + j\overline{d})(b,d)\\
+        &=((i\overline{a} + j\overline{c})a,(i\overline{a} + j\overline{c})c)+((i\overline{b} + j\overline{d})b,(i\overline{b} + j\overline{d})d)\\
+        &= ((i\overline{a} + j\overline{c})a+(i\overline{b} + j\overline{d})b,(i\overline{a} + j\overline{c})c,(i\overline{b} + j\overline{d})d)
+    \end{split}
+    \label{eq:ej}
+\end{equation*}
+
+y esto es analogo a hacer $Az\overline{A}$, donde la ultima matriz es $A$ conjugada.
+
+
 
 \end{document}
 % https://bit-ml.github.io/blog/post/homomorphic-encryption-toy-implementation-in-python/
