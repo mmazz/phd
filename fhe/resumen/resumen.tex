@@ -526,13 +526,16 @@ Si ahora queremos hacerlo a un espacio vectorial, que tiene la base $\beta$, sim
 es la sumatoria de lo recien explicado:
 
 \begin{equation*}
-    Prject_{\beta}(z) = \sum_{i=0}^{N-1}\frac{<z,\beta_i>}{<\beta_i,\beta_i>}\beta_i
+    Project_{\beta}(z) = \sum_{i=0}^{N-1}\frac{<z,\beta_i>}{<\beta_i,\beta_i>}\beta_i
     \label{eq:project}
 \end{equation*}
 
-En la implementacion de Python, lo que hacen es primero calcular los productos internos Hermitianos,
-luego aplicarle el algoritmo de redondeo y luego multiplicar por adelante la matriz
-de Vandermonde transpuesta.
+En la implementacion de Python, lo que hacen es primero calcular los productos internos
+Hermitianos, dejarlas como un vector, es decir $(<z,\beta_1>,...,<z,\beta_{N-1}>)$.
+Luego aplicarle el algoritmo de redondeo a cada uno de estos y luego multiplicar por adelante la matriz
+de Vandermonde.
+Ya que hacer $ Project_{\beta}(z) $ es lo mismo que hacer $A(<z,\beta_1>,...,<z,\beta_{N-1}>)$.
+\todo[inline]{No me queda claro el por que puede aplicar el redondeo como en un paso intermedio}
 La matrix de Vandermonde para las raices de la unidad es:
 \begin{equation*}
     A=    \begin{pmatrix}
