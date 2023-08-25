@@ -38,6 +38,8 @@ int main(int argc, char * argv[])
         curr_point = atoi(argv[3]);
     if (argc>=5)
         max_value = atoi(argv[4])-curr_point;
+
+
     size_t poly_modulus_degree = 4096;
     vector<int> modulus;
     if(RNS)

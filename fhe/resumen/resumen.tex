@@ -536,6 +536,8 @@ Luego aplicarle el algoritmo de redondeo a cada uno de estos y luego multiplicar
 de Vandermonde.
 Ya que hacer $ Project_{\beta}(z) $ es lo mismo que hacer $A(<z,\beta_1>,...,<z,\beta_{N-1}>)$.
 \todo[inline]{No me queda claro el por que puede aplicar el redondeo como en un paso intermedio}
+De esta forma tenemos dentro de nuestra base una representacion con valores enteros de nuestros
+valores.
 La matrix de Vandermonde para las raices de la unidad es:
 \begin{equation*}
     A=    \begin{pmatrix}
@@ -678,6 +680,14 @@ Se agrega entonces la duda de que es el encaje canonico.....
 
 
 \subsection{Aprendice}
+\subsubsection{Lattices}
+Basicamente el crear como creamos las matrices random A de la public key, y demas
+es sobre esto.
+
+Dado una base (como cuando usamos $\sigma$ en el encoding), queremos encontrar
+coeficientes enteros no triviales que hacen cero la suma.
+
+\href{https://www.youtube.com/watch?v=FVFw_qb1ZkY}{link}
 \subsubsection{Producto interno}
 Sea nuestro input $z=(i, j)$ y nuestra matriz $A$:
 

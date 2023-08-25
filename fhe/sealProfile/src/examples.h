@@ -250,6 +250,29 @@ inline void saveDataLog(std::string file_name, int  res, bool new_file)
     logFile.close();
 
 }
+
+inline void saveEncodig(std::string file_name, seal::Plaintext  encoding, int x_plain_size, bool new_file)
+{
+    std::fstream logFile;
+    // Open File
+    if (new_file==1){
+        //std::cout<< " New log: " << std::endl;
+        logFile.open("/home/mmazz/phd/fhe/sealProfile/"+file_name+".txt", std::ios::out);
+        logFile << "New file: " << std::endl ;
+    }
+    else{
+        logFile.open("/home/mmazz/phd/fhe/sealProfile/"+file_name+".txt", std::ios::app);
+        logFile << "\n";
+        for (int index_value=0; index_value<x_plain_size; index_value++)
+        {
+            logFile << std::hex << encoding[index_value] << " " ;
+        }
+        logFile << std::endl;
+    }
+    // close file stream
+    logFile.close();
+
+}
 inline float diff_vec(std::vector<double>  &v1, std::vector<double> &v2, int DIFF){
     float res = 0;
     double diff = 0;
@@ -391,6 +414,17 @@ inline void input_creator(std::vector<double> &input, int poly_modulus_degree, d
         curr_point += step_size;
     }
 }
+
+inline void input_creator(std::vector<double> &input, int poly_modulus_degree, size_t slot_count, double curr_point, double max_value){
+    std::cout << "Creating array, starting at " << curr_point << " and ending at " << max_value << std::endl;
+    double step_size = max_value / (static_cast<double>(slot_count) - 1);
+    for (size_t i = 0; i < slot_count; i++)
+    {
+        input.push_back(curr_point);
+        curr_point += step_size;
+    }
+}
+
 
 inline void input_creator(std::vector<double> &input, int poly_modulus_degree, double curr_point, double max_value, int size){
     std::cout << "Creating array, starting at " << curr_point << " and ending at " << max_value << std::endl;
