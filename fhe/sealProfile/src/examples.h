@@ -16,11 +16,13 @@
 #include <numeric>
 #include <random>
 #include <seal/ciphertext.h>
+#include <seal/plaintext.h>
 #include <sstream>
 #include <string>
 #include <thread>
 #include <vector>
-
+#include <array>
+#include <bitset>
 /*
 Helper function: Prints the name of the example in a fancy banner.
 */
@@ -251,7 +253,50 @@ inline void saveDataLog(std::string file_name, int  res, bool new_file)
 
 }
 
-inline void saveEncodig(std::string file_name, seal::Plaintext  encoding, int x_plain_size, bool new_file)
+//queda el tema de cuantos bits veo....
+inline void bit_check(std::vector<int>& vec, uint64_t coeff_change, uint64_t coeff_original, int offset )
+{
+    uint64_t res = 0;
+    res =  coeff_change^coeff_original; // quedan en 1 los diferentes.
+    std::bitset<64> diff(res);
+    // creo que bitset tiene en posicion 0 el mas significativo
+    for(int i = 63; i==0; i++)
+    {
+        if (diff[i]==1)
+            vec.push_back(i+offset);
+    }
+}
+
+inline std::vector<int>  comparePlaintext(seal::Plaintext x_plain, seal::Plaintext x_plain_original)
+{
+    std::vector<int>  diff;
+    size_t size_x = x_plain.capacity();
+    int offset = 0;
+    for(int i=0;i<size_x; i++)
+    {
+        if(x_plain[i]!=x_plain_original[i])
+        {
+            bit_check(diff, x_plain[i], x_plain_original[i], offset);
+        }
+        offset+=64;
+    }
+    return diff;
+}
+
+inline void saveEncodig(std::string file_name,  bool new_file)
+{
+    std::fstream logFile;
+    // Open File
+    if (new_file==1){
+        //std::cout<< " New log: " << std::endl;
+        logFile.open("/home/mmazz/phd/fhe/sealProfile/"+file_name+".txt", std::ios::out);
+        logFile << "New file: " << std::endl ;
+    }
+    // close file stream
+    logFile.close();
+
+}
+inline void saveEncodig(std::string file_name, std::vector<int> encoding_diff, bool new_file)
 {
     std::fstream logFile;
     // Open File
@@ -263,9 +308,9 @@ inline void saveEncodig(std::string file_name, seal::Plaintext  encoding, int x_
     else{
         logFile.open("/home/mmazz/phd/fhe/sealProfile/"+file_name+".txt", std::ios::app);
         logFile << "\n";
-        for (int index_value=0; index_value<x_plain_size; index_value++)
+        for (int index_value=0; index_value<encoding_diff.size(); index_value++)
         {
-            logFile << std::hex << encoding[index_value] << " " ;
+            logFile <<  encoding_diff[index_value] << " " ;
         }
         logFile << std::endl;
     }

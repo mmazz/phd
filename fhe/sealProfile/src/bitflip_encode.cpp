@@ -61,9 +61,7 @@ int main(int argc, char * argv[])
     PublicKey public_key;
     keygen.create_public_key(public_key);
 
-    Encryptor encryptor(context, public_key);
-    Evaluator evaluator(context);
-    Decryptor decryptor(context, secret_key);
+
     CKKSEncoder encoder(context);
 
     auto &coeff_modulus = parms.coeff_modulus();
@@ -72,11 +70,6 @@ int main(int argc, char * argv[])
     encoder.encode(input, scale, x_plain);
     encoder.encode(input, scale, x_plain_original);
     int x_plain_size = (modulus.size() - 1) * poly_modulus_degree;
-
-    Plaintext plain_result;
-    vector<double> result;
-    float res = 0;
-    float res_elem = 0;
 
     int index_rate = 1;
     short bit_rate = 1;
@@ -89,8 +82,8 @@ int main(int argc, char * argv[])
     std::string dir_name = "new_log_encode/";
     std::string file_name = "encoding";
 
-    saveEncodig(dir_name + file_name,  x_plain,  x_plain_size, new_file);
-    saveEncodig(dir_name + file_name,  x_plain,  x_plain_size, !new_file);
+    saveEncodig(dir_name + file_name,  new_file);
+    //saveEncodig(dir_name + file_name,  x_plain,  x_plain_size, !new_file);
 
     cout << "Starting bitflips with x_plain_size of: " << x_plain_size << endl;
 
@@ -101,13 +94,12 @@ int main(int argc, char * argv[])
         {
             input[index_value] = bit_flip(input[index_value], bit_change);
             encoder.encode(input, scale, x_plain);
-            saveEncodig(dir_name + file_name,  x_plain,  x_plain_size, !new_file);
+            std::vector<int> diff = comparePlaintext(x_plain, x_plain_original);
+            saveEncodig(dir_name + file_name, diff, !new_file);
             input[index_value] = input_orig[index_value];
+            break;
         }
+        break;
     }
-
-
-
-
-       return 0;
+   return 0;
 }
