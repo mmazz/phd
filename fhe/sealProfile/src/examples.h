@@ -254,35 +254,52 @@ inline void saveDataLog(std::string file_name, int  res, bool new_file)
 }
 
 //queda el tema de cuantos bits veo....
-inline void bit_check(std::vector<int>& vec, uint64_t coeff_change, uint64_t coeff_original, int offset )
+inline void bit_check(std::vector<int>& vec, uint64_t coeff_change, uint64_t coeff_original, int offset, int max_bit )
 {
     uint64_t res = 0;
     res =  coeff_change^coeff_original; // quedan en 1 los diferentes.
     std::bitset<64> diff(res);
     // creo que bitset tiene en posicion 0 el mas significativo
-    for(int i = 63; i==0; i++)
+    for(int i = max_bit-1; i>=0; i++)
     {
-        if (diff[i]==1)
+        if (diff[i])
             vec.push_back(i+offset);
     }
 }
 
-inline std::vector<int>  comparePlaintext(seal::Plaintext x_plain, seal::Plaintext x_plain_original)
+// el offset_rate es la cantidad de bits que tiene los coefficientes del polinomio.
+// me sirve tanto para ir mirando cada coefficiente indivudalmente
+inline void  comparePlaintext(std::vector<int>& diff, seal::Plaintext x_plain, seal::Plaintext x_plain_original, int offset_rate)
 {
-    std::vector<int>  diff;
     size_t size_x = x_plain.capacity();
     int offset = 0;
+    int count = 0;
     for(int i=0;i<size_x; i++)
     {
         if(x_plain[i]!=x_plain_original[i])
         {
-            bit_check(diff, x_plain[i], x_plain_original[i], offset);
+            bit_check(diff, x_plain[i], x_plain_original[i], offset, offset_rate);
+            count++;
         }
-        offset+=64;
+
+        offset+=offset_rate;
     }
-    return diff;
+   // std::cout << count << " " << size_x << std::endl;
 }
 
+// Devuelvo la
+inline int  comparePlaintextCoeff(seal::Plaintext x_plain, seal::Plaintext x_plain_original)
+{
+    size_t size_x = x_plain.capacity();
+    int offset = 0;
+    int count = 0;
+    for(int i=0;i<size_x; i++)
+    {
+        if(x_plain[i]!=x_plain_original[i])
+            count++;
+    }
+    return size_x - count;
+}
 inline void saveEncodig(std::string file_name,  bool new_file)
 {
     std::fstream logFile;
@@ -307,12 +324,15 @@ inline void saveEncodig(std::string file_name, std::vector<int> encoding_diff, b
     }
     else{
         logFile.open("/home/mmazz/phd/fhe/sealProfile/"+file_name+".txt", std::ios::app);
-        logFile << "\n";
-        for (int index_value=0; index_value<encoding_diff.size(); index_value++)
+        if(encoding_diff.size()>0)
         {
-            logFile <<  encoding_diff[index_value] << " " ;
+            logFile << "\n";
+            for (int index_value=0; index_value<encoding_diff.size(); index_value++)
+            {
+                logFile <<  encoding_diff[index_value] << " " ;
+            }
+            logFile << std::endl;
         }
-        logFile << std::endl;
     }
     // close file stream
     logFile.close();
@@ -369,6 +389,34 @@ inline uint64_t bit_flip(uint64_t original, ushort bit){
     res =  mask^original; // I flip the bit using xor with the mask.
     return res;
 }
+
+// double tiene 8 bytes
+// bit ira de 0 a 64
+// 1 bit de signo, 11 bits para el exponente y 52 para la mantisa (el significando).
+// el numero se interpreta como signo*1.mantisa (ese 1 es implicito) *2^(exponente)
+// el exponente es en exceso 2^(n-1). Es decir le resto al exponente 2^(n-1)
+// con n el numero de bits del exponente.
+// Ademas dependiendo del exponente se calcula diferente el numero.
+// Si el exponente es cero y el significando tambien, es +/- cero.
+// Si el exponente es cero y lo otro no, entonces es 0.mantisa*2^(emin), emin= -exceso+1 (denormalizado)
+// exponente todo 1 y singificando cero = infinito
+// exponente todo 1 y signcando distinto de cero = Nan
+// otros casos como dijimos, se llaama normalizado.
+// Ej: 1, tiene significando 0 y tiene exponente 0, como lo represento? bits exponente - exceso (011 1111 1111)
+// para que de cero, el exponente tiene que ser el exceso osea 011 1111 1111
+inline double bit_flip(double& original, ushort bit)
+{
+    uint64_t* orig_int = (uint64_t*)&original;
+
+    uint64_t mask = (1ULL << bit); // I set the bit to flip. 1ULL is for a one of 64bits
+    uint64_t res = 0;
+    res =  mask^(*orig_int); // I flip the bit using xor with the mask.
+    //std::cout<< mask << " to int " << res << std::endl;
+    double res_double = *((double*)&res);
+    return res_double;//_double;
+}
+
+
 inline bool check_equality(seal::Plaintext &x_plain, seal::Plaintext &x_plain2){
     int res=0;
     bool res_bool=0;

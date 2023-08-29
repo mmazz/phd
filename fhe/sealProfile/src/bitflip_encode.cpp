@@ -11,6 +11,17 @@ float threshold = 0.1;
 double CURR_POINT = 1;
 double MAX_VALUE = 2.;
 int size_input= 1000;
+
+uint64_t max_valueBit(int bits)
+{
+    std::string s;
+    for (int i=0; i<bits; i++)
+        s.insert(s.begin()+i, '1');
+    std::bitset<64> a(s);
+    uint64_t x =  a.to_ulong();
+    return x;
+}
+
 int main(int argc, char * argv[])
 {
     bool TESTING = true;
@@ -28,9 +39,9 @@ int main(int argc, char * argv[])
     }
 
     if (argc>=3)
-        curr_point = atoi(argv[3]);
+        curr_point = atoi(argv[2]);
     if (argc>=4)
-        max_value = atoi(argv[4])-curr_point;
+        max_value = atoi(argv[3])-curr_point;
 
 
     size_t poly_modulus_degree = 4096;
@@ -86,20 +97,30 @@ int main(int argc, char * argv[])
     //saveEncodig(dir_name + file_name,  x_plain,  x_plain_size, !new_file);
 
     cout << "Starting bitflips with x_plain_size of: " << x_plain_size << endl;
+    int bits_coeff = modulus[0];
+    uint64_t max_coeff = max_valueBit(bits_coeff);
 
     for (int index_value=0; index_value<slot_count; index_value+=index_rate)
     {
         cout <<index_value << ", "<< std::flush;
-        for (short bit_change=0; bit_change<30; bit_change+=bit_rate)
+        std::vector<int> diff_coeff;
+        for (short bit_change=0; bit_change<64; bit_change+=bit_rate)
         {
             input[index_value] = bit_flip(input[index_value], bit_change);
-            encoder.encode(input, scale, x_plain);
-            std::vector<int> diff = comparePlaintext(x_plain, x_plain_original);
-            saveEncodig(dir_name + file_name, diff, !new_file);
+            if (input[index_value] <= max_coeff)
+            {
+   //             std::cout << "Bit flip: " << bit_change << ", origin value: " << input_orig[index_value] << ", new: "
+   //                 << std::setprecision(53) << input[index_value] << std::endl;
+                encoder.encode(input, scale, x_plain);
+                comparePlaintext(diff_coeff, x_plain, x_plain_original, bits_coeff);
+               // int diff = comparePlaintextCoeff(x_plain, x_plain_original);
+               // diff_coeff.push_back(diff);
+            }
+            else
+                std::cout << " Fuera de rango en bit " << bit_change << std::endl;
             input[index_value] = input_orig[index_value];
-            break;
+            saveEncodig(dir_name + file_name, diff_coeff, !new_file);
         }
-        break;
     }
    return 0;
 }
