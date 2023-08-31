@@ -164,15 +164,34 @@ for a total of \numpoints \ points.
 \part[5] Derive the formula for the {\em birthday paradox} (show your work, explaining every step) and
 calculate the number of elements needed to find a collision with at least 50\%.
 
-%\begin{solution} %Uncomment and type your solution here
+\begin{solution} %Uncomment and type your solution here
+Para calcular la paradoja del cumpleaños, la cual es cuantas personas se requieren
+para que dos cumplan en el mismo dia con una probabilidad mayor a 0.5 hago
+basicamente hago 1 menos la productoria: $\prod_{i=0}^{k-1}  (n-k)/n^k$.
+Donde n es la cantidad de posibilidades (en el caso del cumpleaños 365 dias) y k es
+la cantidad de personas que se requieren para que se alcance el minimo valor superior a 0.5.
+Para el caso de las colisiones, podemos hacer lo mismo pero esta vez n representaria
+la cantidad de posibilidades de nuestro espacio de entrada.
 
-%\end{solution}
+    Esto se puede resolver numericamente o bien aproximar la productoria esa por $e^{-k^2/2n}$
+    y para que uno menos esa exponencial de el minimo valor mayor a 0.5 se cumple cuando
+    $k=\sqrt(n)$.
+    Dando asi nuestra solucion.
+\end{solution}
 
 \part[5] Apply the above result to find out how many Bitcoin users are needed to initialize their wallet’s seed, which is based on a random selection of 12 random words from the list in \url{https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt}, to have the event that, with probability at least 50\%, at least two users end up with exactly the same seed.
 
-%\begin{solution} %Uncomment and type your solution here
-
-%\end{solution}
+\begin{solution} %Uncomment and type your solution here
+Para poder contestar tenemos quie saber cuantas semillas distintas tenemos.
+Podemos ver que son 2048 palabras y formamos la semilla como la concatenacion de 12 de estas
+de forma aleatoria.
+Asumno que son 12 distintas.
+Es decir tenemos que calcular la cantidad de semillas diferentes que podemos armar.
+    Esto no es otra cosa que el combinatorio sin repeticion de (2048 12) = 11005261717918037175659349191168.
+    Si ahora le tomamos la raiz nos daria la cantidad de usuarios que se requieren para tener una posibilidad
+    de 0.5 de que tengan la misma semilla.
+    Lo que nos da la absurda cifra de  3.3174179$\times 10^{15}$ usuarios.
+\end{solution}
 
 \end{parts}
 
