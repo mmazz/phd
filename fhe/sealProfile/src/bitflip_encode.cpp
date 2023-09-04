@@ -3,7 +3,7 @@
 #include <seal/randomgen.h>
 #include <seal/keygenerator.h>
 #include "examples.h"
-
+a
 using namespace seal;
 using namespace std;
 int MAX_DIFF = 1;

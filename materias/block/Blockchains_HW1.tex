@@ -199,9 +199,13 @@ Es decir tenemos que calcular la cantidad de semillas diferentes que podemos arm
 
 \question[10] Prof. Gray has designed a cryptographic hash function $H_G : \{0, 1\}^\ast \rightarrow \{0, 1\}^n$. One of his brilliant ideas is to make $H_G(x) = x$ if $x$ is an $n$-bit string (assume the behavior of $H_G$ is much more complicated on inputs of other lengths). That way, we know with certainty that there are no collisions among $n$-bit strings. Has Prof. Gray made a good design decision? Justify your answer, in particular listing the properties that may or may not be satisfied by the design.
 
-%\begin{solution} %Uncomment and type your solution here
-
-%\end{solution}
+\begin{solution} %Uncomment and type your solution here
+Una de las propiedades que esta funcion hash no cumple es la distribucion amplia
+del input.
+En particular en este caso cuando el input es de $n-bit$ es 1 a 1 y esto genera
+que un pequeño cambio en la entrada genere un pequeño cambio en la salida.
+Al tener esta propiedad, es fácil de invertir, dada la salida sabemos la entrada.
+\end{solution}
 
 \newpage
 
@@ -209,17 +213,39 @@ Es decir tenemos que calcular la cantidad de semillas diferentes que podemos arm
 
 Show an attack on the plain RSA signature scheme we saw in class in which an attacker forges a signature on an arbitrary message $m$ by asking the signer to sign two other different messages (not necessarily unrelated to $m$).
 
-%\begin{solution} %Uncomment and type your solution here
+\begin{solution} %Uncomment and type your solution here
+Esto es posible gracias a que el esquema RSA tiene la propiedad de que la multiplicación es
+homomórfica.
+Esto significa que descencriptar la multiplicación de dos mensajes encriptados nos
+devuelve el mismo resultado que los mensajes sin encriptar multiplicados.
 
-%\end{solution}
+    Con esto, un atacante puede firmar un mensaje diferente pidiendo (u obteniendo)
+la firma de dos mensajes $m_1$ y $m_2$, teniendo así sus firmas $s_1$ y $s_2$ respectivamente.
+Teniendo el parámetro $n$ de la llave publica del que firma, el atacante puede producir
+un mensaje nuevo  $m = m_1*m_2 \text{ mod }n$ con firma $s = s_1*s_2\text{ mod }n$.
+Luego esto puede ser subido con la llave publica original, verificando que $s$ es una
+firma valida para $m$ para dicho juego de llaves.
+
+Para entender el por que funciona, primero  acordémonos que $s_i = m_i^d \text{ mod }n$, con $d$ parte
+de la llave secreta.
+Y la verificación es usando el parámetro $e$ de la llave publica $s_i^e \text{ mod }n = m_i$.
+Entonces nuestro firma forjada $s=(m_1*m_2)^d \text{ mod }n$ y entonces al verificarlo es
+    elevarlo a la $e$, $verificacion(s)=(m_1*m_2)^{d*e} \text{ mod }n$, pero como $d*e$ es congruente a
+    $1\text{ mod }n$, podemos reemplazarlo con 1, quedándonos $verificacion(s)=(m_1*m_2)^{1} \text{ mod }n = m_1*m_2  = m$.
+    Que era lo que queríamos probar.
+\end{solution}
 
 \newpage
 
 \question[10] A Bitcoin miner creates a block $B$ which contains address $\alpha$, on which it wants to receive its rewards. An attacker changes the contents of $B$, such that instead of $\alpha$ it defines a new address $\alpha'$, which is controlled by the attacker. Will the attacker receive the rewards that the miner tries to claim? Why or why not? Give a detailed explanation of your answer.
 
-%\begin{solution} %Uncomment and type your solution here
-
-%\end{solution}
+\begin{solution} %Uncomment and type your solution here
+Al generar un cambio de en el bloque B, por el atacante, dicho bloque tendrá un valor
+de hash completamente diferente, generando que no cumpla con la condición encontrada por
+el minero para que dicho bloque satisfaga la prueba de trabajo, un hash con una $x$
+cantidad de ceros al comienzo.
+Al suceder eso el bloque no sera aceptado y por ende el atacante no recibirá la recompensa.
+\end{solution}
 
 \newpage
 
