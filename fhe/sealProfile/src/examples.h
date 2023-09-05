@@ -254,40 +254,74 @@ inline void saveDataLog(std::string file_name, int  res, bool new_file)
 }
 
 //queda el tema de cuantos bits veo....
+//
 inline void bit_check(std::vector<int>& vec, uint64_t coeff_change, uint64_t coeff_original, int offset, int max_bit )
 {
     uint64_t res = 0;
     res =  coeff_change^coeff_original; // quedan en 1 los diferentes.
     std::bitset<64> diff(res);
     // creo que bitset tiene en posicion 0 el mas significativo
-    for(int i = max_bit-1; i>=0; i++)
+    for(int i = max_bit-1; i>=0; i--)
     {
         if (diff[i])
+        {
             vec.push_back(i+offset);
+        }
     }
 }
+inline void bit_check_sum(std::vector<int>& vec, uint64_t coeff_change, uint64_t coeff_original, int offset, int max_bit )
+{
+    uint64_t res = 0;
+    res =  coeff_change^coeff_original; // quedan en 1 los diferentes.
+    std::bitset<64> diff(res);
+    int count = 0;
+    // creo que bitset tiene en posicion 0 el mas significativo
+    for(int i = 0; i<max_bit; i++)
+    {
+        if (diff[i])
+            count++;
+    }
+    vec.push_back(count);
+}
+// La uso para testear con dos valores que les cambio un solo bit
+inline int bit_check(uint64_t coeff_change, uint64_t coeff_original, int max_bit )
+{
+    int bit_changed = 0;
+    uint64_t res = 0;
+    res =  coeff_change^coeff_original; // quedan en 1 los diferentes.
+  //  std::cout << coeff_change << " " << coeff_original << std::endl;
+    std::bitset<64> diff(res);
+    for(int i = max_bit-1; i>=0; i--)
+    {
+        if (diff[i])
+            bit_changed+= i;
+    }
+    return bit_changed;
+}
+
 
 // el offset_rate es la cantidad de bits que tiene los coefficientes del polinomio.
 // me sirve tanto para ir mirando cada coefficiente indivudalmente
-inline void  comparePlaintext(std::vector<int>& diff, seal::Plaintext x_plain, seal::Plaintext x_plain_original, int offset_rate)
+inline void  comparePlaintext(std::vector<int>& diff, seal::Plaintext x_plain, seal::Plaintext x_plain_original, int offset_rate, bool bit_to_bit)
 {
-    size_t size_x = x_plain.capacity();
+    size_t size_x = x_plain.coeff_count();
+    size_x = 4096;
     int offset = 0;
-    int count = 0;
     for(int i=0;i<size_x; i++)
     {
         if(x_plain[i]!=x_plain_original[i])
         {
-            bit_check(diff, x_plain[i], x_plain_original[i], offset, offset_rate);
-            count++;
+            if(bit_to_bit)
+                bit_check(diff, x_plain[i], x_plain_original[i], offset, offset_rate);
+            else
+                bit_check_sum(diff, x_plain[i], x_plain_original[i], offset, offset_rate);
         }
-
+        // 40 en general, auqnue en realidad son de 64....
         offset+=offset_rate;
     }
-   // std::cout << count << " " << size_x << std::endl;
 }
 
-// Devuelvo la
+// Devuelvo la cantidad de coefficientes iguales que tengo
 inline int  comparePlaintextCoeff(seal::Plaintext x_plain, seal::Plaintext x_plain_original)
 {
     size_t size_x = x_plain.capacity();
