@@ -109,22 +109,28 @@ int main(int argc, char *argv[]) {
   uint64_t max_coeff = max_valueBit(bits_coeff);
 
   for (int index_value = 0; index_value < slot_count;
-       index_value += index_rate) {
+       index_value += index_rate)
+  {
     cout << index_value << ", " << std::flush;
-    for (short bit_change = 0; bit_change < 64; bit_change += bit_rate) {
+    for (short bit_change = 0; bit_change < 64; bit_change += bit_rate)
+    {
       std::vector<int> diff_coeff;
       input[index_value] = bit_flip(input[index_value], bit_change);
-      if (input[index_value] <= max_coeff) {
+      if (input[index_value] <= max_coeff)
+      {
         encoder.encode(input, scale, x_plain);
         if (bit_wise_stats)
           comparePlaintext(diff_coeff, x_plain, x_plain_original, bits_coeff,
                            bit_to_bit);
-        else {
+        else
+        {
           int diff = comparePlaintextCoeff(x_plain, x_plain_original);
           std::cout << diff << " ";
           diff_coeff.push_back(diff);
         }
-      } else {
+      }
+      else
+      {
         std::cout << " Fuera de rango en bit " << bit_change << std::endl;
         // pongo un -1 de que exploto
         diff_coeff.push_back(-1);

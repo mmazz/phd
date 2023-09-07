@@ -263,10 +263,10 @@ inline void bit_check(std::vector<int>& vec, uint64_t coeff_change, uint64_t coe
     // creo que bitset tiene en posicion 0 el mas significativo
     for(int i = max_bit-1; i>=0; i--)
     {
+        // arranco con el i de la posicion en realidad mas baja y le sumo el off set
+        // pero antes de sumar mapeo para invertir el orden, el i=63->0 e i=0->63
         if (diff[i])
-        {
-            vec.push_back(i+offset);
-        }
+            vec.push_back((max_bit-1-i)+offset);
     }
 }
 inline void bit_check_sum(std::vector<int>& vec, uint64_t coeff_change, uint64_t coeff_original, int offset, int max_bit )
@@ -360,7 +360,6 @@ inline void saveEncodig(std::string file_name, std::vector<int> encoding_diff, b
         logFile.open("/home/mmazz/phd/fhe/sealProfile/"+file_name+".txt", std::ios::app);
         if(encoding_diff.size()>0)
         {
-            logFile << "\n";
             for (int index_value=0; index_value<encoding_diff.size(); index_value++)
             {
                 logFile <<  encoding_diff[index_value] << " " ;
