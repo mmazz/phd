@@ -110,7 +110,7 @@ for a total of \numpoints \ points.
     \part[3] Describe how (cryptographic) hash functions are used in a MT.
 
     \begin{solution} %Uncomment and type your solution here
-        e divide al bloque en N partes iguales de una cierta cantidad de Bytes establecida, y se
+        Se divide al bloque en N partes iguales de una cierta cantidad de Bytes establecida, y se
         le aplica a cada uno la función Hash.
         Estos serán las hojas de nuestro árbol binario.
         Se concatenan luego de a pares consecutivos, es decir la hoja 0 con el 1, el 2 con el 3,
@@ -124,11 +124,13 @@ for a total of \numpoints \ points.
 
     \begin{solution} %Uncomment and type your solution here
         De abajo hacia arriba.
+        Como es un arbol completo, y estamos en el caso de hojas impares, la ultima hoja se ira hasheando
+        a medida que baja de nivel hacia la raiz.
 
         H(ABC), H(DEF), H(GHI), H(KLM), H(OPQ)\\
-           H(H$_{ABC}|$H$_{DEF}$), H(H$_{GHI}|$H$_{KLM}$), H$_{OPQ}$\\
-                H(H$_{ABCDEF}|$H$_{GHIKLM}$) , H$_{OPQ}$\\
-                H(H$_{ABCDEFGHIKLM}|$ H$_{OPQ}$)
+           H(H$_{ABC}|$H$_{DEF}$), H(H$_{GHI}|$H$_{KLM}$), H(H$_{OPQ}$)\\
+                H(H$_{ABCDEF}|$H$_{GHIKLM}$) , H(H(H$_{OPQ}$))\\
+                H(H$_{ABCDEFGHIKLM}|$ H(H(H$_{OPQ}$))
     \end{solution}
 
     \part[4] Describe how a Patricia Trie is constructed for the following key/value store: \{blah: 17, blahblah: 28, bored: 53, board: 39, aboard: 42, abroad: 17\}.
@@ -251,9 +253,18 @@ Al suceder eso el bloque no sera aceptado y por ende el atacante no recibirá la
 
 \question[10] Using the course’s Goerli  Testnet chain, send 1 ETH to the address of a fellow student. Describe how you conducted the payment, including the transaction’s id and addresses which you used. (Refer to the instructions from Lecture 5 on ``How to Connect to a Public Testnet'' as well as the Solidity tutorial material and pointers.)
 
-%\begin{solution} %Uncomment and type your solution here
-
-%\end{solution}
+\begin{solution} %Uncomment and type your solution here
+Para poder enviar se requiere la llave publica de la persona a la que se le quiere enviar.
+    Desde MetaMask, es simplemente ir a \textit{send}, poner dicha llave publica, poner el monto
+    a enviar (en mi caso 0.0001 ETH ya que cuento con poco) y se calcula el gas a pagar, y
+    aceptamos.
+    Hecho esto, obtenemos el ID de la transacción generada.
+    En mi caso:
+    \begin{itemize}
+        \item ID Transacción: 0x0fc3e99de9df60251bea42b2ee8fce44056db8b8565d1633c935b18c8a375fa2
+        \item Address: 0x10aa3Ac3Cca291F0af57d20125B995889E4D73b5
+    \end{itemize}
+\end{solution}
 
 \newpage
 
@@ -310,17 +321,40 @@ contract Bank {
 
  \part[5] Describe the contract’s functionality (that is, the purpose of each variable, function, and event).
 
-%\begin{solution} %Uncomment and type your solution here
+\begin{solution} %Uncomment and type your solution here
+Tenemos por un lado un diccionario llamado balance, que básicamente guarda el balance
+de los usuarios que vayan usando el contrato banco.
+Luego hay un array de usuarios que utilizaron el contrato.
+Tendremos por otro lado los evento de deposito y de extracción.
 
-%\end{solution}
+La gracia de este contrato es emular un banco, donde alguien lo instancia y otros usuarios
+operan con el.
+Tendremos la función de deposito los usuarios podrán hacer un deposito.
+Para ello se chequea que el usuario tenga al menos 10 Wei, que es la comisión que se lleva
+el banco, y luego se guarda en el diccionario el balance del usuario sin esa comisión.
+Se agrega dicho usuario al array y luego se emite el deposito con lo solicitado.
+
+Por otra parte tenemos la función de extracción, que básicamente se transfiere todo lo depositado
+hasta el momento del usuario emitiendo dicha extracción, y se actualiza el diccionario con un
+balance de cero.
+
+También tendremos funciones como conocer el balance, y una función especial de vaciado, en
+el cual creo que el creador del banco se transfiere todas las comisiones generadas hasta el
+momento.
+\end{solution}
 
 \part[15]
 
  Provide the id of the transaction you performed and the address you used.
 
- %\begin{solution} %Uncomment and type your solution here
+\begin{solution} %Uncomment and type your solution here
+\begin{itemize}
+    \item Transfer id: 0x62675b91796844731a5c0bb1fde2398616cda73d4f0495b4b98d8bef93981aa0
+    \item Address: 0xF9221cb35b4bb0AF0A0Fd3c7549aBa54d15Fdb65
+\end{itemize}
 
-%\end{solution}
+
+\end{solution}
 
 \end{parts}
 
