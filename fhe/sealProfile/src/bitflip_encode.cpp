@@ -3,7 +3,11 @@
 #include "examples.h"
 #include <seal/keygenerator.h>
 #include <seal/randomgen.h>
-
+#include <strings.h>
+/*
+    Change one bit of the input and compare the encodings with the original one.
+    We save the positions of the bits that are different.
+*/
 using namespace seal;
 using namespace std;
 int MAX_DIFF = 1;
@@ -108,7 +112,7 @@ int main(int argc, char *argv[]) {
        << " with coeffs of bits:" << bits_coeff << endl;
   uint64_t max_coeff = max_valueBit(bits_coeff);
 
-  for (int index_value = 0; index_value < slot_count;
+  for (int index_value = 500; index_value < slot_count;
        index_value += index_rate)
   {
     cout << index_value << ", " << std::flush;
@@ -131,7 +135,7 @@ int main(int argc, char *argv[]) {
       }
       else
       {
-        std::cout << " Fuera de rango en bit " << bit_change << std::endl;
+        std::cout << " Fuera de rango en bit " << bit_change << " , input value original: "<< input_orig[index_value] << " changed " << input[index_value] << std::endl;
         // pongo un -1 de que exploto
         diff_coeff.push_back(-1);
       }

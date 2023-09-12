@@ -123,7 +123,7 @@ int main(int argc, char * argv[])
             file_name = "encoding_nonNTT_nonRNS";
             file_name_elem = "encoding_elemDiff_nonNTT_nonRNS";
         }
-        saveDataLog(dir_name+file_name, res, new_file); // simplemente crea el archivo
+    //    saveDataLog(dir_name+file_name, res, new_file); // simplemente crea el archivo
         saveDataLog(dir_name+file_name_elem, 0, 0, res_elem, new_file);
         //saveDataLog(file_name, 0, 0, res, new_file); // simplemente crea el archivo
         int modulus_index = 0;
@@ -150,7 +150,7 @@ int main(int argc, char * argv[])
                 if (x_plain[index_value] >= k_rns_prime){
                     cout<< "Mas grande que el modulo!" << k_rns_prime << endl;
                     x_plain = x_plain_original;
-                    saveDataLog(dir_name+file_name, 0, !new_file);
+                //    saveDataLog(dir_name+file_name, 0, !new_file);
                     saveDataLog(dir_name+file_name_elem, 0, !new_file);
                 }
                 else
@@ -158,8 +158,8 @@ int main(int argc, char * argv[])
                     encryptor.encrypt(x_plain, x_encrypted);
                     decryptor.decrypt(x_encrypted, plain_result);
                     encoder.decode(plain_result, result);
-                    res = diff_vec(input, result, MAX_DIFF);
-                    saveDataLog(dir_name+file_name, res, !new_file);
+                 //   res = diff_vec(input, result, MAX_DIFF);
+                 //   saveDataLog(dir_name+file_name, res, !new_file);
 
                     res_elem = diff_elem(input, result, threshold, size_input);
                     saveDataLog(dir_name+file_name_elem, res_elem, !new_file);

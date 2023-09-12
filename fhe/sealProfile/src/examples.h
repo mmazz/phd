@@ -396,7 +396,7 @@ inline float diff_elem(std::vector<double>  &v1, std::vector<double> &v2, float 
             diff_thresh = abs(v1[i]*threshold);
             if(diff>diff_thresh)
             {
-               // std::cout << diff << " > " << diff_thresh<< std::endl;
+                //std::cout << "v1 " << v1[i] << " v2 " << v2[i] << " diff: " << diff << " > " << diff_thresh<< std::endl;
                 res = 0;
                 break;
             }

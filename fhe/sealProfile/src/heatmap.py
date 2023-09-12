@@ -25,12 +25,12 @@ row_count = 0
 row = 0
 column_count = 0
 temp_array = np.zeros(bits_encoding)
-
 # tengo que tener los datos ordenados en cada fila
 # para agrupar dentro de distintas columnas divido por el tamaño que quiero y redondeo para arriba
 # Voy contando las filas y cuando supere una nueva sumo uno a la row.
 for line in file.readlines()[1:]:
     col = 0
+    print(row_count)
     for word in line.split():
         temp_array[math.floor(int(word)/column_chunk)] += 1
         avg_rows[row] += int(word)
@@ -43,6 +43,7 @@ for line in file.readlines()[1:]:
         row += 1
     row_count+=1
 avg_rows = avg_rows/num_row
+print("finish")
 file.close()
 np.savetxt('heatmap_encoding.txt', matrix, delimiter=',')
 np.savetxt('heatmap_encoding_rowAVG.txt', avg_rows, delimiter=',')
