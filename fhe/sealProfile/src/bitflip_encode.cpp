@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 #include "examples.h"
+#include "utils_mati.h"
 #include <seal/keygenerator.h>
 #include <seal/randomgen.h>
 #include <strings.h>

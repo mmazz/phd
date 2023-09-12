@@ -4,6 +4,7 @@ que es correcto lo que se genera.
 Tambien vemos que el chequeador tambien funciona.
 */
 #include "../src/examples.h"
+#include "../src/utils_mati.h"
 
 double value = 1.0;
 uint64_t int_value;

@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 #include "examples.h"
+#include "utils_mati.h"
 #include <ios>
 #include <iostream>
 #include <memory>
