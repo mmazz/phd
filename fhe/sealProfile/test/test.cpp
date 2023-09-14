@@ -14,7 +14,6 @@
 
 using namespace seal;
 using namespace std;
-int MAX_DIFF = 1;
 float threshold = 0.3;
 double CURR_POINT = 1;
 double MAX_VALUE = 2.;
@@ -77,15 +76,10 @@ TEST(functions, diff_elem_WRONG)
     bool res = diff_elem(v1, v2, threshold);
     EXPECT_EQ(res, 0);
 }
-
-
-int main(int argc, char * argv[])
+TEST(NTT, come_back_nonRNS)
 {
     vector<int> modulus;
-    if(RNS_ON)
-        modulus ={30, 30, 20};
-    else
-        modulus ={50, 20};
+    modulus ={50, 20};
 
     double scale = pow(2.0, 40);
     int coeff_modulus_size = modulus.size()-1;
@@ -96,13 +90,11 @@ int main(int argc, char * argv[])
     input_creator(input, poly_modulus_degree, curr_point, max_value);
     print_vector(input, 3, 7);
 
-    print_example_banner("Example: CKKS random encryption without ntt");
     EncryptionParameters parms(scheme_type::ckks);
     parms.set_poly_modulus_degree(poly_modulus_degree);
     parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulus));
     SEALContext context(parms);
-    print_parameters(context);
-    cout << endl;
+
 
     KeyGenerator keygen(context);
     auto secret_key = keygen.secret_key();
@@ -122,9 +114,9 @@ int main(int argc, char * argv[])
     Plaintext x_plain;
     encoder.encode(input, scale, x_plain);
 
-    int x_plain_size = 2* coeff_modulus_size * poly_modulus_degree;
-    if (RNS_ON)
-        x_plain_size = (coeff_modulus_size-1)* x_plain_size;
+
+    // x_plain size es un unico polinomio
+    int x_plain_size =  coeff_modulus_size * poly_modulus_degree;
     // Este es el experimento que quiero, pero antes quiero chequear que los elementos
     // que estoy tocando del encoding sean los correctos.
     // Tiene exactamente x_plain_size por 2 de tamaño, como era de esperar
@@ -137,6 +129,148 @@ int main(int argc, char * argv[])
 
     Plaintext plain_result;
     vector<double> result;
+
+    bool res = 0;
+    // chequeo que desencripta bien
+    decryptor.decrypt(x_encrypted, plain_result);
+    encoder.decode(plain_result, result);
+    res = diff_elem(input, result, threshold);
+    EXPECT_EQ(res, 1);
+
+    // Transformo y destransformo.
+    bool ntt_res = true;
+    bool ntt_temp = false;
+    x_encrypted = x_encrypted_original;
+    util::inverse_ntt_negacyclic_harvey(x_encrypted.data(0), ntt_tables[0]);
+    ntt_transformation(x_encrypted, ntt_tables, 0, 0);
+    ntt_temp = check_equality(x_encrypted, x_encrypted_original);
+    ntt_res = ntt_res&ntt_temp;
+    EXPECT_EQ(ntt_res, 1);
+    // pruebo que sigo desencriptando bien
+    decryptor.decrypt(x_encrypted, plain_result);
+    encoder.decode(plain_result, result);
+    res = diff_elem(input, result, threshold);
+    EXPECT_EQ(res, 1);
+
+    // lo mismo pero para el segundo polinomio
+    ntt_res = true;
+    ntt_temp = false;
+    x_encrypted = x_encrypted_original;
+
+    // start at c1, this is polydegree*K_rns_values
+    util::inverse_ntt_negacyclic_harvey(x_encrypted.data(1), ntt_tables[0]);
+    ntt_transformation(x_encrypted, ntt_tables, 0, 1);
+    ntt_temp = check_equality(x_encrypted, x_encrypted_original);
+    ntt_res = ntt_res&ntt_temp;
+    EXPECT_EQ(ntt_res, 1);
+    decryptor.decrypt(x_encrypted, plain_result);
+    encoder.decode(plain_result, result);
+    res = diff_elem(input, result, threshold);
+    EXPECT_EQ(res, 1);
+
+}
+
+
+TEST(NTT, come_back_RNS)
+{
+    vector<int> modulus;
+    modulus ={30, 30, 20};
+
+    double scale = pow(2.0, 40);
+    int coeff_modulus_size = modulus.size()-1;
+
+    size_t size_input = poly_modulus_degree/2;
+    vector<double> input;
+    input.reserve(size_input);
+    input_creator(input, poly_modulus_degree, curr_point, max_value);
+    print_vector(input, 3, 7);
+
+    EncryptionParameters parms(scheme_type::ckks);
+    parms.set_poly_modulus_degree(poly_modulus_degree);
+    parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulus));
+    SEALContext context(parms);
+
+
+    KeyGenerator keygen(context);
+    auto secret_key = keygen.secret_key();
+    PublicKey public_key;
+    keygen.create_public_key(public_key);
+
+    Encryptor encryptor(context, public_key);
+    Evaluator evaluator(context);
+    Decryptor decryptor(context, secret_key);
+    CKKSEncoder encoder(context);
+    //auto context_data_ptr = context.get_context_data(context.first_parms_id());
+    auto context_data_ptr = context.get_context_data(parms.parms_id());
+    auto &context_data = *context_data_ptr;
+    auto &coeff_modulus = parms.coeff_modulus();
+    auto ntt_tables = context_data.small_ntt_tables();
+
+    Plaintext x_plain;
+    encoder.encode(input, scale, x_plain);
+
+    int x_plain_size =  coeff_modulus_size * poly_modulus_degree;
+    // Este es el experimento que quiero, pero antes quiero chequear que los elementos
+    // que estoy tocando del encoding sean los correctos.
+    // Tiene exactamente x_plain_size por 2 de tamaño, como era de esperar
+    Ciphertext x_encrypted;
+    Ciphertext x_encrypted_original;
+    // el .data() creo que es un puntero y entonces me puedo pasar....
+    // pero dan igual, si hago .data(1) empiezo desde el segundo cifrado!!
+    encryptor.encrypt(x_plain, x_encrypted);
+    encryptor.encrypt(x_plain, x_encrypted_original);
+
+    Plaintext plain_result;
+    vector<double> result;
+
+    bool res = 0;
+    // chequeo que desencripta bien
+    decryptor.decrypt(x_encrypted, plain_result);
+    encoder.decode(plain_result, result);
+    res = diff_elem(input, result, threshold);
+    EXPECT_EQ(res, 1);
+
+    // Transformo y destransformo.
+    bool ntt_res = true;
+    bool ntt_temp = false;
+    x_encrypted = x_encrypted_original;
+    for (size_t modulus_index = 0; modulus_index < coeff_modulus_size; modulus_index++)
+    {
+        util::inverse_ntt_negacyclic_harvey(x_encrypted.data(0) + (modulus_index * poly_modulus_degree),
+                                            ntt_tables[modulus_index]);
+        ntt_transformation(x_encrypted, ntt_tables, modulus_index, 0);
+        ntt_temp = check_equality(x_encrypted, x_encrypted_original);
+        ntt_res = ntt_res&ntt_temp;
+    }
+    EXPECT_EQ(ntt_res, 1);
+    // pruebo que sigo desencriptando bien
+    decryptor.decrypt(x_encrypted, plain_result);
+    encoder.decode(plain_result, result);
+    res = diff_elem(input, result, threshold);
+    EXPECT_EQ(res, 1);
+
+    // lo mismo pero para el segundo polinomio
+    ntt_res = true;
+    ntt_temp = false;
+    x_encrypted = x_encrypted_original;
+    for (int modulus_index = 0; modulus_index < coeff_modulus_size; modulus_index++)
+    {
+        // start at c1, this is polydegree*K_rns_values
+        util::inverse_ntt_negacyclic_harvey(x_encrypted.data(1) + (modulus_index * poly_modulus_degree), ntt_tables[modulus_index]);
+        ntt_transformation(x_encrypted, ntt_tables, modulus_index, 1);
+        ntt_temp = check_equality(x_encrypted, x_encrypted_original);
+        ntt_res = ntt_res&ntt_temp;
+    }
+    EXPECT_EQ(ntt_res, 1);
+    decryptor.decrypt(x_encrypted, plain_result);
+    encoder.decode(plain_result, result);
+    res = diff_elem(input, result, threshold);
+    EXPECT_EQ(res, 1);
+}
+
+int main(int argc, char * argv[])
+{
+
     testing::InitGoogleTest(&argc, argv);
 
     return RUN_ALL_TESTS();

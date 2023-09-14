@@ -209,11 +209,7 @@ inline bool diff_elem(std::vector<double>  &v1, std::vector<double> &v2, float t
             diff = abs(v1[i] - v2[i]);
             diff_thresh = abs(v1[i]*threshold);
             if(diff>diff_thresh)
-            {
-                //std::cout << "v1 " << v1[i] << " v2 " << v2[i] << " diff: " << diff << " > " << diff_thresh<< std::endl;
                 res = 0;
-                break;
-            }
             i++;
         }
     }
@@ -280,7 +276,8 @@ inline bool check_equality(seal::Plaintext &x_plain, seal::Plaintext &x_plain2){
     return res_bool;
 }
 
-inline bool check_equality(seal::Ciphertext &x_encrypted, seal::Ciphertext &x_encrypted2){
+// Se fija componente a componente si son iguales, y va sumando 1 por cada uno que es distinto
+inline int count_diff_coef(seal::Ciphertext &x_encrypted, seal::Ciphertext &x_encrypted2){
     int res=0;
     bool res_bool=0;
 
@@ -290,18 +287,38 @@ inline bool check_equality(seal::Ciphertext &x_encrypted, seal::Ciphertext &x_en
     int total_num_coeff = size_x*poly_degree*k_rns;
     for(int i=0;i<total_num_coeff; i++){
         if(x_encrypted[i]!=x_encrypted2[i])
-        {
             res+=1;
-            //std::cout <<x_encrypted[i]<< " != " << x_encrypted2[i] << std::endl;
+    }
+    return res;
+}
+
+
+// Se fija si tiene al menos un elemento distinto
+// da 1 si son iguales, 0 si no
+inline bool check_equality(seal::Ciphertext &x_encrypted, seal::Ciphertext &x_encrypted2)
+{
+    int res=0;
+    bool res_bool=0;
+
+    size_t size_x = x_encrypted.size();
+    int poly_degree =  x_encrypted.poly_modulus_degree();
+    int k_rns =  x_encrypted.coeff_modulus_size();
+    int total_num_coeff = size_x*poly_degree*k_rns;
+    //std::cout << k_rns << " " << total_num_coeff<< std::endl;
+    int i=0;
+    while(i<total_num_coeff && res==0){
+        if(x_encrypted[i]!=x_encrypted2[i])
+        {
+            std::cout << i  << " :" << x_encrypted[i] << " != " << x_encrypted2[i] << std::endl;
+            res+=1;
         }
+        i++;
     }
-    if (res != 0){
-        std::cout<< "Equality check is: Failed, " << res << std::endl;
-    }
-    else
+    if (res == 0)
         res_bool = 1;
     return res_bool;
 }
+
 inline void  reset_values(seal::Plaintext &x_plain){
     // Me traigo los valores de x_plain antes de aplicarle  NTT
     std::string file_name = "/home/mmazz/phd/fhe/sealProfile/SEALlog_nonNTT_plaintextValues.txt";

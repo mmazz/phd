@@ -34,7 +34,6 @@ void nttBit_flip(Ciphertext& x_encrypted, const util::NTTTables *ntt_tables, int
 void arguments(int argc, char *argv[], bool& TESTING, bool& RNS_ON, bool& NTT_ON, double& curr_point, double& max_value);
 std::string fileName(bool RNS_ON, bool NTT_ON);
 
-
 //                 test, rns, ntt,
 int main(int argc, char * argv[])
 {
@@ -105,6 +104,7 @@ int main(int argc, char * argv[])
     vector<double> result;
     float res = 0;
     float res_elem = 0;
+
     if(!TESTING)
     {
         bool new_file = 1;
@@ -123,7 +123,7 @@ int main(int argc, char * argv[])
             modulus_index = floor(index_value/(2*poly_modulus_degree));
             modulus_bits = modulus[modulus_index];
             k_rns_prime = coeff_modulus[modulus_index].value();
-            cout <<index_value << ", "<< std::flush;
+            cout <<index_value << ", " << std::flush;
             for (int bit_change=0; bit_change<modulus_bits; bit_change++)
             {
                 //cout << "bit changed " << bit_change << " original coeff " << x_encrypted[index_value];
@@ -163,96 +163,7 @@ int main(int argc, char * argv[])
     // test NTT
     else
     {
-        decryptor.decrypt(x_encrypted, plain_result);
-        encoder.decode(plain_result, result);
-        res = diff_vec(input, result, MAX_DIFF);
-        if (res<1)
-            cout << "Good decryption" << endl;
 
-        bool ntt_res = true;
-        bool ntt_temp = false;
-        x_encrypted = x_encrypted_original;
-        for (size_t modulus_index = 0; modulus_index < coeff_modulus_size; modulus_index++)
-        {
-            util::inverse_ntt_negacyclic_harvey(x_encrypted.data(0) + (modulus_index * poly_modulus_degree),
-                                                ntt_tables[modulus_index]);
-            ntt_transformation(x_encrypted, ntt_tables, modulus_index, 0);
-            ntt_temp = check_equality(x_encrypted, x_encrypted_original);
-            ntt_res = ntt_res&ntt_temp;
-        }
-        cout << "c0 inverse ntt and ntt: " << std::boolalpha << ntt_res <<endl;
-        decryptor.decrypt(x_encrypted, plain_result);
-        encoder.decode(plain_result, result);
-        res = diff_vec(input, result, MAX_DIFF);
-        if (res<1)
-            cout << "Good decryption after first test" << endl;
-
-        ntt_res = true;
-        ntt_temp = false;
-        x_encrypted = x_encrypted_original;
-        for (int modulus_index = 0; modulus_index < coeff_modulus_size-1; modulus_index++)
-        {
-            // start at c1, this is polydegree*K_rns_values
-            util::inverse_ntt_negacyclic_harvey(x_encrypted.data(1) + (modulus_index * poly_modulus_degree), ntt_tables[modulus_index]);
-            ntt_transformation(x_encrypted, ntt_tables, modulus_index, 1);
-            ntt_temp = check_equality(x_encrypted, x_encrypted_original);
-            ntt_res = ntt_res&ntt_temp;
-        }
-        cout << "c1 inverse ntt and ntt: " << std::boolalpha << ntt_res <<endl;
-        decryptor.decrypt(x_encrypted, plain_result);
-        encoder.decode(plain_result, result);
-        res = diff_vec(input, result, MAX_DIFF);
-        if (res<1)
-            cout << "Good decryption after second  test" << endl;
-
-        ntt_res = true;
-        ntt_temp = false;
-        x_encrypted = x_encrypted_original;
-        int modulus_index = 0;
-        for (int index_value=0; index_value<x_plain_size; index_value+=200)
-        {
-            modulus_index = int((index_value+1)/poly_modulus_degree);
-            for (int bit_change=0; bit_change<modulus[modulus_index]; bit_change+=8)
-            {
-                util::inverse_ntt_negacyclic_harvey(x_encrypted.data(0) + (modulus_index * poly_modulus_degree),
-                        ntt_tables[modulus_index]);
-                x_encrypted[index_value] = bit_flip(x_encrypted[index_value],bit_change);
-                x_encrypted[index_value] = bit_flip(x_encrypted[index_value],bit_change);
-                ntt_transformation(x_encrypted, ntt_tables, modulus_index, 0);
-                ntt_temp = check_equality(x_encrypted, x_encrypted_original);
-                ntt_res = ntt_res&ntt_temp;
-            }
-        }
-        cout << "c0 inverse ntt and ntt with double bitflitp : " << std::boolalpha << ntt_res <<endl;
-        decryptor.decrypt(x_encrypted, plain_result);
-        encoder.decode(plain_result, result);
-        res = diff_vec(input, result, MAX_DIFF);
-        if (res<1)
-            cout << "Good decryption after third test" << endl;
-
-        ntt_res = true;
-        ntt_temp = false;
-        x_encrypted = x_encrypted_original;
-        for (int index_value=x_plain_size; index_value<2*x_plain_size; index_value+=200)
-        {
-            modulus_index = int(((index_value-x_plain_size)+1)/poly_modulus_degree);
-            for (int bit_change=0; bit_change<modulus[modulus_index]; bit_change+=8)
-            {
-                util::inverse_ntt_negacyclic_harvey(x_encrypted.data(1) + (modulus_index * poly_modulus_degree),
-                                                    ntt_tables[modulus_index]);
-                x_encrypted[index_value] = bit_flip(x_encrypted[index_value],bit_change);
-                x_encrypted[index_value] = bit_flip(x_encrypted[index_value],bit_change);
-                ntt_transformation(x_encrypted, ntt_tables, modulus_index, 1);
-                ntt_temp = check_equality(x_encrypted, x_encrypted_original);
-                ntt_res = ntt_res&ntt_temp;
-            }
-        }
-        cout << "c1 inverse ntt and ntt with double bitflitp : " << std::boolalpha << ntt_res <<endl;
-        decryptor.decrypt(x_encrypted, plain_result);
-        encoder.decode(plain_result, result);
-        res = diff_vec(input, result, MAX_DIFF);
-        if (res<1)
-            cout << "Good decryption after fourth test" << endl;
     }
    return 0;
    //    cout <<  "validity ntt form: " << x_encrypted.is_ntt_form() << ", valid for:  ";
