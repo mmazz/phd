@@ -194,12 +194,18 @@ inline float diff_vec(std::vector<double>  &v1, std::vector<double> &v2, int DIF
 
     return res;
 }
-inline float diff_elem(std::vector<double>  &v1, std::vector<double> &v2, float threshold, int size){
-    float res = 1;
+
+// size np es v1.size...
+// 1 si la diferencia es elemento a elemento menor al threshold, cero si no.
+inline bool diff_elem(std::vector<double>  &v1, std::vector<double> &v2, float threshold){
+    bool res = 1;
     double diff = 0;
     double diff_thresh = 0;
+    int i = 0;
+    int size = v1.size();
     if (v1.size()==v2.size()){
-        for (int i=0; i<size; i++){
+        while(res!=0 && i<size )
+        {
             diff = abs(v1[i] - v2[i]);
             diff_thresh = abs(v1[i]*threshold);
             if(diff>diff_thresh)
@@ -208,20 +214,21 @@ inline float diff_elem(std::vector<double>  &v1, std::vector<double> &v2, float 
                 res = 0;
                 break;
             }
+            i++;
         }
     }
-    else{
-        for (int i=0; i<size; i++){
-            diff = abs(v1[i] - v2[i]);
-            diff_thresh = abs(v1[i]*threshold);
-            if(diff>diff_thresh)
-            {
-                //std::cout << v1[i] << ": " << diff << " > " << diff_thresh<< std::endl;
-                res = 0;
-                break;
-            }
-        }
-    }
+//    else{
+//        for (int i=0; i<size; i++){
+//            diff = abs(v1[i] - v2[i]);
+//            diff_thresh = abs(v1[i]*threshold);
+//            if(diff>diff_thresh)
+//            {
+//                //std::cout << v1[i] << ": " << diff << " > " << diff_thresh<< std::endl;
+//                res = 0;
+//                break;
+//            }
+//        }
+//    }
     return res;
 }
 inline uint64_t bit_flip(uint64_t original, ushort bit){
