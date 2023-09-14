@@ -105,66 +105,59 @@ int main(int argc, char * argv[])
     float res = 0;
     float res_elem = 0;
 
-    if(!TESTING)
+    bool new_file = 1;
+    std::string dir_name = "logs/log_encrypt/";
+
+    saveDataLog(dir_name+file_name, 0, 0, res_elem, new_file);
+    int modulus_index = 0;
+    int modulus_bits = 0;
+    uint64_t k_rns_prime = 0;
+
+    cout << "Starting bitflips with x_plain_size of: " << x_plain_size << endl;
+    // Realmente estan en orden, priemro lso coefs de los dos polinomios del rns,
+    // despues los del segundo y asi...
+    for (int index_value=0; index_value<x_plain_size; index_value++)
     {
-        bool new_file = 1;
-        std::string dir_name = "logs/og_encrypt/";
-
-        saveDataLog(dir_name+file_name, 0, 0, res_elem, new_file);
-        int modulus_index = 0;
-        int modulus_bits = 0;
-        uint64_t k_rns_prime = 0;
-
-        cout << "Starting bitflips with x_plain_size of: " << x_plain_size << endl;
-        // Realmente estan en orden, priemro lso coefs de los dos polinomios del rns,
-        // despues los del segundo y asi...
-        for (int index_value=0; index_value<x_plain_size; index_value++)
+        modulus_index = floor(index_value/(2*poly_modulus_degree));
+        modulus_bits = modulus[modulus_index];
+        k_rns_prime = coeff_modulus[modulus_index].value();
+        cout <<index_value << ", " << std::flush;
+        for (int bit_change=0; bit_change<modulus_bits; bit_change++)
         {
-            modulus_index = floor(index_value/(2*poly_modulus_degree));
-            modulus_bits = modulus[modulus_index];
-            k_rns_prime = coeff_modulus[modulus_index].value();
-            cout <<index_value << ", " << std::flush;
-            for (int bit_change=0; bit_change<modulus_bits; bit_change++)
+            //cout << "bit changed " << bit_change << " original coeff " << x_encrypted[index_value];
+            if(!NTT_ON)
+                nttBit_flip(x_encrypted,  ntt_tables, x_plain_size, index_value, bit_change, modulus_index, poly_modulus_degree);
+
+            else
+                x_encrypted[index_value] = bit_flip(x_encrypted[index_value], bit_change);
+            //cout << " new coeff " << x_encrypted[index_value] << " modulus bit: " << modulus_bits  << endl;
+
+            if (x_encrypted[index_value] >= k_rns_prime)
             {
-                //cout << "bit changed " << bit_change << " original coeff " << x_encrypted[index_value];
+                cout<< "Mas grande que el modulo!" << k_rns_prime << endl;
                 if(!NTT_ON)
-                    nttBit_flip(x_encrypted,  ntt_tables, x_plain_size, index_value, bit_change, modulus_index, poly_modulus_degree);
-
+                    x_encrypted = x_encrypted_original;
                 else
-                    x_encrypted[index_value] = bit_flip(x_encrypted[index_value], bit_change);
-                //cout << " new coeff " << x_encrypted[index_value] << " modulus bit: " << modulus_bits  << endl;
-
-                if (x_encrypted[index_value] >= k_rns_prime)
-                {
-                    cout<< "Mas grande que el modulo!" << k_rns_prime << endl;
-                    if(!NTT_ON)
-                        x_encrypted = x_encrypted_original;
-                    else
-                        x_encrypted[index_value] = x_encrypted_original[index_value];
-                    saveDataLog(dir_name+file_name, 0, !new_file);
-                }
-                else
-                {
-                    decryptor.decrypt(x_encrypted, plain_result);
-                    encoder.decode(plain_result, result);
-
-                    res_elem = diff_elem(input, result, threshold, size_input);
-                    saveDataLog(dir_name+file_name, res_elem, !new_file);
-                  //  cout <<  x_encrypted[index_value] << " " <<  x_encrypted_original[index_value] << endl;
-                    // Si no tengo ntt tengo que cambiar todo el cifrado ya que se modifico todo
-                    if(!NTT_ON)
-                        x_encrypted = x_encrypted_original;
-                    else
-                        x_encrypted[index_value] = x_encrypted_original[index_value];
-                }
+                    x_encrypted[index_value] = x_encrypted_original[index_value];
+                saveDataLog(dir_name+file_name, 0, !new_file);
             }
-       }
-    }
-    // test NTT
-    else
-    {
+            else
+            {
+                decryptor.decrypt(x_encrypted, plain_result);
+                encoder.decode(plain_result, result);
 
-    }
+                res_elem = diff_elem(input, result, threshold);
+                saveDataLog(dir_name+file_name, res_elem, !new_file);
+              //  cout <<  x_encrypted[index_value] << " " <<  x_encrypted_original[index_value] << endl;
+                // Si no tengo ntt tengo que cambiar todo el cifrado ya que se modifico todo
+                if(!NTT_ON)
+                    x_encrypted = x_encrypted_original;
+                else
+                    x_encrypted[index_value] = x_encrypted_original[index_value];
+            }
+        }
+   }
+
    return 0;
    //    cout <<  "validity ntt form: " << x_encrypted.is_ntt_form() << ", valid for:  ";
        //    cout <<is_valid_for(x_encrypted, context)<< ", buffer valid: " << is_buffer_valid(x_encrypted);
@@ -191,34 +184,26 @@ void arguments(int argc, char *argv[], bool& TESTING, bool& RNS_ON, bool& NTT_ON
 {
    if (argc==1)
         cout << "Starting in default test mode: true" << endl;
-    if(argc >= 2)
+    if (argc>=2)
     {
         if(atoi(argv[1])==1)
-            TESTING = true;
-        else
-            TESTING = false;
-        cout << "Starting in test mode: " << std::boolalpha << TESTING << endl;
-    }
-    if (argc>=3)
-    {
-        if(atoi(argv[2])==1)
             RNS_ON = true;
         else
             RNS_ON = false;
         cout << "Starting in RNS mode: " << std::boolalpha << RNS_ON << endl;
     }
-    if (argc>=4)
+    if (argc>=3)
     {
-        if(atoi(argv[3])==1)
+        if(atoi(argv[2])==1)
             NTT_ON = true;
         else
             NTT_ON = false;
         cout << "Starting in NTT mode: " << std::boolalpha << NTT_ON << endl;
     }
+    if (argc>=4)
+        curr_point = atoi(argv[3]);
     if (argc>=5)
-        curr_point = atoi(argv[4]);
-    if (argc>=6)
-        max_value = atoi(argv[5])-curr_point;
+        max_value = atoi(argv[4])-curr_point;
 }
 
 // Transformo el cifrado a su estado sin ntt, hago el bitflip y vuelvo al espacio ntt

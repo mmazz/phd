@@ -308,10 +308,7 @@ inline bool check_equality(seal::Ciphertext &x_encrypted, seal::Ciphertext &x_en
     int i=0;
     while(i<total_num_coeff && res==0){
         if(x_encrypted[i]!=x_encrypted2[i])
-        {
-            std::cout << i  << " :" << x_encrypted[i] << " != " << x_encrypted2[i] << std::endl;
             res+=1;
-        }
         i++;
     }
     if (res == 0)
@@ -349,7 +346,7 @@ inline void ntt_transformation(seal::Plaintext &x_plain, const seal::util::NTTTa
 inline void ntt_transformation(seal::Ciphertext &x_encrypted, const seal::util::NTTTables* ntt_tables, int modulus_index, int cipher_index){
     size_t poly_degree =  x_encrypted.poly_modulus_degree();
     if (cipher_index==0)
-        seal::util::ntt_negacyclic_harvey(x_encrypted.data() + (modulus_index * poly_degree), ntt_tables[modulus_index]);
+        seal::util::ntt_negacyclic_harvey(x_encrypted.data(0) + (modulus_index * poly_degree), ntt_tables[modulus_index]);
     if (cipher_index==1) // start at c1.
         seal::util::ntt_negacyclic_harvey(x_encrypted.data(1) + (modulus_index * poly_degree), ntt_tables[modulus_index]);
 }
