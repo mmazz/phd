@@ -3,6 +3,10 @@
 
 ## Bit flip
 
+### Encryption
+
+- Ahora hay un unico archivo para hacer las corridas, que puede ser o no con RNS y/o  NTT.
+
 ### Encoding
 
 - Modifico de a un bit la entrada y veo cuanto cambia su codificacion con la original.

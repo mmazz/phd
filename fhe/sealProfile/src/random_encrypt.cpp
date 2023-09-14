@@ -109,7 +109,7 @@ int main(int argc, char * argv[])
     if(!TESTING)
     {
         bool new_file = 1;
-        std::string dir_name = "log_encrypt/";
+        std::string dir_name = "logs/og_encrypt/";
 
         saveDataLog(dir_name+file_name, 0, 0, res_elem, new_file);
         int modulus_index = 0;

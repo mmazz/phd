@@ -379,6 +379,7 @@ inline void input_creator(std::vector<double> &input, int poly_modulus_degree, i
         input.push_back(random_value);
     }
 }
+
 inline void input_refill(std::vector<double> &input, int poly_modulus_degree, double curr_point, double max_value){
     size_t slot_count = poly_modulus_degree/2;
     std::cout << "Creating array, starting at " << curr_point << " and ending at " << max_value << std::endl;
