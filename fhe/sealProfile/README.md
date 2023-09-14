@@ -1,5 +1,8 @@
 # Profiling
 
+# Install
+
+- googletest: https://github.com/google/googletest
 
 ## Bit flip
 

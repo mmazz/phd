@@ -35,8 +35,7 @@ void arguments(int argc, char *argv[], bool& TESTING, bool& RNS_ON, bool& NTT_ON
 std::string fileName(bool RNS_ON, bool NTT_ON);
 
 
-
-// test, rns, ntt,
+//                 test, rns, ntt,
 int main(int argc, char * argv[])
 {
     bool TESTING = false;
@@ -161,7 +160,7 @@ int main(int argc, char * argv[])
             }
        }
     }
-
+    // test NTT
     else
     {
         decryptor.decrypt(x_encrypted, plain_result);
