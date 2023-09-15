@@ -32,6 +32,8 @@ algo 3 veces mas grande. Porque?
 
 - Se comporta igual todos los valores del vector inputs al ir modificandoles los bits en relacion a que posicion
 del vector input se encuentra?
+- Como se que la version rns de un cifrado es, primero el c01 c11 c02 c12 y asi.
+    - Viendo el valcheck.cpp vemos que estan ordenados diferentes, primeros estan todos los c0i y luego todos los c1i
 
 ## Ideas
 
