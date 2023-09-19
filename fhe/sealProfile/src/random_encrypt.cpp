@@ -26,7 +26,7 @@ using namespace seal;
 using namespace std;
 
 int MAX_DIFF = 1;
-float threshold = 0.3;
+float threshold = 10.0;
 double CURR_POINT = 1;
 double MAX_VALUE = 2.;
 
@@ -34,6 +34,7 @@ void nttBit_flip(Ciphertext& x_encrypted, const util::NTTTables *ntt_tables, int
 void nttBit_flip(Ciphertext& x_encrypted, const util::NTTTables *ntt_tables, int index_value, size_t c0, int bit_change, size_t modulus_index);
 void arguments(int argc, char *argv[], bool& TESTING, bool& RNS_ON, bool& NTT_ON, double& curr_point, double& max_value);
 std::string fileName(bool RNS_ON, bool NTT_ON);
+std::string fileName_norm2(bool RNS_ON, bool NTT_ON);
 
 //                 test, rns, ntt,
 int main(int argc, char * argv[])
@@ -52,6 +53,7 @@ int main(int argc, char * argv[])
     else
         modulus ={50, 20};
     std::string file_name = fileName(RNS_ON, NTT_ON);
+    std::string file_name_norm2 = fileName_norm2(RNS_ON, NTT_ON);
 
     double scale = pow(2.0, 40);
     int coeff_modulus_size = modulus.size()-1;
@@ -62,7 +64,7 @@ int main(int argc, char * argv[])
     input_creator(input, poly_modulus_degree, curr_point, max_value);
     print_vector(input, 3, 7);
 
-    print_example_banner("Example: CKKS random encryption without ntt");
+    print_example_banner("Example: CKKS random encryption");
     EncryptionParameters parms(scheme_type::ckks);
     parms.set_poly_modulus_degree(poly_modulus_degree);
     parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulus));
@@ -103,13 +105,16 @@ int main(int argc, char * argv[])
 
     Plaintext plain_result;
     vector<double> result;
-    float res = 0;
-    float res_elem = 0;
+
+    uint64_t res_hamming = 0;
+    double res_norm2 = 0;
 
     bool new_file = 1;
     std::string dir_name = "logs/log_encrypt/";
 
-    saveDataLog(dir_name+file_name, 0, 0, res_elem, new_file);
+    saveDataLog(dir_name+file_name, 0, new_file);
+    saveDataLog(dir_name+file_name_norm2, 0,  new_file);
+
     int modulus_index = 0;
     int modulus_bits = 0;
 
@@ -117,7 +122,8 @@ int main(int argc, char * argv[])
     // Realmente estan en orden, priemro lso coefs de los dos polinomios del rns,
     // despues los del segundo y asi...
     auto size = x_encrypted.size();
-
+    cout << " Encrypted size: " << size << endl;
+    cout << " Modulus size: " << coeff_modulus_size << endl;
     // Loopea primero por polynomio c0 o c1, aniado con un loop por cada rns y luego por cada bit.
     // el orden de 0 hasta el maximo coef, es primero todos los c0 de los rns, y luego los c1
     int index_value = 0;
@@ -129,15 +135,15 @@ int main(int argc, char * argv[])
             auto poly_modulus_degree = x_encrypted.poly_modulus_degree();
 
             modulus_bits = modulus[modulus_index];
-            for (; poly_modulus_degree--;)
+            for (; poly_modulus_degree--; index_value++)
             {
                 cout << index_value << ", " << std::flush;
                 for (int bit_change=0; bit_change<modulus_bits; bit_change++)
                 {
-                    if(!NTT_ON)
-                        nttBit_flip(x_encrypted, ntt_tables, index_value,  i, bit_change, modulus_index);
-                    else
+                    if(NTT_ON)
                         x_encrypted[index_value] = bit_flip(x_encrypted[index_value], bit_change);
+                    else
+                        nttBit_flip(x_encrypted, ntt_tables, index_value,  i, bit_change, modulus_index);
 
                     if (x_encrypted[index_value] >= modulus_value)
                     {
@@ -147,22 +153,26 @@ int main(int argc, char * argv[])
                         else
                             x_encrypted[index_value] = x_encrypted_original[index_value];
                         saveDataLog(dir_name+file_name, 0, !new_file);
+                        saveDataLog(dir_name+file_name_norm2, 0, !new_file);
+
                     }
                     else
                     {
                         decryptor.decrypt(x_encrypted, plain_result);
                         encoder.decode(plain_result, result);
+                        res_hamming = hamming_distance(input, result);
+                        res_norm2 = norm2_vec(input, result);
+                        //res_elem = (int)diff_elem(input, result, threshold);
+                        saveDataLog(dir_name+file_name, res_hamming, !new_file);
+                        saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
 
-                        res_elem = (int)diff_elem(input, result, threshold);
-                        saveDataLog(dir_name+file_name, res_elem, !new_file);
                         // Si no tengo ntt tengo que cambiar todo el cifrado ya que se modifico todo
-                        if(!NTT_ON)
-                            x_encrypted = x_encrypted_original;
-                        else
+                        if(NTT_ON)
                             x_encrypted[index_value] = x_encrypted_original[index_value];
+                        else
+                            x_encrypted = x_encrypted_original;
                     }
                 }
-            index_value++;
             }
         }
     }
@@ -247,7 +257,19 @@ std::string fileName(bool RNS_ON, bool NTT_ON)
         file_name = "encryption";
     return file_name;
 }
-
+std::string fileName_norm2(bool RNS_ON, bool NTT_ON)
+{
+    std::string file_name;
+    if (RNS_ON && NTT_ON)
+        file_name = "encryptionN2_withRNS&NTT";
+    else if (RNS_ON && !NTT_ON)
+        file_name = "encryptionN2_withRNS";
+    else if (!RNS_ON && NTT_ON)
+        file_name = "encryptionN2_withNTT";
+    else if (!RNS_ON && !NTT_ON)
+        file_name = "encryptionN2";
+    return file_name;
+}
 void arguments(int argc, char *argv[], bool& TESTING, bool& RNS_ON, bool& NTT_ON, double& curr_point, double& max_value)
 {
    if (argc==1)

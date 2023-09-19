@@ -6,7 +6,9 @@
 #include "seal/seal.h"
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -43,7 +45,7 @@ inline void saveDataLog(std::string file_name, int index_value, int bit_change, 
 
 }
 
-inline void saveDataLog(std::string file_name, int  res, bool new_file)
+inline void saveDataLog(std::string file_name, uint64_t  res, bool new_file)
 {
     std::fstream logFile;
     // Open File
@@ -179,18 +181,16 @@ inline void saveEncodig(std::string file_name, std::vector<int> encoding_diff, b
     logFile.close();
 
 }
-inline float diff_vec(std::vector<double>  &v1, std::vector<double> &v2, int DIFF){
-    float res = 0;
+
+inline double norm2_vec(std::vector<double>  &v1, std::vector<double> &v2){
+    double res = 0;
     double diff = 0;
     for (int i=0; i<v2.size(); i++)
     {
         diff = v1[i] - v2[i];
         res += pow(diff, 2);
     }
-    if (res>DIFF)
-        res = 0;
-    else
-        res = 1;
+    res = std::sqrt(res);
 
     return res;
 }
@@ -260,6 +260,32 @@ inline double bit_flip(double& original, ushort bit)
     return res_double;//_double;
 }
 
+inline uint64_t hamming_distance(double& coeff1, double& coeff2)
+{
+    uint64_t* coeff1_int= (uint64_t*)&coeff1;
+    uint64_t* coeff2_int= (uint64_t*)&coeff2;
+
+    uint64_t res = 0;
+    res = (*coeff1_int)^(*coeff2_int);
+    uint64_t count = 0;
+    while (res) {
+        count += res & 1;
+        res >>= 1;
+    }
+    return count;
+}
+
+// se podria paralelizar...
+inline uint64_t hamming_distance(std::vector<double>& vec1, std::vector<double>& vec2)
+{
+    uint64_t count = 0;
+    if (vec1.size() == vec2.size())
+    {
+        for(unsigned int i = 0; i < vec1.size(); i++)
+            count += hamming_distance(vec1[i], vec2[i]);
+    }
+    return count;
+}
 
 inline bool check_equality(seal::Plaintext &x_plain, seal::Plaintext &x_plain2){
     int res=0;

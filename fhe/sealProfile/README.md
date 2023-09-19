@@ -11,6 +11,13 @@
     - make
     - sudo make install
 
+## SEAL Hardcoded
+
+- Seal ahora lee la semilla desde un archivo llamado hardcoded_random.txt.
+- En cada inicializacion modifica ese archivo agregando uno para poder utilizar
+multiples semillas en una corrida o simplemente usar la misma durante diferentes entradas.
+
+
 ## Bit flip
 
 ### Encryption
