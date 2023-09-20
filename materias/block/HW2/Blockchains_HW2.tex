@@ -198,11 +198,29 @@ high-level decisions you made for the design of your contract, including:
     \item What data type/structure did you use for the pick options and why?
 \end{itemize}
 \begin{solution} %Uncomment and type your solution here
+    1) el contrato es el que paga ya que antes de jugar el contrato se queda con la apuesta de ambos.
 
+    2) La recompensa tiene que ser pedida por cada usuario.
+    Basicamente el contrato tiene los depositos originales de cada jugador mas menos lo que
+    fueron ganando o perdiendo.
+    Entonces cuando quieren solicitan sacar la plata y listo.
+    Esto evita posibles problemas de seguiridad.
+
+    3) Cada usuario elije una opcion, pero envia el hash de la opcion con un numero elegido por el.
+    Una vez que ambos la elijen pueden pedir abrirla, dando por separado la opcion y el numero.
+    Entonces el contrato verifica que el hash de estas dos cosas es la opcion que puso el usuario
+    y cuando el segundo jugador tambien abre su opcion el contrato verifica quien gano.
+
+    4) Use un diccionario address jugador con un bytes32 que contiene el hash de la opcion.
+    Use dos diccionarios, uno con la opcion hasheada con el numero random y luego otra
+    donde ya se encuentra la opcion revelada.
+    Por lo explicado en el anterior de esta forma un usuario para que la informacion de la eleccion
+    del contricante este en la blockchain de forma revelada el otro jugador tambien tuvo que haber elejido.
+    Y si quiere sacar la plata por que vio que el otro gano, el contrato asume que pierde directamente
+    y le da la ganancia al otro jugador.
 \end{solution}
 
-\part[5]A detailed gas consumption evaluation of your implementation, in-
-cluding:
+\part[5]A detailed gas consumption evaluation of your implementation, including:
 
 \begin{itemize}
     \item The cost of deploying and interacting with your contract.
@@ -211,6 +229,7 @@ cluding:
 \end{itemize}
 
 \begin{solution} %Uncomment and type your solution here
+El costo de deploying es de 1942115 Wei
 \end{solution}
 
 \part[5]A thorough list of potential hazards and vulnerabilities that may occur
@@ -218,6 +237,12 @@ in your contract; provide a detailed analysis of the security mechanisms you use
 to mitigate such hazards.
 
 \begin{solution} %Uncomment and type your solution here
+    No queda definido que pasa si hacen las elecciones y antes de revelar retirar la plata.
+    Esa plata queda en el contrato.
+    Mas que eso no creo que haya otra vulnerabilidad ni que pueda ser explotada.
+    Mas que eso creo que no.
+    Creo que me asegure que no haya reentrada, ni que un usuario pueda hacer que
+    el otro pierda ethers por haber apostado y retirado.
 \end{solution}
 \part[5] A description of your analysis of your fellow student’s contract (along
 with relative code snippets of their contract, where needed for readability),
@@ -232,6 +257,7 @@ including:
 \end{itemize}
 
 \begin{solution} %Uncomment and type your solution here
+
 \end{solution}
      \part[5] The transaction history of an execution of a game on your contrac
 \begin{solution} %Uncomment and type your solution here

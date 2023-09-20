@@ -42,10 +42,24 @@ contract CoinFlip
     {
         return keccak256(abi.encodePacked(choice, randomness));
     }
-
-// sol reentrancy
     function withdrawBalance() public
     {
+        // evito que un jugador pueda no revelar su opcion y el otro si y retirar si sabe que perdio.
+        // basicamente se lo doy como perdida y retira. Pero le doy al otro usuario su ganancia
+        if(msg.sender == players[0])
+        {
+            if(choicesRevealed[players[1]]!= bytes32(0))
+            {
+                userBalances[players[1]] += 200000000;
+            }
+        }
+        if(msg.sender == players[1])
+        {
+            if(choicesRevealed[players[0]]!= bytes32(0))
+            {
+                userBalances[players[0]] += 200000000;
+            }
+        }
         uint amountToWithdraw = userBalances[msg.sender];
         userBalances[msg.sender] = 0;
         delete userBalances[msg.sender];
@@ -57,6 +71,7 @@ contract CoinFlip
         choices[players[1]] = bytes32(0);
         payable(msg.sender).transfer(amountToWithdraw);
     }
+
 
     function play(bytes32 choice) payable public
     {
