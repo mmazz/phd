@@ -1,0 +1,248 @@
+\documentclass[12pt,addpoints,answers]{exam}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amsfonts,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{mathtools}
+\usepackage{hyperref}
+\usepackage{fullpage}
+\usepackage{microtype}
+\usepackage{xspace}
+\usepackage[svgnames]{xcolor}
+\usepackage[sc]{mathpazo}
+\usepackage{enumitem}
+\usepackage{bm}
+
+\pagestyle{head}
+
+%----------Header--------------------%
+\def\course{{\sc Foundations and Applications of Blockchains}}
+\def\term{Depto. de Computaci\'{o}n, $2^{\textrm{do}}$ Cuatrimestre 2023}
+\def\prof{Lecturer: Juan Garay}
+\newcommand{\handout}[5]{
+   \renewcommand{\thepage}{\arabic{page}}
+   \begin{center}
+   \framebox{
+      \vbox{
+    \hbox to 5.78in { \hfill \large{\course} \hfill }
+    \vspace{2mm}
+%    \hbox to 5.78in { \hfill \large{\prof} \hfill }
+%       \vspace{2mm}
+       \hbox to 5.78in { {\Large \hfill \textbf{#5}  \hfill} }
+       \vspace{2mm}
+       \hbox to 5.78in { \term \hfill \emph{#2}}
+       \hbox to 5.78in { {#3 \hfill \emph{#4}}}
+      }
+   }
+   \end{center}
+   \vspace*{4mm}
+}
+\newcommand{\hw}[4]{\handout{#1}{#2}{#3}{#4}{Homework #2}}
+
+% -- For ignoring stuff -- %
+\newcommand{\ignore}[1]{}
+
+\begin{document}
+
+%----Specs: change accordingly-----%
+\newif\ifstudent % comment out false
+\studenttrue
+% \studentfalse
+
+\def\hwnum{1}
+\def\issuedate{14/9/23}
+\def\duedate{25/9/23, 3:30pm} %
+\def\yourname{} % put your name here
+%------------------------------%
+
+\ifstudent
+\hw{\hwnum}{\issuedate}{Student: \yourname}{Due: \duedate}%
+\else
+\hw{\hwnum}{\issuedate}{\prof}{Due: \duedate}%
+\fi
+
+% \ignore{
+
+\noindent \textbf{Instructions}
+
+\begin{itemize}
+    \item The way to deliver your solution will be explained in the following classes.
+
+     If you are proficient with \LaTeX, you may also typeset your submission and submit in PDF format. To do so, uncomment the ``\%\textbackslash begin\{solution\}'' and ``\%\textbackslash end\{solution\}'' lines and write your solution between those two command lines.
+
+      \item Your solutions will be graded on \emph{correctness} and
+    \emph{clarity}. You should only submit work that you believe to be
+    correct.
+    % , and you will get significantly more partial credit if you     clearly identify the gap(s) in your solution.
+
+    \item You may collaborate with others on Questions 1-3 of this problem set. However, you
+must write up your own solutions and list your collaborators and any external
+sources for each problem. Be ready to explain your solutions orally to a member of
+the course staff if asked. You may not collaborate with others on Question 4
+
+
+\end{itemize}
+
+\noindent This homework contains \numquestions\ questions,
+% \numpages\ pages
+for a total of \numpoints \ points.
+% and \numbonuspoints\ bonus points.
+
+%\medskip
+\newpage
+
+%} %IGNORE
+
+\begin{questions}
+
+
+\question We saw in class the notion of digital signatures and their security properties, existential
+unforgeability being an important one.
+
+\begin{parts}
+    \part[5] Describe the purpose of a Public-Key Infrastructure (PKI). Can the
+security properties of a digital signature be guaranteed without a PKI? Elaborate.
+
+    \begin{solution} %Uncomment and type your solution here
+    El proposito de una PKI en firmas digitales es poder usar la llave secreta para la firma
+        y la llave publica para validar.
+        Esto es de gran ayuda cuando tenemos un servidor de confianza donde puede
+        confirmar de quien es cada llave publica.
+        Teniendo esto podemos validar algo firmado de forma facil y eficiente.
+        De todas formas se puede tener las propiedades de seguridad de una firma digital
+        sin una PKI.
+
+    \end{solution}
+
+    \part[5] Bitcoin transactions use the ECDSA signature scheme. Does Bitcoin
+assume a PKI? If not, reconcile with the above argument.
+
+    \begin{solution} %Uncomment and type your solution here
+        Bitcoin no asume  un PKI.
+    \end{solution}
+
+
+\end{parts}
+
+\newpage
+
+    \question[10] Refer to Algorithm 4 (Main Loop) in [GKL15]. We saw in class that
+blockchains would start from a “genesis” block, which would provide an unpredictable string to start mining from.
+    Yet, notice that in Algorithm 4 mining starts from the empty string $(C \leftarrow \epsilon)$.
+    How come? Explain why this works
+
+\begin{solution} %Uncomment and type your solution here
+
+\end{solution}
+
+
+
+\newpage
+
+\question[10] Refer to Algorithm 1 (validate) in [GKL15], which implements the chain validation
+predicate.
+
+
+ \begin{parts}
+    \part[5] Rewrite validate so that it starts checking from the beginning of the chain.
+    \begin{solution} %Uncomment and type your solution here
+        Suponiendo la funcion que permita sacar un bloque desde el principio,
+        y que podemos agarrar el primer bloque de una cadena, el algoritmo
+        quedaria igual con una salvedad.
+        De que ahora tenemos que ir a agarrar otro bloque (el siguiente) para poder agarrar el puntero del bloque anterior (parametro s),
+        para poder validar de que el hash del bloque que tengo es igual a la infomracion del parametro s guardado en el siguiente bloque.
+    \end{solution}
+    \part[5] Discuss pros and cons of this approach, compared to Algorithm 1’s.
+    \begin{solution} %Uncomment and type your solution here
+        Uno de las contras que le encuentro es que ahora tenemos que estar agarrando dos bloques para poder ver si uno apunta al otro.
+        Que en el caso original como vamos desde el final para el principio simplemente nos guardamos la informacion del parametro s
+        del bloque en que estamos para que el siguiente iteracion lo usemos para comparar con el hash del bloque actual.
+    \end{solution}
+ \end{parts}
+
+
+
+\newpage
+
+\question
+Smart contract programming: Matching Pennies. This assignment will focus on
+writing your own smart contract to implement the Matching Pennies game. The
+contract should allow two players (A, B) to play a game of Matching Pennies at any
+point in time. Each player picks a value of two options—for example, the options
+might be \{0, 1\}, \{‘a’, ‘b’\}, \{True, False\}, etc. If both players pick the same value, the
+first player wins; if players pick different values, the second player wins. The winner
+gets 0.1 ETH as reward. After a game ends, two different players should be able to
+use your contract to play a new game.
+
+Example: Let A, B be two players who play the game, each with 1 ETH. A picks 0
+and B picks 0, so A wins. After the game ends, A’s balance is 1.1 ETH (perhaps minus
+some gas fees, if necessary).
+
+You should implement the smart contract and deploy it on the course’s Goerli Testnet.
+Your contract should be as secure, gas efficient, and fair as possible. After deploying
+your contract, you should engage with other student’s contract and play a game
+on his/her contract. Before you engage with a fellow student’s smart contract, you
+should evaluate their code and analyze its features in terms of security and fairness
+(refer to Lectures 07 and 08). You should provide:
+
+
+
+
+ \begin{parts}
+
+ \part[10] The code of your contract, together with a detailed description of the
+high-level decisions you made for the design of your contract, including:
+\begin{itemize}
+    \item Who pays for the reward of the winner?
+    \item  How is the reward sent to the winner?
+    \item  How is it guaranteed that a player cannot cheat?
+    \item What data type/structure did you use for the pick options and why?
+\end{itemize}
+\begin{solution} %Uncomment and type your solution here
+
+\end{solution}
+
+\part[5]A detailed gas consumption evaluation of your implementation, in-
+cluding:
+
+\begin{itemize}
+    \item The cost of deploying and interacting with your contract.
+    \item  Whether your contract is fair to both players, including whether one player has to pay more gas than the other and why.
+    \item Techniques to make your contract more cost efficient and/or fair
+\end{itemize}
+
+\begin{solution} %Uncomment and type your solution here
+\end{solution}
+
+\part[5]A thorough list of potential hazards and vulnerabilities that may occur
+in your contract; provide a detailed analysis of the security mechanisms you use
+to mitigate such hazards.
+
+\begin{solution} %Uncomment and type your solution here
+\end{solution}
+\part[5] A description of your analysis of your fellow student’s contract (along
+with relative code snippets of their contract, where needed for readability),
+including:
+
+\begin{solution} %Uncomment and type your solution here
+\end{solution}
+\part[5]
+\begin{itemize}
+    \item Any vulnerabilities discovered?
+    \item How could a player exploit these vulnerabilities to win the game
+\end{itemize}
+
+\begin{solution} %Uncomment and type your solution here
+\end{solution}
+     \part[5] The transaction history of an execution of a game on your contrac
+\begin{solution} %Uncomment and type your solution here
+\end{solution}
+
+\end{parts}
+
+\newpage
+
+~\\
+
+\end{questions}
+
+\end{document}
