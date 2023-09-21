@@ -33,11 +33,6 @@ int main(int argc, char * argv[])
     size_t poly_modulus_degree = 4096;
     vector<int> modulus = {30, 30, 30};
 
-    std::string dir_name = "logs/log_encode/";
-    std::string file_name_hd = "encodeHD_withRNS&NTT";
-    std::string file_name_norm2 =  "encodeN2_withRNS&NTT";
-    std::string file_name_hd_decode = "encodeHD_withRNS&NTT_decode";
-    std::string file_name_norm2_decode = "encodeN2_withRNS&NTT_decode";
 
     double scale = pow(2.0, 40);
     int coeff_modulus_size = modulus.size()-1;
@@ -90,15 +85,12 @@ int main(int argc, char * argv[])
     int index_value = 0;
     bool new_file = 1;
 
-    saveDataLog(dir_name+file_name_hd, 0,  new_file);
-    saveDataLog(dir_name+file_name_norm2, 0,  new_file);
-    saveDataLog(dir_name+file_name_hd_decode, 0, new_file);
-    saveDataLog(dir_name+file_name_norm2_decode, 0, new_file);
+
     cout << "Starting bitflips with x_plain_size of: " << x_plain_size << endl;
 
     cout << "Coeff modulus size: " << coeff_modulus_size << std::endl;
 
-    for (size_t modulus_index = 0; modulus_index < coeff_modulus_size; modulus_index++)
+    for (size_t modulus_index = 1; modulus_index < coeff_modulus_size; modulus_index++)
     {
         uint64_t modulus_value=0;
         modulus_value = coeff_modulus[modulus_index].value();
@@ -107,45 +99,51 @@ int main(int argc, char * argv[])
         modulus_bits = modulus[modulus_index];
         size_t coeff_count = parms.poly_modulus_degree();
 
+        coeff_count=1;
+        index_value=2047;
         for (; coeff_count--; index_value++)
         {
             cout << index_value << ", " << std::flush;
 
-            for (int bit_change=0; bit_change<modulus_bits; bit_change++)
+            cout << "coeff " << coeff_count << endl;
+            for (int bit_change=0; bit_change<modulus_bits-6; bit_change+=modulus_bits+1)
             {
+                    cout << "bit change" << bit_change << endl;
                 x_plain[index_value] = bit_flip(x_plain[index_value], bit_change);
 
                 if (x_plain[index_value] >= modulus_value)
                 {
                     x_plain[index_value] = x_plain_original[index_value];
-                    saveDataLog(dir_name+file_name_hd, 0, !new_file);
-                    saveDataLog(dir_name+file_name_norm2, 0, !new_file);
-                    saveDataLog(dir_name+file_name_hd_decode, 0, !new_file);
-                    saveDataLog(dir_name+file_name_norm2_decode, 0, !new_file);
                 }
 
                 else
                 {
+                    cout << "entre" << endl;
                     encoder.decode(x_plain, result);
                     res_hamming = hamming_distance(input, result);
                     res_norm2 = norm2_vec(input, result);
-                    saveDataLog(dir_name+file_name_hd_decode, res_hamming, !new_file);
-                    saveDataLog(dir_name+file_name_norm2_decode, res_norm2, !new_file);
 
-                    encryptor.encrypt(x_plain, x_encrypted);
-                    decryptor.decrypt(x_encrypted, plain_result);
-                    encoder.decode(plain_result, result);
-                    res_hamming = hamming_distance(input, result);
-                    res_norm2 = norm2_vec(input, result);
-                    //cout << x_plain_original[index_value]<<  " vs "  << x_plain[index_value] << " , indexvalue: " << index_value << " bitchange: " << bit_change << " hd: " << res_hamming << " n2: "<< res_norm2 << endl;
-                    saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
-                    saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
+                //    encryptor.encrypt(x_plain, x_encrypted);
+               //     decryptor.decrypt(x_encrypted, plain_result);
+               //     encoder.decode(plain_result, result);
+               //     res_hamming = hamming_distance(input, result);
+               //     res_norm2 = norm2_vec(input, result);
 
                     x_plain[index_value] = x_plain_original[index_value];
+                    std::ofstream outfile;
+
+                   outfile.open("data/example_bitflip.txt", std::ios_base::out);//std::ios_base::app
+                   for(int i=0; i<input.size()-1; i++)
+                   {
+                       outfile << result[i] << ",";
+                       cout << "i: " <<i << " inputs: " << input[i] << " vs " << result[i] << endl;
+                   }
+                   outfile << result[input.size()-1] << endl;
                 }
             }
         }
     }
+
    return 0;
 }
 

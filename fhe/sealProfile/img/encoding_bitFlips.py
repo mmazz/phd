@@ -83,7 +83,7 @@ fileHDDecode = "encodeHD_withRNS&NTT_decode.txt"
 #image_creator(encoding, by_coeff_av, by_bits_av, "Hamming distance", "HD")
 
 df = pd.read_csv(dir+fileN2Decode, header=None,  skip_blank_lines=False)
-df = df.iloc[147:,:]
+df = df.iloc[1:,:]
 encoding = df[df.columns[0]].to_numpy(dtype='float')
 encoding = encoding/(polynomial_size*coeff_bits)
 print(f"{fileN2Decode}: {encoding.mean()}")
@@ -93,7 +93,7 @@ image_creator(encoding, by_coeff_av, by_bits_av, "Norm2", "Norm2_decode")
 
 
 df = pd.read_csv(dir+fileHDDecode, header=None,  skip_blank_lines=False)
-df = df.iloc[147:,:]
+df = df.iloc[1:,:]
 encoding = df[df.columns[0]].to_numpy(dtype='float')
 encoding = encoding/(total_bits)*100
 print(f"{fileHDDecode}: {encoding.mean()}")
