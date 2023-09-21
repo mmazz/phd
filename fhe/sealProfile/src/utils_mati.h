@@ -200,7 +200,6 @@ inline double norm2_vec(std::vector<double>  &vecInput, std::vector<double> &vec
         res += pow(diff, 2);
     }
     res = std::sqrt(res/vecInput.size());
-    res = (1.0 - (res / (max_value-min_value))) * 100;
     return res;
 }
 
