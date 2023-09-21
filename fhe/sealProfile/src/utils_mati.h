@@ -182,16 +182,25 @@ inline void saveEncodig(std::string file_name, std::vector<int> encoding_diff, b
 
 }
 
-inline double norm2_vec(std::vector<double>  &v1, std::vector<double> &v2){
+inline double norm2_vec(std::vector<double>  &vecInput, std::vector<double> &vecOutput){
     double res = 0;
     double diff = 0;
-    for (int i=0; i<v2.size(); i++)
+    double max_value = 0;
+    double min_value = 10000000000;
+    double actual_value = 0;
+    // Itero sobre el del input por si el del output por construccion quedo mas grande
+    for (int i=0; i<vecInput.size(); i++)
     {
-        diff = v1[i] - v2[i];
+        if(vecInput[i] > max_value)
+            max_value = vecInput[i];
+        if(vecInput[i] < min_value)
+            min_value = vecInput[i];
+
+        diff = vecInput[i] - vecOutput[i];
         res += pow(diff, 2);
     }
-    res = std::sqrt(res);
-
+    res = std::sqrt(res/vecInput.size());
+    res = (1.0 - (res / (max_value-min_value))) * 100;
     return res;
 }
 
@@ -276,14 +285,12 @@ inline uint64_t hamming_distance(double& coeff1, double& coeff2)
 }
 
 // se podria paralelizar...
-inline uint64_t hamming_distance(std::vector<double>& vec1, std::vector<double>& vec2)
+inline uint64_t hamming_distance(std::vector<double>& vecInput, std::vector<double>& vecOutput)
 {
     uint64_t count = 0;
-    if (vec1.size() == vec2.size())
-    {
-        for(unsigned int i = 0; i < vec1.size(); i++)
-            count += hamming_distance(vec1[i], vec2[i]);
-    }
+    // el vector output puede tener otro size... entonces miro el input
+    for(unsigned int i = 0; i < vecInput.size(); i++)
+        count += hamming_distance(vecInput[i], vecOutput[i]);
     return count;
 }
 

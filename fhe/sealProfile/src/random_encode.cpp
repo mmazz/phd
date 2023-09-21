@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #include <system_error>
 #include <vector>
+#include <iterator>
 #include "examples.h"
 #include "utils_mati.h"
 #include <seal/randomgen.h>
@@ -34,9 +35,10 @@ double MAX_VALUE = 2.;
 
 void nttBit_flip(Plaintext& x_plain, const util::NTTTables *ntt_tables, int index_value,  int bit_change, size_t modulus_index, int poly_modulus_degree);
 void arguments(int argc, char *argv[], bool& TESTING, bool& RNS_ON, bool& NTT_ON, double& curr_point, double& max_value);
-std::string fileName(bool RNS_ON, bool NTT_ON);
+std::string fileName_hd(bool RNS_ON, bool NTT_ON);
 std::string fileName_norm2(bool RNS_ON, bool NTT_ON);
-
+std::string fileName_hd_decode(bool RNS_ON, bool NTT_ON);
+std::string fileName_norm2_decode(bool RNS_ON, bool NTT_ON);
 //                 test, rns, ntt,
 int main(int argc, char * argv[])
 {
@@ -53,16 +55,23 @@ int main(int argc, char * argv[])
         modulus ={30, 20, 30};
     else
         modulus ={50, 20};
-    std::string file_name = fileName(RNS_ON, NTT_ON);
+    std::string file_name_hd = fileName_hd(RNS_ON, NTT_ON);
     std::string file_name_norm2 = fileName_norm2(RNS_ON, NTT_ON);
+    std::string file_name_hd_decode = fileName_hd_decode(RNS_ON, NTT_ON);
+    std::string file_name_norm2_decode = fileName_norm2_decode(RNS_ON, NTT_ON);
+
 
     double scale = pow(2.0, 40);
     int coeff_modulus_size = modulus.size()-1;
 
     size_t size_input = poly_modulus_degree/2;
-    vector<double> input;
-    input.reserve(size_input);
-    input_creator(input, poly_modulus_degree, curr_point, max_value);
+ //   vector<double> input;
+    std::ifstream     file("data/example.txt");
+    std::vector<double>  input(std::istream_iterator<double>{file},
+                            std::istream_iterator<double>{});
+
+//    input.reserve(size_input);
+//    input_creator(input, poly_modulus_degree, curr_point, max_value);
     print_vector(input, 3, 7);
 
     print_example_banner("Example: CKKS random encoding");
@@ -100,6 +109,8 @@ int main(int argc, char * argv[])
         x_plain_size = (coeff_modulus_size-1)* x_plain_size;
 
     Plaintext plain_result;
+    Ciphertext x_encrypted;
+
     vector<double> result;
     uint64_t res_hamming = 0;
     double res_norm2 = 0;
@@ -107,7 +118,7 @@ int main(int argc, char * argv[])
     bool new_file = 1;
     std::string dir_name = "logs/log_encode/";
 
-    saveDataLog(dir_name+file_name, 0,  new_file);
+    saveDataLog(dir_name+file_name_hd, 0,  new_file);
     saveDataLog(dir_name+file_name_norm2, 0,  new_file);
     int modulus_index = 0;
     int modulus_bits = 0;
@@ -116,8 +127,6 @@ int main(int argc, char * argv[])
 
     int index_value = 0;
 
-
-    //
     cout << coeff_modulus_size << ", " << std::endl;
     for (size_t modulus_index = 0; modulus_index < coeff_modulus_size; modulus_index++)
     {
@@ -150,7 +159,7 @@ int main(int argc, char * argv[])
                         x_plain[index_value] = x_plain_original[index_value];
                     else
                         x_plain = x_plain_original;
-                    saveDataLog(dir_name+file_name, 0, !new_file);
+                    saveDataLog(dir_name+file_name_hd, 0, !new_file);
                     saveDataLog(dir_name+file_name_norm2, 0, !new_file);
                 }
                 else
@@ -160,7 +169,17 @@ int main(int argc, char * argv[])
                     res_hamming = hamming_distance(input, result);
                     res_norm2 = norm2_vec(input, result);
                     //res_elem = (int)diff_elem(input, result, threshold);
-                    saveDataLog(dir_name+file_name, res_hamming, !new_file);
+                    saveDataLog(dir_name+file_name_hd_decode, res_hamming, !new_file);
+                    saveDataLog(dir_name+file_name_norm2_decode, res_norm2, !new_file);
+
+                    encryptor.encrypt(x_plain, x_encrypted);
+                    decryptor.decrypt(x_encrypted, plain_result);
+                    encoder.decode(x_plain, result);
+
+                    res_hamming = hamming_distance(input, result);
+                    res_norm2 = norm2_vec(input, result);
+                    //res_elem = (int)diff_elem(input, result, threshold);
+                    saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
                     saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
                     // Si no tengo ntt tengo que cambiar todo el cifrado ya que se modifico todo
                     if(!NTT_ON)
@@ -175,19 +194,20 @@ int main(int argc, char * argv[])
 }
 
 
-std::string fileName(bool RNS_ON, bool NTT_ON)
+std::string fileName_hd(bool RNS_ON, bool NTT_ON)
 {
     std::string file_name;
     if (RNS_ON && NTT_ON)
-        file_name = "encode_withRNS&NTT";
+        file_name = "encodeHD_withRNS&NTT";
     else if (RNS_ON && !NTT_ON)
-        file_name = "encode_withRNS";
+        file_name = "encodeHD_withRNS";
     else if (!RNS_ON && NTT_ON)
-        file_name = "encode_withNTT";
+        file_name = "encodeHD_withNTT";
     else if (!RNS_ON && !NTT_ON)
-        file_name = "encode";
+        file_name = "encodeHD";
     return file_name;
 }
+
 std::string fileName_norm2(bool RNS_ON, bool NTT_ON)
 {
     std::string file_name;
@@ -201,6 +221,35 @@ std::string fileName_norm2(bool RNS_ON, bool NTT_ON)
         file_name = "encodeN2";
     return file_name;
 }
+
+std::string fileName_hd_decode(bool RNS_ON, bool NTT_ON)
+{
+    std::string file_name;
+    if (RNS_ON && NTT_ON)
+        file_name = "encodeHD_withRNS&NTT_decode";
+    else if (RNS_ON && !NTT_ON)
+        file_name = "encodeHD_withRNS_decode";
+    else if (!RNS_ON && NTT_ON)
+        file_name = "encodeHD_withNTT_decode";
+    else if (!RNS_ON && !NTT_ON)
+        file_name = "encodeHD_decode";
+    return file_name;
+}
+
+std::string fileName_norm2_decode(bool RNS_ON, bool NTT_ON)
+{
+    std::string file_name;
+    if (RNS_ON && NTT_ON)
+        file_name = "encodeN2_withRNS&NTT_decode";
+    else if (RNS_ON && !NTT_ON)
+        file_name = "encodeN2_withRNS_decode";
+    else if (!RNS_ON && NTT_ON)
+        file_name = "encodeN2_withNTT_decode";
+    else if (!RNS_ON && !NTT_ON)
+        file_name = "encodeN2_decode";
+    return file_name;
+}
+
 void arguments(int argc, char *argv[], bool& TESTING, bool& RNS_ON, bool& NTT_ON, double& curr_point, double& max_value)
 {
    if (argc==1)
@@ -226,8 +275,6 @@ void arguments(int argc, char *argv[], bool& TESTING, bool& RNS_ON, bool& NTT_ON
     if (argc>=5)
         max_value = atoi(argv[4])-curr_point;
 }
-
-
 
 void nttBit_flip(Plaintext& x_plain, const util::NTTTables *ntt_tables, int index_value,  int bit_change, size_t modulus_index, int poly_modulus_degree)
 {
