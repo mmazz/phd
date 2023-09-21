@@ -31,20 +31,20 @@ def image_creator(data, by_coeff_data, by_bits_data, metric, nameType):
     plt.plot(data)
     plt.xlabel('Encoding bit')
     plt.ylabel(f"{metric}")
-    plt.show()
+   # plt.show()
     plt.savefig(f"raw_{nameType}.jpg", bbox_inches="tight")
 
     plt.plot(by_coeff_data, color='steelblue',linewidth=5.0)
     plt.xlabel('Polynomail cofficient')
     plt.ylabel(f"{metric}")
-    plt.show()
+   # plt.show()
     plt.savefig(f"byCoeff_{nameType}.jpg", bbox_inches="tight")
 
     plt.clf()
     plt.plot(by_bits_data, color='steelblue',linewidth=5.0)
     plt.xlabel('Number of Bit in cofficient')
     plt.ylabel(f"{metric}")
-    plt.show()
+  #  plt.show()
     plt.savefig(f"byBits_{nameType}.jpg", bbox_inches="tight")
 
 
@@ -56,35 +56,51 @@ fileN2Decode = "encodeN2_withRNS&NTT_decode.txt"
 fileHDDecode = "encodeHD_withRNS&NTT_decode.txt"
 
 
-#df = pd.read_csv(dir+fileN2Full, header=None,  skip_blank_lines=False)
-#df = df.iloc[1:,:]
-#encoding = df[df.columns[0]].to_numpy(dtype='float')
-#
-#encoding1 = encoding[:polynomial_size*coeff_bits]
-#encoding1 = encoding1/len(encoding1)
-#encoding2 = encoding[polynomial_size*coeff_bits:]
-#encoding2 = encoding2/len(encoding2)
-#
-#encoding = encoding/(polynomial_size*coeff_bits)
-#print(f"Size first mod coeff: {len(encoding1)}, and second: {len(encoding2)}")
-#print(f"{fileN2Full}: {encoding1.mean()}, {encoding2.mean()} ")
-#
-#by_coeff_av, by_bits_av = data_reshape(encoding)
-#image_creator(encoding, by_coeff_av, by_bits_av, "Norm2", "Norm2")
-#
-#
-#df = pd.read_csv(dir+fileHDFull, header=None,  skip_blank_lines=False)
-#df = df.iloc[1:,:]
-#encoding = df[df.columns[0]].to_numpy(dtype='float')
-#encoding = encoding/(total_bits)*100
-#print(f"{fileHDFull}: {encoding.mean()}")
-#
-#by_coeff_av, by_bits_av = data_reshape(encoding)
-#image_creator(encoding, by_coeff_av, by_bits_av, "Hamming distance", "HD")
+df = pd.read_csv(dir+fileN2Full, header=None,  skip_blank_lines=False)
+df = df.iloc[1:,:]
+encoding = df[df.columns[0]].to_numpy(dtype='float')
+max = 0
+min = 10000000
+for i in range(len(encoding)):
+    if(encoding[i]>max):
+        max = encoding[i]
+    if(encoding[i]<min):
+        min = encoding[i]
+encoding = (encoding/100 + 1)*(max-min)
+
+encoding1 = encoding[:polynomial_size*coeff_bits]
+encoding1 = encoding1/len(encoding1)
+encoding2 = encoding[polynomial_size*coeff_bits:]
+encoding2 = encoding2/len(encoding2)
+
+encoding = encoding/(polynomial_size*coeff_bits)
+print(f"Size first mod coeff: {len(encoding1)}, and second: {len(encoding2)}")
+print(f"{fileN2Full}: {encoding1.mean()}, {encoding2.mean()} ")
+
+by_coeff_av, by_bits_av = data_reshape(encoding)
+image_creator(encoding, by_coeff_av, by_bits_av, "Norm2", "Norm2")
+
+
+df = pd.read_csv(dir+fileHDFull, header=None,  skip_blank_lines=False)
+df = df.iloc[1:,:]
+encoding = df[df.columns[0]].to_numpy(dtype='float')
+print(f"{fileHDFull}: {encoding.mean()}")
+encoding = encoding/(total_bits)*100
+
+by_coeff_av, by_bits_av = data_reshape(encoding)
+image_creator(encoding, by_coeff_av, by_bits_av, "Hamming distance (\%)" , "HD")
 
 df = pd.read_csv(dir+fileN2Decode, header=None,  skip_blank_lines=False)
 df = df.iloc[1:,:]
 encoding = df[df.columns[0]].to_numpy(dtype='float')
+max = 0
+min = 10000000
+for i in range(len(encoding)):
+    if(encoding[i]>max):
+        max = encoding[i]
+    if(encoding[i]<min):
+        min = encoding[i]
+encoding = (encoding/100 + 1)*(max-min)
 encoding = encoding/(polynomial_size*coeff_bits)
 print(f"{fileN2Decode}: {encoding.mean()}")
 
@@ -95,11 +111,12 @@ image_creator(encoding, by_coeff_av, by_bits_av, "Norm2", "Norm2_decode")
 df = pd.read_csv(dir+fileHDDecode, header=None,  skip_blank_lines=False)
 df = df.iloc[1:,:]
 encoding = df[df.columns[0]].to_numpy(dtype='float')
+
 encoding = encoding/(total_bits)*100
 print(f"{fileHDDecode}: {encoding.mean()}")
 
 by_coeff_av, by_bits_av = data_reshape(encoding)
-image_creator(encoding, by_coeff_av, by_bits_av, "Hamming distance", "HD_decode")
+image_creator(encoding, by_coeff_av, by_bits_av, "Hamming distance (\%)", "HD_decode")
 
 
 
