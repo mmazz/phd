@@ -21,6 +21,7 @@
 #include <seal/plaintext.h>
 #include <sstream>
 #include <string>
+#include <sys/types.h>
 #include <thread>
 #include <vector>
 #include <array>
@@ -182,27 +183,30 @@ inline void saveEncodig(std::string file_name, std::vector<int> encoding_diff, b
 
 }
 
-inline double norm2_vec(std::vector<double>  &vecInput, std::vector<double> &vecOutput){
+inline double norm2(std::vector<double>  &vecInput, std::vector<double> &vecOutput){
     double res = 0;
     double diff = 0;
-    double max_value = 0;
-    double min_value = 10000000000;
-    double actual_value = 0;
     // Itero sobre el del input por si el del output por construccion quedo mas grande
     for (int i=0; i<vecInput.size(); i++)
     {
-        if(vecInput[i] > max_value)
-            max_value = vecInput[i];
-        if(vecInput[i] < min_value)
-            min_value = vecInput[i];
-
         diff = vecInput[i] - vecOutput[i];
         res += pow(diff, 2);
     }
     res = std::sqrt(res/vecInput.size());
     return res;
 }
-
+inline double porcentage(std::vector<double>  &vecInput, std::vector<double> &vecOutput){
+    double res = 0;
+    double diff = 0;
+    // Itero sobre el del input por si el del output por construccion quedo mas grande
+    for (int i=0; i<vecInput.size(); i++)
+    {
+        diff = (vecInput[i] - vecOutput[i])*100/vecInput[i];
+        res += diff;
+    }
+    res = res/vecInput.size();
+    return res;
+}
 // size np es v1.size...
 // 1 si la diferencia es elemento a elemento menor al threshold, cero si no.
 inline bool diff_elem(std::vector<double>  &v1, std::vector<double> &v2, float threshold){
@@ -268,7 +272,7 @@ inline double bit_flip(double& original, ushort bit)
     return res_double;//_double;
 }
 
-inline uint64_t hamming_distance(double& coeff1, double& coeff2)
+inline uint64_t hamming_distance(double coeff1, double coeff2)
 {
     uint64_t* coeff1_int= (uint64_t*)&coeff1;
     uint64_t* coeff2_int= (uint64_t*)&coeff2;
@@ -290,6 +294,28 @@ inline uint64_t hamming_distance(std::vector<double>& vecInput, std::vector<doub
     // el vector output puede tener otro size... entonces miro el input
     for(unsigned int i = 0; i < vecInput.size(); i++)
         count += hamming_distance(vecInput[i], vecOutput[i]);
+    return count;
+}
+
+
+inline uint64_t hamming_distance(uint64_t coeff1, uint64_t coeff2)
+{
+    uint64_t res = 0;
+    res = coeff1^coeff2;
+    uint64_t count = 0;
+    while (res) {
+        count += res & 1;
+        res >>= 1;
+    }
+    return count;
+}
+// se podria paralelizar...
+inline uint64_t hamming_distance(seal::Plaintext &x_plain, seal::Plaintext &x_plain_original)
+{
+    uint64_t count = 0;
+    // el vector output puede tener otro size... entonces miro el input
+    for(unsigned int i = 0; i < x_plain.coeff_count(); i++)
+        count += hamming_distance(x_plain[i], x_plain_original[i]);
     return count;
 }
 

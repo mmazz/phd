@@ -16,7 +16,12 @@ coeff_bits = 30
 polynomial_size = 4096
 total_bits = modulus_size*coeff_bits*polynomial_size
 num_coeff = int(polynomial_size*modulus_size)
+dir = "../logs/log_encode/"
+fileN2Full = "encodeN2_withRNS&NTT.txt"
+fileHDFull = "encodeHD_withRNS&NTT.txt"
 
+fileN2Decode = "encodeN2_withRNS&NTT_decode.txt"
+fileHDDecode = "encodeHD_withRNS&NTT_decode.txt"
 print(f"Total number of bits: {total_bits}")
 # Hago una matriz de cantidad de coeficientes por cantidad de bits por coeff
 def data_reshape(encoding):
@@ -31,92 +36,60 @@ def image_creator(data, by_coeff_data, by_bits_data, metric, nameType):
     plt.plot(data)
     plt.xlabel('Encoding bit')
     plt.ylabel(f"{metric}")
-   # plt.show()
+    plt.show()
     plt.savefig(f"raw_{nameType}.jpg", bbox_inches="tight")
 
     plt.plot(by_coeff_data, color='steelblue',linewidth=5.0)
     plt.xlabel('Polynomail cofficient')
     plt.ylabel(f"{metric}")
-   # plt.show()
+    plt.show()
     plt.savefig(f"byCoeff_{nameType}.jpg", bbox_inches="tight")
 
     plt.clf()
     plt.plot(by_bits_data, color='steelblue',linewidth=5.0)
     plt.xlabel('Number of Bit in cofficient')
     plt.ylabel(f"{metric}")
-  #  plt.show()
+    plt.show()
     plt.savefig(f"byBits_{nameType}.jpg", bbox_inches="tight")
 
 
-dir = "../logs/log_encode/"
-fileN2Full = "encodeN2_withRNS&NTT.txt"
-fileHDFull = "encodeHD_withRNS&NTT.txt"
+dfN2Full = pd.read_csv(dir+fileN2Full, header=None,  skip_blank_lines=False)
+dfN2Full = dfN2Full.iloc[1:,:]
+encoding = dfN2Full[dfN2Full.columns[0]].to_numpy(dtype='float')
+print(f"{fileN2Full}: {encoding.mean()} ")
+dfN2Decode = pd.read_csv(dir+fileN2Decode, header=None,  skip_blank_lines=False)
+dfN2Decode = dfN2Decode.iloc[1:,:]
+encoding = dfN2Decode[dfN2Decode.columns[0]].to_numpy(dtype='float')
+print(f"{fileN2Decode}: {encoding.mean()}")
 
-fileN2Decode = "encodeN2_withRNS&NTT_decode.txt"
-fileHDDecode = "encodeHD_withRNS&NTT_decode.txt"
+
+dfHDFull = pd.read_csv(dir+fileHDFull, header=None,  skip_blank_lines=False)
+dfHDFull = dfHDFull.iloc[1:,:]
+encoding = dfHDFull[dfHDFull.columns[0]].to_numpy(dtype='float')
+encoding = encoding/(total_bits)*100
+print(f"{fileHDFull}: {encoding.mean()}")
+dfHDDecode = pd.read_csv(dir+fileHDDecode, header=None,  skip_blank_lines=False)
+dfHDDecode = dfHDDecode.iloc[1:,:]
+encoding = dfHDDecode[dfHDDecode.columns[0]].to_numpy(dtype='float')
+encoding = encoding/(total_bits)*100
+print(f"{fileHDDecode}: {encoding.mean()}")
 
 
-df = pd.read_csv(dir+fileN2Full, header=None,  skip_blank_lines=False)
-df = df.iloc[1:,:]
-encoding = df[df.columns[0]].to_numpy(dtype='float')
-max = 0
-min = 10000000
-for i in range(len(encoding)):
-    if(encoding[i]>max):
-        max = encoding[i]
-    if(encoding[i]<min):
-        min = encoding[i]
-encoding = (encoding/100 + 1)*(max-min)
 
-encoding1 = encoding[:polynomial_size*coeff_bits]
-encoding1 = encoding1/len(encoding1)
-encoding2 = encoding[polynomial_size*coeff_bits:]
-encoding2 = encoding2/len(encoding2)
 
-encoding = encoding/(polynomial_size*coeff_bits)
-print(f"Size first mod coeff: {len(encoding1)}, and second: {len(encoding2)}")
-print(f"{fileN2Full}: {encoding1.mean()}, {encoding2.mean()} ")
 
 by_coeff_av, by_bits_av = data_reshape(encoding)
 image_creator(encoding, by_coeff_av, by_bits_av, "Norm2", "Norm2")
 
-
-df = pd.read_csv(dir+fileHDFull, header=None,  skip_blank_lines=False)
-df = df.iloc[1:,:]
-encoding = df[df.columns[0]].to_numpy(dtype='float')
-print(f"{fileHDFull}: {encoding.mean()}")
-encoding = encoding/(total_bits)*100
+by_coeff_av, by_bits_av = data_reshape(encoding)
+image_creator(encoding, by_coeff_av, by_bits_av, "Norm2", "Norm2_decode")
 
 by_coeff_av, by_bits_av = data_reshape(encoding)
 image_creator(encoding, by_coeff_av, by_bits_av, "Hamming distance (\%)" , "HD")
 
-df = pd.read_csv(dir+fileN2Decode, header=None,  skip_blank_lines=False)
-df = df.iloc[1:,:]
-encoding = df[df.columns[0]].to_numpy(dtype='float')
-max = 0
-min = 10000000
-for i in range(len(encoding)):
-    if(encoding[i]>max):
-        max = encoding[i]
-    if(encoding[i]<min):
-        min = encoding[i]
-encoding = (encoding/100 + 1)*(max-min)
-encoding = encoding/(polynomial_size*coeff_bits)
-print(f"{fileN2Decode}: {encoding.mean()}")
-
 by_coeff_av, by_bits_av = data_reshape(encoding)
 image_creator(encoding, by_coeff_av, by_bits_av, "Norm2", "Norm2_decode")
 
-
-df = pd.read_csv(dir+fileHDDecode, header=None,  skip_blank_lines=False)
-df = df.iloc[1:,:]
-encoding = df[df.columns[0]].to_numpy(dtype='float')
-
-encoding = encoding/(total_bits)*100
-print(f"{fileHDDecode}: {encoding.mean()}")
-
-by_coeff_av, by_bits_av = data_reshape(encoding)
-image_creator(encoding, by_coeff_av, by_bits_av, "Hamming distance (\%)", "HD_decode")
 
 
 

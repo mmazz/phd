@@ -161,7 +161,7 @@ int main(int argc, char * argv[])
                         decryptor.decrypt(x_encrypted, plain_result);
                         encoder.decode(plain_result, result);
                         res_hamming = hamming_distance(input, result);
-                        res_norm2 = norm2_vec(input, result);
+                        res_norm2 = norm2(input, result);
                         //res_elem = (int)diff_elem(input, result, threshold);
                         saveDataLog(dir_name+file_name, res_hamming, !new_file);
                         saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);

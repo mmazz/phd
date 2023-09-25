@@ -167,7 +167,7 @@ int main(int argc, char * argv[])
                     encoder.decode(x_plain, result);
 
                     res_hamming = hamming_distance(input, result);
-                    res_norm2 = norm2_vec(input, result);
+                    res_norm2 = norm2(input, result);
                     //res_elem = (int)diff_elem(input, result, threshold);
                     saveDataLog(dir_name+file_name_hd_decode, res_hamming, !new_file);
                     saveDataLog(dir_name+file_name_norm2_decode, res_norm2, !new_file);
@@ -177,7 +177,7 @@ int main(int argc, char * argv[])
                     encoder.decode(x_plain, result);
 
                     res_hamming = hamming_distance(input, result);
-                    res_norm2 = norm2_vec(input, result);
+                    res_norm2 = norm2(input, result);
                     //res_elem = (int)diff_elem(input, result, threshold);
                     saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
                     saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);

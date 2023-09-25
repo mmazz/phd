@@ -1,4 +1,6 @@
-# Profiling
+# Profiling bitflip
+
+- Vamos a probar con imagenes de mnist.
 
 # Install
 
