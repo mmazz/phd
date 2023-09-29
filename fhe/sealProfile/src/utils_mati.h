@@ -195,6 +195,23 @@ inline double norm2(std::vector<double>  &vecInput, std::vector<double> &vecOutp
     res = std::sqrt(res/vecInput.size());
     return res;
 }
+
+inline double norm2(seal::Plaintext  &vecInput, seal::Plaintext &vecOutput){
+    double res = 0;
+    double diff = 0;
+    uint64_t coeff_count = vecInput.coeff_count();
+    // Itero sobre el del input por si el del output por construccion quedo mas grande
+    for (int i=0; i<coeff_count; i++)
+    {
+        diff = vecInput[i] - vecOutput[i];
+        res += pow(diff, 2);
+    }
+    res = std::sqrt(res/coeff_count);
+    return res;
+}
+
+
+
 inline double porcentage(std::vector<double>  &vecInput, std::vector<double> &vecOutput){
     double res = 0;
     double diff = 0;
@@ -318,7 +335,15 @@ inline uint64_t hamming_distance(seal::Plaintext &x_plain, seal::Plaintext &x_pl
         count += hamming_distance(x_plain[i], x_plain_original[i]);
     return count;
 }
-
+inline uint64_t hamming_distance(seal::Plaintext &x_plain, seal::Plaintext &x_plain_original, int poly_degree, int offset)
+{
+    uint64_t count = 0;
+    int offset_rns = offset*poly_degree;
+    // el vector output puede tener otro size... entonces miro el input
+    for(unsigned int i = 0; i < poly_degree; i++)
+        count += hamming_distance(x_plain[i+offset_rns], x_plain_original[i+offset_rns]);
+    return count;
+}
 inline bool check_equality(seal::Plaintext &x_plain, seal::Plaintext &x_plain2){
     int res=0;
     bool res_bool=0;

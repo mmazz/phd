@@ -20,7 +20,7 @@ contract CoinFlip
     {
         // que no haya mas de 2 jugadores
         require(num_players < 2, "Max players, wait for one of them end playing");
-        require(msg.value >= 1000000000 gwei, "Not enough funds"); // fondos... 1 eth
+        require(msg.value >= 100 gwei, "Not enough funds"); // fondos... 1 eth
         if(players[0]==address(0))
         {
             players[0]=msg.sender;
@@ -42,6 +42,8 @@ contract CoinFlip
     {
         return keccak256(abi.encodePacked(choice, randomness));
     }
+
+// sol reentrancy
     function withdrawBalance() public
     {
         // evito que un jugador pueda no revelar su opcion y el otro si y retirar si sabe que perdio.
@@ -50,14 +52,14 @@ contract CoinFlip
         {
             if(choicesRevealed[players[1]]!= bytes32(0))
             {
-                userBalances[players[1]] += 200000000;
+                userBalances[players[1]] += 200;
             }
         }
         if(msg.sender == players[1])
         {
             if(choicesRevealed[players[0]]!= bytes32(0))
             {
-                userBalances[players[0]] += 200000000;
+                userBalances[players[0]] += 200;
             }
         }
         uint amountToWithdraw = userBalances[msg.sender];
@@ -72,12 +74,11 @@ contract CoinFlip
         payable(msg.sender).transfer(amountToWithdraw);
     }
 
-
     function play(bytes32 choice) payable public
     {
         require(choices[msg.sender] == bytes32(0), "You had make your choice");
-        require(userBalances[msg.sender] >= 100000000, "Not enough funds in the contract, make a new deposit");
-        userBalances[msg.sender] -= 100000000;
+        require(userBalances[msg.sender] >= 100, "Not enough funds in the contract, make a new deposit");
+        userBalances[msg.sender] -= 100;
         choices[msg.sender] = choice;
     }
 
@@ -106,7 +107,7 @@ contract CoinFlip
 
         if(choicesRevealed[players[0]] == choicesRevealed[players[1]])
         {
-            userBalances[players[1]] += 200000000;
+            userBalances[players[1]] += 200;
             choicesRevealed[players[0]] = bytes32(0);
             choicesRevealed[players[1]] = bytes32(0);
             choices[players[0]] = bytes32(0);
@@ -114,7 +115,7 @@ contract CoinFlip
         }
         else
         {
-            userBalances[players[0]] += 200000000;
+            userBalances[players[0]] += 200;
             choicesRevealed[players[0]] = bytes32(0);
             choicesRevealed[players[1]] = bytes32(0);
             choices[players[0]] = bytes32(0);

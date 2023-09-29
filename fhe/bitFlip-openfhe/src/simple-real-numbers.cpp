@@ -1,21 +1,16 @@
+#include "lattice/hal/lat-backend.h"
 #include "math/hal/intnat/transformnat.h"
 #include <cstdint>
 #define PROFILE
-
 #include "openfhe.h"
 #include "iostream"
 
 using namespace lbcrypto;
-
 int main() {
     // Step 1: Setup CryptoContext
     uint32_t multDepth = 1;
-
     uint32_t scaleModSize = 50;
-
-
     uint32_t batchSize = 1<<10;
-
 
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
@@ -28,54 +23,38 @@ int main() {
     cc->Enable(KEYSWITCH);
     cc->Enable(LEVELEDSHE);
     std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension() << std::endl << std::endl;
-
     std::vector<int> test = {1, 2, 3};
-
     auto keys = cc->KeyGen();
-
-
     cc->EvalMultKeyGen(keys.secretKey);
-
     cc->EvalRotateKeyGen(keys.secretKey, {1, -2});
 
     // Step 3: Encoding and encryption of inputs
-
     std::ifstream file("data/example.txt");
     std::vector<double> x1(std::istream_iterator<double>{file}, std::istream_iterator<double>{});
     x1.erase(x1.begin()); // pop front
-
 
     // padding of zeros
     for (size_t i=x1.size(); i<batchSize; i++)
         x1.push_back(0);
     // Encoding as plaintexts
     Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(x1);
-
-    auto plainElem2 = ptxt1->GetElement<DCRTPoly>();
-    auto elems = plainElem2.GetAllElements();
+    DCRTPoly plainElem = ptxt1->GetElement<DCRTPoly>();
 
 
-    std::cout << elems.size() << " " << elems[0].GetLength() << std::endl;
+    auto elems =  plainElem.GetAllElements();
 
-    for (size_t i = 0; i < 1; i++)
+    std::cout << elems.size() << std::endl;
+    for (size_t i = 0; i < elems.size(); i++)
     {
-        for (size_t j=0; j<elems[i].GetLength(); j++)
-        {
-            elems->SetElementAtIndex(i, elems[1]) ;
-         //   std::cout << elems[i].at(j) << std::endl;
-        }
+        std::cout << "Polynomial " << i << " " << elems[i][0] << std::endl;
+        plainElem.GetAllElements()[i][0] = 0;
     }
 
-    auto elems2 = ptxt1->GetElement<DCRTPoly>().GetAllElements();
-
-
+    auto elems2 =  plainElem.GetAllElements();
 
     for (size_t i = 0; i < elems2.size(); i++)
     {
-        for (size_t j=0; j<elems[i].GetLength(); j++)
-        {
-        std::cout << elems2[i].at(j) << std::endl;
-        }
+        std::cout << "Polynomial " << i << " " << elems2[i][0] << std::endl;
     }
     // Encrypt the encoded vectors
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);

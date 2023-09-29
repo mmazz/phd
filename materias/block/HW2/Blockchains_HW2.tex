@@ -109,7 +109,7 @@ security properties of a digital signature be guaranteed without a PKI? Elaborat
         confirmar de quien es cada llave publica.
         Teniendo esto podemos validar algo firmado de forma facil y eficiente.
         De todas formas se puede tener las propiedades de seguridad de una firma digital
-        sin una PKI.
+        sin una PKI siempre y cuando el consenso de  n participantes es mayor que 3t (Bor96)
 
     \end{solution}
 
@@ -131,7 +131,8 @@ blockchains would start from a “genesis” block, which would provide an unpre
     How come? Explain why this works
 
 \begin{solution} %Uncomment and type your solution here
-
+Esto funciona por que una string vacia tambien puede ser hasheada, entonces no genera
+ninugn problema.
 \end{solution}
 
 
@@ -244,11 +245,14 @@ to mitigate such hazards.
     Creo que me asegure que no haya reentrada, ni que un usuario pueda hacer que
     el otro pierda ethers por haber apostado y retirado.
 \end{solution}
+
+
 \part[5] A description of your analysis of your fellow student’s contract (along
 with relative code snippets of their contract, where needed for readability),
 including:
 
 \begin{solution} %Uncomment and type your solution here
+Revise el contrato del compañero Luciano Tarsia,
 \end{solution}
 \part[5]
 \begin{itemize}
@@ -257,14 +261,157 @@ including:
 \end{itemize}
 
 \begin{solution} %Uncomment and type your solution here
-
+ Por lo que veo el contrato no genera ninugn tipo de seguridad para la eleccion del
+    usuario que primero juega.
+    Es decir el ultimo que hace su eleccion puede ver en la blockchain la eleccion del primero
+    y realizar la eleccion correcta para siempre ganar.
+    Esto claramente genera el exploit de poder siempre ganar.
 \end{solution}
      \part[5] The transaction history of an execution of a game on your contrac
 \begin{solution} %Uncomment and type your solution here
+    \begin{itemize}
+        \item Hago un deposito de 1000Gwei (cambie la cantidad requerida ya que nadie en la testnet tenemos 1ether...), 0x9b213f6b15355d5e35acbdf6a4d6778c262b96fecc6c32bebc92524ea43b1cc4
+        \item Me fijo el hash de lo la eleccion, Ejemplo: HEAD:  0x4845414400000000000000000000000000000000000000000000000000000000
+        \item Luego usando hashChoice pongo el hash de recien mas un numero que quiero y me hashea,
+            Ejemplo con el numero 14 y da: 0xbbf2ff047966babbabfc43a5f8013fbd71a5ab35692a9453601380e7e469a4f2
+        \item pego esto en play, 0x2a282564ff34872df40e2a6fe18c445f276901204a602a359dc06394315aaeaf.
+        \item Ahora tengo que esperar a que el otro jugador elija su eleccion.
+        \item Ahora pego el hash original de mi eleccion mas el numero que elegi en evaluateChoice.
+        \item Ahora puedo volver a jugar o retirar el dinero con withdraw.
+        \item En este caso hice withdraw, 0x7fcea6438092c1b20cee25c2d60b24ab29a5c045eb27440b2dfec82fab99e4ad
+    \end{itemize}
 \end{solution}
 
 \end{parts}
+\begin{verbatim}
 
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity ^0.8.0;
+
+
+contract CoinFlip
+{
+    bytes32 public constant HEAD = "HEAD";
+    bytes32 public constant TAIL = "TAIL";
+
+    uint public num_players = 0;
+    address[2] public players;
+    mapping(address => bytes32) public choices;
+    mapping(address => bytes32) public choicesRevealed;
+
+    mapping(address => uint256) private userBalances;
+
+
+    // Pago inicial
+    function deposit(uint256 deposito) payable public
+    {
+        // que no haya mas de 2 jugadores
+        require(num_players < 2, "Max players, wait for one of them end playing");
+        require(msg.value >= 100 gwei, "Not enough funds"); // fondos... 1 eth
+        if(players[0]==address(0))
+        {
+            players[0]=msg.sender;
+        }
+        else
+        {
+            players[1]=msg.sender;
+        }
+        userBalances[msg.sender] += deposito;
+        num_players += 1;
+    }
+
+    function balanceOf(address account) public view returns (uint256)
+    {
+        return userBalances[account];
+    }
+
+    function hashChoice(bytes32 choice, uint64 randomness) external pure returns(bytes32)
+    {
+        return keccak256(abi.encodePacked(choice, randomness));
+    }
+
+// sol reentrancy
+    function withdrawBalance() public
+    {
+        // evito que un jugador pueda no revelar su opcion y el otro si y retirar si sabe que perdio.
+        // basicamente se lo doy como perdida y retira. Pero le doy al otro usuario su ganancia
+        if(msg.sender == players[0])
+        {
+            if(choicesRevealed[players[1]]!= bytes32(0))
+            {
+                userBalances[players[1]] += 200;
+            }
+        }
+        if(msg.sender == players[1])
+        {
+            if(choicesRevealed[players[0]]!= bytes32(0))
+            {
+                userBalances[players[0]] += 200;
+            }
+        }
+        uint amountToWithdraw = userBalances[msg.sender];
+        userBalances[msg.sender] = 0;
+        delete userBalances[msg.sender];
+        num_players -= 1;
+        // para evitar que uno revele su respuesta y el otro retire todo
+        choicesRevealed[players[0]] = bytes32(0);
+        choicesRevealed[players[1]] = bytes32(0);
+        choices[players[0]] = bytes32(0);
+        choices[players[1]] = bytes32(0);
+        payable(msg.sender).transfer(amountToWithdraw);
+    }
+
+    function play(bytes32 choice) payable public
+    {
+        require(choices[msg.sender] == bytes32(0), "You had make your choice");
+        require(userBalances[msg.sender] >= 100, "Not enough funds in the contract, make a new deposit");
+        userBalances[msg.sender] -= 100;
+        choices[msg.sender] = choice;
+    }
+
+    function evaluateChoice(bytes32 choice, uint64 randomness) external
+    {
+        // que los dos ya hallan elegido
+        require(choices[players[0]] != bytes32(0), " Player 0 has not make a choice");
+        require(choices[players[1]] != bytes32(0), " Player 1 has not make a choice");
+        require(keccak256(abi.encodePacked(choice, randomness)) == choices[msg.sender], "Your choice and randomness do not correspond to your previus selection");
+        choicesRevealed[msg.sender] = choice;
+        // Si ya jugaron los dos directamente se ejecuta el evaluate
+        if((msg.sender==players[0]) && (choicesRevealed[players[1]]!= bytes32(0)))
+        {
+            evaluate();
+        }
+        else if((msg.sender==players[1]) && (choicesRevealed[players[0]]!= bytes32(0)))
+        {
+            evaluate();
+        }
+    }
+
+    function evaluate() internal
+    {
+        require(choicesRevealed[players[0]] != bytes32(0), "Player 0 has not revealed his choice");
+        require(choicesRevealed[players[1]] != bytes32(0), "Player 1 has not revealed his choice");
+
+        if(choicesRevealed[players[0]] == choicesRevealed[players[1]])
+        {
+            userBalances[players[1]] += 200;
+            choicesRevealed[players[0]] = bytes32(0);
+            choicesRevealed[players[1]] = bytes32(0);
+            choices[players[0]] = bytes32(0);
+            choices[players[1]] = bytes32(0);
+        }
+        else
+        {
+            userBalances[players[0]] += 200;
+            choicesRevealed[players[0]] = bytes32(0);
+            choicesRevealed[players[1]] = bytes32(0);
+            choices[players[0]] = bytes32(0);
+            choices[players[1]] = bytes32(0);
+        }
+    }
+    receive() external payable {}
+}
+\end{verbatim}
 \newpage
 
 ~\\
