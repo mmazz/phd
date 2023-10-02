@@ -1,9 +1,9 @@
-#include "lattice/hal/lat-backend.h"
 #include "math/hal/intnat/transformnat.h"
 #include <cstdint>
 #define PROFILE
 #include "openfhe.h"
 #include "iostream"
+#include "utils_mati.h"
 
 using namespace lbcrypto;
 int main() {
@@ -40,22 +40,28 @@ int main() {
     Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(x1);
     DCRTPoly plainElem = ptxt1->GetElement<DCRTPoly>();
 
-
-    auto elems =  plainElem.GetAllElements();
-
-    std::cout << elems.size() << std::endl;
-    for (size_t i = 0; i < elems.size(); i++)
+    size_t RNS_size = plainElem.GetAllElements().size();
+    //for (size_t i = 0; i < RNS_size; i++)
+    for (size_t i = 0; i < 1; i++)
     {
-        std::cout << "Polynomial " << i << " " << elems[i][0] << std::endl;
-        plainElem.GetAllElements()[i][0] = 0;
+        //size_t poly_degree = plainElem.GetAllElements()[i].GetLength();
+        //for (size_t j = 0; j < poly_degree; j++)
+        for (size_t j = 0; j < 1; j++)
+        {
+            auto original = plainElem.GetAllElements()[i][j];
+            std::cout << "Original " <<plainElem.GetAllElements()[i][j] << std::endl;
+            for(size_t bit=0; bit<64; bit++)
+            {
+                plainElem.GetAllElements()[i][j] = bit_flip(original, bit);
+                std::cout << "BitChanged " << bit << " " << plainElem.GetAllElements()[i][j] << std::endl;
+                plainElem.GetAllElements()[i][j] = original;
+            }
+            std::cout << "Polynomial " << i << " " << plainElem.GetAllElements()[i][j] << std::endl;
+        }
     }
 
-    auto elems2 =  plainElem.GetAllElements();
+    std::cout << "RNS size: " << RNS_size << " Polynomial degree: " << plainElem.GetAllElements()[0].GetLength() << std::endl;
 
-    for (size_t i = 0; i < elems2.size(); i++)
-    {
-        std::cout << "Polynomial " << i << " " << elems2[i][0] << std::endl;
-    }
     // Encrypt the encoded vectors
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
 
