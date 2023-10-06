@@ -41,14 +41,16 @@ int main() {
     DCRTPoly plainElem = ptxt1->GetElement<DCRTPoly>();
 
     size_t RNS_size = ptxt1->GetElement<DCRTPoly>().GetAllElements().size();
-    for (size_t i = 0; i < RNS_size; i++)
+    //for (size_t i = 0; i < RNS_size; i++)
+    for (size_t i = 0; i < 1; i++)
     {
-        size_t poly_degree = ptxt1->GetElement<DCRTPoly>().GetAllElements()[i].GetLength();
-        for (size_t j = 0; j < poly_degree; j++)
+        //size_t poly_degree = ptxt1->GetElement<DCRTPoly>().GetAllElements()[i].GetLength();
+        //for (size_t j = 0; j < poly_degree; j++)
+        for (size_t j = 0; j < 1; j++)
         {
             auto original = ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j];
             std::cout << "Original " <<ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] << std::endl;
-            for(size_t bit=63; bit<64; bit++)
+            for(size_t bit=9; bit<10; bit++)
             {
                 ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = bit_flip(original, bit);
                 auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
@@ -57,7 +59,7 @@ int main() {
                 result->SetLength(28*28);
                 std::cout << "Estimated precision in bits: " << result << std::endl;
                 std::cout << "BitChanged " << bit << " " << ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] << std::endl;
-                ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = original;
+                //ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = original;
             }
             std::cout << "Polynomial " << i << " " << plainElem.GetAllElements()[i][j] << std::endl;
         }
