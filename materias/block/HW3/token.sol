@@ -7,11 +7,11 @@ contract Token
     // a public payable address that defines the contract’s “owner,” that is, the
     // user that deploys the contract
     address payable public owner;
-    string public _symbol;
-    string public _name;
-    uint256 public _totalSupply = 0;
-    uint256 public _maxTokens = 1_000_000;
-    uint128 public _price = 600;
+    string private _symbol;
+    string private _name;
+    uint256 private _totalSupply = 0;
+    uint256 private _maxTokens = 1_000_000;
+    uint128 private _price = 600;
     mapping(address => uint256) balances;
     mapping(address => uint256) paid;
 

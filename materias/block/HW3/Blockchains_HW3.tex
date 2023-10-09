@@ -75,7 +75,7 @@
 %------------------------------%
 
 \ifstudent
-\hw{\hwnum}{\issuedate}{Student: \yourname}{Due: \duedate}%
+\hw{\hwnum}{\issuedate}{Student: Matias Mazzanti}{Due: \duedate}%
 \else
 \hw{\hwnum}{\issuedate}{\prof}{Due: \duedate}%
 \fi
@@ -134,9 +134,12 @@ for a total of \numpoints \ points.
 
             \part[3] Describe the purpose of a {\em coinbase} transaction.
 
-     %\begin{solution} %Uncomment and type your solution here
-
-    %\end{solution}
+     \begin{solution} %Uncomment and type your solution here
+        El objetivo es tener un sistema de pago a los mineros que son los que mantienen el estado de la Blockchain.
+         Entonces el minero cuando hace la POW tiene agregada esta transaccion hacia el para tener el pago de dicho trabajo.
+         Esa critpomoneda que se agregan como pago es nueva, de ahi el termino minar.
+         Es la forma que tienen esas criptomonedas de generar (''imprimir'') mas.
+    \end{solution}
 
             \end{parts}
 
@@ -249,9 +252,18 @@ You should provide:
 \item How did you link the library to your contract?
 \end{tiret}
 
-    %\begin{solution} %Uncomment and type your solution here
+    \begin{solution} %Uncomment and type your solution here
+        Para este contrato uso dos diccionarios, uno para tener la cantidad de plata que puso cada usiario en ethers y otra
+        para tener la cantidad de tokens que tiene cada uno.
+        Despues tengo una string para el nombre del token y otro para el de su symbolo.
+        Y por ultimo tengo 3 enteros, uno para el precio de token en wei, otro para la cantidad posible de emicion de tokens y el ultimo la cantidad de
+        tokens emitidos.
 
-    %\end{solution}
+        El usuario envia ethers al contrato y de aca el owner puede emitirle tokens.
+        Para vender el usuario simplemente pone cuantos tokens quiere vender.
+
+        Para saber su balance simplemente tiene que poner el address suyo en balanceOf y listo.
+    \end{solution}
 
 \part[5] A detailed gas evaluation of your implementation, including:
 \begin{tiret}
@@ -261,29 +273,174 @@ You should provide:
 including its code in your contract?
 \end{tiret}
 
-    %\begin{solution} %Uncomment and type your solution here
-
-    %\end{solution}
+    \begin{solution} %Uncomment and type your solution here
+        El del contracto cuesta 0.003206567508978389 ETH y el interactuar 0.000108640000304192 ETH.
+        Para hacerlo lo mas eficientemente posible en cuanto a gas es usar una estrucutra
+        de datos como los diccionarios para evitar cualquier tipo de loop a la hora de
+        buscar los balances y demas.
+    \end{solution}
 
 \part[5] A thorough listing of potential hazards and vulnerabilities that can occur in the smart
 contract and a detailed analysis of the security mechanisms that can mitigate these
 hazards.
 
-    %\begin{solution} %Uncomment and type your solution here
-
-    %\end{solution}
+    \begin{solution} %Uncomment and type your solution here
+        Los Hazards posibles que se me ocurren pueden ser a la hora de mover tokens
+    \end{solution}
 
 \part[5] The transaction history of the deployment of and interaction with your contract.
 
-    %\begin{solution} %Uncomment and type your solution here
-
-    %\end{solution}
+    \begin{solution} %Uncomment and type your solution here
+ \begin{itemize}
+    \item Deploy: 0x11546dd3f3140363ca1a3ed223572120fedab35e14b71a55bb085f301d7830c9
+    \item fallBack: 0x312f48ea06a719105ea44ace9cf0fbed305f4a2bd4f8934d130d7b941f379219
+    \item Mint 1 token: 0xf596013730a6df3e07d562194b36b34f4763f01a5ab7b18a8f62179aa08eeab3
+    \item Sell: 0x117cce502f11df877d53ef116ac614b15e7e3815d4a71bb57e71894411026743
+    \item Close: 0xba6d985dd60ccc1ca475e06dab42508b8aac05dce46ffd9ad8b4579625724b94
+ \end{itemize}
+    \end{solution}
 
 \part[5] The code of your contract.
 
-    %\begin{solution} %Uncomment and type your solution here
+    \begin{solution} %Uncomment and type your solution here
 
-    %\end{solution}
+\begin{verbatim}
+
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity ^0.8.0;
+
+
+contract Token
+{
+    // a public payable address that defines the contract’s “owner,” that is, the
+    // user that deploys the contract
+    address payable public owner;
+    string private _symbol;
+    string private _name;
+    uint256 private _totalSupply = 0;
+    uint256 private _maxTokens = 1_000_000;
+    uint128 private _price = 600;
+    mapping(address => uint256) balances;
+    mapping(address => uint256) paid;
+
+
+    // an event that contains two addresses and a uint256
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    // an event that contains an address and a uint256
+    // emitir seria
+    event Mint(address indexed to,  uint256 value);
+
+       // an event that contains an address and a uint256
+    event Sell(address indexed from, uint256 value);
+
+
+    // function that initializes the contract as needed
+    constructor()
+    {
+        _symbol = "CC";
+        _name = "Chiquito Coin";
+        owner = payable(msg.sender);
+      //  balances[owner] = _totalSupply;
+        emit Transfer(address(0), owner, _totalSupply);
+    }
+
+
+
+
+    // a view function that returns a uint256 of the total amount of minted tokens
+    function totalSupply() external view returns (uint256)
+    {
+        return _totalSupply;
+    }
+
+    // a view function returns a uint256 of the amount of tokens an address owns
+    function balanceOf(address account) external view returns (uint256 balance)
+    {
+        return balances[account];
+    }
+
+    //a view function that returns a string with the token’s name
+    function getName() public view returns (string memory)
+    {
+        return _name;
+    }
+
+    // a view function that returns a string with the token’s symbol
+    function getSymbol()  public view returns  (string memory)
+    {
+        return _symbol;
+    }
+
+    // a view function that returns a uint128 with the token’s price (at which
+    // users can redeem their tokens)
+    function getPrice() public view returns  (uint128)
+    {
+        return _price;
+    }
+
+    //a function that transfers value amount of tokens between the caller’s address and
+    // the address to; if the transfer completes successfully, the function emits an event
+    //  Transfer with the sender’s and receiver’s addresses and the amount of transferred
+    // tokens and returns a boolean value (true)
+    function transfer(address to, uint256 value)  public returns (bool success)
+    {
+        require(to != address(0), "ERC20: transfer to the zero address");
+        require(value <= balances[msg.sender], "ERC20: Insufficient balance");
+
+        balances[msg.sender] -= value;
+        balances[to] += value;
+        emit Transfer(msg.sender, to, value);
+        return true;
+    }
+
+    // a function that enables only the owner to create value new tokens and give them
+    // to address to; if the operation completes successfully, the function emits an
+    // event Mint with the receiver’s address and the amount of minted tokens and returns
+    // a boolean value (true)
+    function mint(address to, uint256 value) public returns(bool success)
+    {
+        require(to != address(0), "Mint to the zero address");
+        //require(paid[to] >= value * _price);
+        require(msg.sender == owner, "Do not have privilages to mint");
+        require(_totalSupply+value <= _maxTokens, "No more tokens to emit");
+        require(paid[to] >= value * _price);
+        paid[to] -= value * _price;
+        _totalSupply += value;
+        balances[to] += value;
+        emit Mint( to, value);
+        return true;
+    }
+
+    // a function that enables a user to sell tokens for wei at a price of 600 wei per token;
+    // if the operation completes successfully, the sold tokens are removed from the
+    // circulating supply, and the function emits an event Sell with the seller’s address
+    // and the amount of sold tokens and returns a boolean value (true)
+    function sell(uint256 value) public returns(bool)
+    {
+        require(balances[msg.sender]>= value, "Not enough tokens");
+        balances[msg.sender] -= value;
+        _totalSupply -= value;
+        payable(msg.sender).transfer(value*_price);
+        emit Sell(msg.sender, value);
+        return true;
+    }
+
+    // a function that enables only the owner to destroy the contract; the
+    // contract’s balance in wei, at the moment of destruction, should be transferred to
+    // the owner’s address
+    function close() public
+    {
+        require(msg.sender == owner, "Do not have privilages to close contract");
+        selfdestruct(owner);
+    }
+
+    //functions that enable anyone to send Ether to the contract’s account
+    receive() external payable {
+        paid[msg.sender] += msg.value;
+    }
+}
+\end{verbatim}
+    \end{solution}
 
 \end{parts}
 
