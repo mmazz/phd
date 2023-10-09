@@ -128,9 +128,22 @@ for a total of \numpoints \ points.
          \begin{parts}
                    \part[7] Describe the mechanism used in the actual Bitcoin application that  the miners follow in order to insert transactions into a block. Would the Consistency (aka Persistence) and Liveness properties we saw in class, as well as the $V,I,R$ functions have to be modified to capture the actual mechanism? Elaborate.
 
-     %\begin{solution} %Uncomment and type your solution here
+     \begin{solution} %Uncomment and type your solution here
+        El minero cuando recibe una transacaccion tiene que primero revisar que sea correcta.
+         Es decir, que tengan los fondos suficientes, que no sea una duplicada, que la firma sea
+         correcta, que tenga un tamaño menor al maximo permitido, syntaxis corrrecta, etc.
+         Luego de todo esto se puede insertar a un bloque.
 
-    %\end{solution}
+         Antes de esto, el minero agarra algunas transacciones del pool de transancciones sin
+          estar en bloques.
+          En general (para no decir siempre), los mineros elegien las transacciones con la mayor comision.
+          Entocnes esto ya genera un problema con la propiedad \textit{Livenes}.
+          Ya que hay una pequeña probabilidad de que una transaccion generada por un usuario honesto
+          nunca sea agregada a la blockchain.
+
+          En cuanto al resto, diria que no hace falta modificar nada mas.
+
+    \end{solution}
 
             \part[3] Describe the purpose of a {\em coinbase} transaction.
 
@@ -169,15 +182,52 @@ for a total of \numpoints \ points.
 
 \part[7] Let $T_1$ and $T_2$ be the target values in 2x1 PoW, and $\kappa$ the size of the hash function's output. What relation should they satisfy for the technique to work? Elaborate.
 
-    %\begin{solution} %Uncomment and type your solution here
-
-    %\end{solution}
+   \begin{solution} %Uncomment and type your solution here
+        Por un lado se requiere que $\kappa$ sea neutral desde el punto de vista de la prueba.
+        Por el otro se sigue requiriendo que que tanto $t_1 (T_1 = 2^{t_1})$ y $t_2 (T_2 = 2^{t_2})$
+        cumplan que $t_1,t_2 < \kappa/2$.
+    \end{solution}
 
   \part[8] Design and argue correctness of an $\ell$x1 PoW scheme. Note that such a scheme would enable an $\ell$-parallel blockchain. What properties of the blockchain or ledger application would, if any,  benefit from a parallel blockchain? Elaborate.
 
-   %\begin{solution} %Uncomment and type your solution here
+   \begin{solution} %Uncomment and type your solution here
+    Para poder realziar un $l\times 1$PoW se podria separar el string en diferentes partes y compararlo con diferentes $T'$.
+       Es decir en vez de separar en solamante $w_0$ y $w_1$ podemos hacerlo hasta $w_l$.
+       Luego al igual que en el caso de $2\times1$ PoW, podemos luego hacer un Hash de los hashes
+       de estos $w_i$.
+        Luego con este hash podemos buscarle $l$ propiedades, y esto lo podemos hacer al
+        dividir el hash por la mitad y ver que arranque y termine en $x$ cantidad de ceros, y asi.
 
-    %\end{solution}
+        El beneficio que puede tener esto es que se puede hacer que cierta parte sea mas sencillo que otra al ponerle
+        una condicin $T_i$ mas o menos sencilla.
+        Como que el poner transacciones sea mas sencillo que el PoW de validar un bloque.
+
+\begin{verbatim}
+function ele-pow(w0, w1, ..., wl)
+    B0, B1, ..., Bl $leftarrow \epsilon$
+    ctr $\leftarrow$ 1
+    h $\leftarrow$ <G(w0), G(w1), ..., G(wl)>
+    while (ctr $leq$ q) do
+        u $\leftarrow$ H(ctr, h)
+        if (f(u,0) < T ) $\lor$ (B0 = $\epsilon$) then
+            B0 $\leftarrow$  <w0, ctr, G(w1)>
+        end if
+        if (f(u,1) < T ) $\lor$ (B1 = $\epsilon$) then
+            B1  $\leftarrow$ <w1, ctr, G(w2)>
+        end if
+        .
+        .
+        .
+        if (f(u,l) < T ) $lor$ (B1 = $\epsilon$) then
+            Bl  $\leftarrow$ <wl, ctr, G(w0)>
+        end if
+        ctr  $\leftarrow$ ctr + 1
+    end while
+    return <B0, B1, ..., Bl>
+end function
+\end{verbatim}
+
+    \end{solution}
 
     \end{parts}
 
@@ -189,15 +239,22 @@ for a total of \numpoints \ points.
 
 \part[5] What should be the assumption on the adversarial computational power (similar to the ``Honest Majority Assumption'') for Strong Validity to hold?
 
-    %\begin{solution} %Uncomment and type your solution here
-
-    %\end{solution}
+    \begin{solution} %Uncomment and type your solution here
+        La asumsion es que cuando no estemos en el caso binario, el poder de hashing
+        sea acotado en $(1-\delta)/(|V|-1)$.
+        Donde $|V|$ es el tamaño del espacio de entrada.
+        Esto asegura que el numero esperado de bloques en la blockchain que son contraolados por
+        el adversario sea menor que $1/|V|$ y que mantenga validez incluso en el peor caso
+        donde las entradas de los participantes honestos estan divididas de igual forma
+        en todas las posibilidades menos en una.
+    \end{solution}
 
 \part[5]  State and prove the Strong Validity lemma.
 
-    %\begin{solution} %Uncomment and type your solution here
-
-    %\end{solution}
+    \begin{solution} %Uncomment and type your solution here
+        \textbf{Strong Validity}: Si los participantes honestos deciden en $v$, entonces
+        el valor inicial de algun participante honesto fue $v$.
+    \end{solution}
 
 \end{parts}
 
@@ -246,7 +303,7 @@ You should provide:
 
 \part[5] A detailed description of your high-level design decisions, including (but not limited to):
 \begin{tiret}
-\item  What internal variables did you use?
+\item What internal variables did you use?
 \item What is the process of buying/selling tokens and changing the price?
 \item How can users access their token balance?
 \item How did you link the library to your contract?
