@@ -8,6 +8,7 @@ dir = "../data/"
 file = "example.txt"
 file_bitflip = "example_bitflip.txt"
 file_bitflip_decode = "example_bitflip_decode.txt"
+file_nonBitflip = "example_nonbitflip.txt"
 file_nonBitflip = "example_nonBitflip.txt"
 
 
@@ -18,12 +19,12 @@ plt.style.use('grayscale')
 plt.imshow(data_matrix)
 plt.show()
 
-data_matrix = np.loadtxt(dir+file_nonBitflip,  delimiter=",").reshape(28,28)
+data_matrix = np.loadtxt(dir+file_nonBitflip,  delimiter=",").reshape(28,28)*10000
 
 plt.imshow(data_matrix)
 plt.show()
 
-data_matrix = np.loadtxt(dir+file_bitflip_decode,  delimiter=",").reshape(28,28)
+data_matrix = np.loadtxt(dir+file_bitflip_decode,  delimiter=",", dtype=int).reshape(28,28)*10000
 
 plt.imshow(data_matrix)
 plt.show()

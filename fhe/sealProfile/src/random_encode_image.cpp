@@ -96,7 +96,13 @@ int main(int argc, char * argv[])
     int modulus_bits = 0;
     int index_value = 0;
     bool new_file = 1;
+    std::ofstream outfile;
 
+    cout << "valor2! " << res_hamming << endl;
+    outfile.open("data/example_nonbitflip.txt", std::ios_base::out);
+    for(int i=0; i<input.size()-1; i++)
+        outfile << result[i] << ",";
+    outfile << result[input.size()-1] << endl;
     cout << "Starting bitflips with x_plain_size of: " << x_plain_size << endl;
 
     cout << "Coeff modulus size: " << coeff_modulus_size << std::endl;
