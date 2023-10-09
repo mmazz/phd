@@ -51,7 +51,9 @@ int main() {
             auto original = ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j];
             std::cout << "Original " <<ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] << std::endl;
             for(size_t bit=9; bit<10; bit++)
+
             {
+                std::cout << ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] << "vs " <<  bit_flip(original, bit) << std::endl;
                 ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = bit_flip(original, bit);
                 auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
                 Plaintext result;
