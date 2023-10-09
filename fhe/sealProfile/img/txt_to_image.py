@@ -6,8 +6,10 @@ size = 28
 
 dir = "../data/"
 file = "example.txt"
-file_bitflip = "example_bitflip.txt"
-file_bitflip_decode = "example_bitflip_decode.txt"
+file_bitflip = "example_nonOps.txt"
+#file_bitflip = "example_bitflip.txt"
+file_bitflip_decode = "example_nonOps_decode.txt"
+#file_bitflip_decode = "example_bitflip_decode.txt"
 file_nonBitflip = "example_nonbitflip.txt"
 file_nonBitflip = "example_nonBitflip.txt"
 

@@ -9,10 +9,11 @@
     cada bit en el.
     El loop de coeficiente, deberia ser 2*4096 coeficientes por cada RNS
 */
-#include <cstdint>
 #include <iostream>
 #include <seal/ciphertext.h>
 #include <seal/plaintext.h>
+#include <seal/util/ntt.h>
+#include <string>
 #include <sys/types.h>
 #include <system_error>
 #include <vector>
@@ -34,16 +35,21 @@ void nttBit_flip(Plaintext& x_plain, const util::NTTTables *ntt_tables, int inde
 int main(int argc, char * argv[])
 {
     size_t poly_modulus_degree = 4096;
-   // vector<int> modulus = {30, 30, 30};
     vector<int> modulus = {60, 30};
-    double scale = pow(2.0, 40);
-    int coeff_modulus_size = modulus.size()-1;
-    size_t size_input = poly_modulus_degree/2;
 
+    std::string dir_name = "logs/log_encode/";
+    std::string file_name_hd = "encodeHD_nonOps";
+    std::string file_name_norm2 =  "encodeN2_nonOps";
+    std::string file_name_hd_decode = "encodeHD_nonOps_decode";
+    std::string file_name_norm2_decode = "encodeN2_nonOps_decode";
+
+    double scale = pow(2.0, 30);
+    int coeff_modulus_size = modulus.size()-1;
+
+    size_t size_input = poly_modulus_degree/2;
     std::ifstream     file("data/example.txt");
     std::vector<double> input(std::istream_iterator<double>{file}, std::istream_iterator<double>{});
     input.erase(input.begin()); // pop front
-
     print_vector(input, 3, 7);
     cout << "size vec " << input.size() << endl;
     print_example_banner("Example: CKKS random encoding");
@@ -65,6 +71,7 @@ int main(int argc, char * argv[])
     Evaluator evaluator(context);
     Decryptor decryptor(context, secret_key);
     CKKSEncoder encoder(context);
+
     auto context_data_ptr = context.get_context_data(parms.parms_id());
     auto &context_data = *context_data_ptr;
     auto ntt_tables = context_data.small_ntt_tables();
@@ -83,111 +90,86 @@ int main(int argc, char * argv[])
 
     vector<double> result;
     result.reserve(input.size());
+    vector<double> result_decode;
+    result_decode.reserve(input.size());
 
-    encryptor.encrypt(x_plain, x_encrypted);
-    decryptor.decrypt(x_encrypted, plain_result);
-    encoder.decode(plain_result, result);
 
-    std::ofstream outfile_nonBitFlip;
-    outfile_nonBitFlip.open("data/example_nonBitflip.txt", std::ios_base::out);
-    for(int i=0; i<input.size()-1; i++)
-    {
-        outfile_nonBitFlip<< result[i] << ",";
-       // cout << "i: " <<i << " inputs: " << input[i] << " vs " << result[i] << endl;
-    }
-    outfile_nonBitFlip << result[input.size()-1] << endl;
 
     uint64_t res_hamming = 0;
+    uint64_t res_hamming_decode = 0;
     double res_norm2 = 0;
+    double res_norm2_decode = 0;
+
     int modulus_index = 0;
     int modulus_bits = 0;
     int index_value = 0;
     bool new_file = 1;
-    std::ofstream outfile;
 
-    cout << "valor2! " << res_hamming << endl;
-    outfile.open("data/example_nonbitflip.txt", std::ios_base::out);
-    for(int i=0; i<input.size()-1; i++)
-        outfile << result[i] << ",";
-    outfile << result[input.size()-1] << endl;
+    saveDataLog(dir_name+file_name_hd, 0,  new_file);
+    saveDataLog(dir_name+file_name_norm2, 0,  new_file);
+    saveDataLog(dir_name+file_name_hd_decode, 0, new_file);
+    saveDataLog(dir_name+file_name_norm2_decode, 0, new_file);
+
     cout << "Starting bitflips with x_plain_size of: " << x_plain_size << endl;
 
     cout << "Coeff modulus size: " << coeff_modulus_size << std::endl;
-
-    for (size_t modulus_index = 1; modulus_index < coeff_modulus_size; modulus_index++)
+    int count = 0;
+    for (size_t modulus_index = 0; modulus_index < coeff_modulus_size; modulus_index++)
     {
         uint64_t modulus_value=0;
         modulus_value = coeff_modulus[modulus_index].value();
-        //cout << modulus_value << endl;
+        cout << "Modulus value " << modulus_value << endl;
 
         modulus_bits = modulus[modulus_index];
-        cout << modulus_bits << endl;
         size_t coeff_count = parms.poly_modulus_degree();
 
-        coeff_count=100;
-        index_value=1490;
         for (; coeff_count--; index_value++)
         {
             cout << index_value << ", " << std::flush;
 
             for (int bit_change=0; bit_change<modulus_bits; bit_change++)
             {
-      //          cout << "bit change" << bit_change << endl;
-                //x_plain[index_value] = bit_flip(x_plain[index_value], bit_change);
-
                 nttBit_flip(x_plain, ntt_tables, index_value, bit_change, modulus_index, poly_modulus_degree);
                 if (x_plain[index_value] >= modulus_value)
                 {
                     x_plain[index_value] = x_plain_original[index_value];
-
-                    cout << "Max modulus.... " << std::endl;
+                    saveDataLog(dir_name+file_name_hd, 4096*60, !new_file);
+                    saveDataLog(dir_name+file_name_norm2, 1000000000, !new_file);
+                    // la mayor cantidad de bits...
+                    saveDataLog(dir_name+file_name_hd_decode, 4096*60, !new_file);
+                    saveDataLog(dir_name+file_name_norm2_decode, 1000000000, !new_file);
                 }
+
                 else
                 {
-                    cout << "Max modulus.... " << std::endl;
-                    uint64_t hd_bitflip = hamming_distance(x_plain, x_plain_original);
-                    //cout << "Hamming distance x_plain bit flip: " << hd_bitflip << endl;
-                    //cout << "Coeff count " << x_plain.coeff_count() << endl;
-                    cout << "Max modulus.... " << std::endl;
-                    encoder.decode(x_plain, result);
-                    res_hamming = hamming_distance(input, result)*100/(4096*60);
-                    res_norm2 = norm2(input, result);
-                  //  if(res_hamming<6)
-                 //   {
-                    std::ofstream outfile_decode;
-                    cout << "hamming distance: " << res_hamming << endl;
-                    cout << "N2:  " << res_norm2 << endl;
-                    outfile_decode.open("data/example_nonOps_decode.txt", std::ios_base::out);
-                    //outfile_decode.open("data/example_bitflip_decode.txt", std::ios_base::out);
-                    for(int i=0; i<input.size()-1; i++)
-                        outfile_decode << result[i] << ",";
-                    outfile_decode << result[input.size()-1] << endl;
-                //    }
+
+
+                    encoder.decode(x_plain, result_decode);
+                    res_hamming_decode = hamming_distance(input, result_decode);
+                    res_norm2_decode = norm2(input, result_decode);
+                    saveDataLog(dir_name+file_name_hd_decode, res_hamming_decode, !new_file);
+                    saveDataLog(dir_name+file_name_norm2_decode, res_norm2_decode, !new_file);
+
                     encryptor.encrypt(x_plain, x_encrypted);
                     decryptor.decrypt(x_encrypted, plain_result);
                     encoder.decode(plain_result, result);
-                    res_hamming = hamming_distance(input, result)*100/(4096*60);
+
+
+                    res_hamming = hamming_distance(input, result);
                     res_norm2 = norm2(input, result);
+                    //cout << x_plain_original[index_value]<<  " vs "  << x_plain[index_value] << " , indexvalue: " << index_value << " bitchange: " << bit_change << " hd: " << res_hamming << " n2: "<< res_norm2 << endl;
+                    saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
+                    saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
+
+                //    uint64_t hd_decode = hamming_distance(x_plain, plain_result);
+                //    uint64_t hd_res = hamming_distance(result, result_decode);
+                //    cout << "HD of encoding with encrypt and without " << hd_decode << " res: " << hd_res<< endl;
 
                     x_plain[index_value] = x_plain_original[index_value];
-
-                 //   if(res_hamming<6)
-                 //   {
-                    std::ofstream outfile;
-
-                    cout << "hamming distance 2: " << res_hamming << endl;
-                    cout << "N2 2:  " << res_norm2 << endl;
-                    outfile.open("data/example_nonOps.txt", std::ios_base::out);
-                    //outfile.open("data/example_bitflip.txt", std::ios_base::out);
-                    for(int i=0; i<input.size()-1; i++)
-                        outfile << result[i] << ",";
-                    outfile << result[input.size()-1] << endl;
-                 //   }
                 }
             }
         }
     }
-
    return 0;
 }
 
