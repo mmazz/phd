@@ -93,8 +93,6 @@ int main(int argc, char * argv[])
     vector<double> result_decode;
     result_decode.reserve(input.size());
 
-
-
     uint64_t res_hamming = 0;
     uint64_t res_hamming_decode = 0;
     double res_norm2 = 0;
@@ -132,18 +130,16 @@ int main(int argc, char * argv[])
                 nttBit_flip(x_plain, ntt_tables, index_value, bit_change, modulus_index, poly_modulus_degree);
                 if (x_plain[index_value] >= modulus_value)
                 {
-                    x_plain[index_value] = x_plain_original[index_value];
+                    x_plain = x_plain_original;
                     saveDataLog(dir_name+file_name_hd, 4096*60, !new_file);
-                    saveDataLog(dir_name+file_name_norm2, 1000000000, !new_file);
+                    saveDataLog(dir_name+file_name_norm2, -1, !new_file);
                     // la mayor cantidad de bits...
                     saveDataLog(dir_name+file_name_hd_decode, 4096*60, !new_file);
-                    saveDataLog(dir_name+file_name_norm2_decode, 1000000000, !new_file);
+                    saveDataLog(dir_name+file_name_norm2_decode, -1, !new_file);
                 }
 
                 else
                 {
-
-
                     encoder.decode(x_plain, result_decode);
                     res_hamming_decode = hamming_distance(input, result_decode);
                     res_norm2_decode = norm2(input, result_decode);
@@ -153,8 +149,6 @@ int main(int argc, char * argv[])
                     encryptor.encrypt(x_plain, x_encrypted);
                     decryptor.decrypt(x_encrypted, plain_result);
                     encoder.decode(plain_result, result);
-
-
                     res_hamming = hamming_distance(input, result);
                     res_norm2 = norm2(input, result);
                     //cout << x_plain_original[index_value]<<  " vs "  << x_plain[index_value] << " , indexvalue: " << index_value << " bitchange: " << bit_change << " hd: " << res_hamming << " n2: "<< res_norm2 << endl;
@@ -165,7 +159,7 @@ int main(int argc, char * argv[])
                 //    uint64_t hd_res = hamming_distance(result, result_decode);
                 //    cout << "HD of encoding with encrypt and without " << hd_decode << " res: " << hd_res<< endl;
 
-                    x_plain[index_value] = x_plain_original[index_value];
+                    x_plain = x_plain_original;
                 }
             }
         }

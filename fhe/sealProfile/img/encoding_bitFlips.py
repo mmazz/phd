@@ -17,11 +17,11 @@ polynomial_size = 4096
 total_bits = modulus_size*coeff_bits*polynomial_size
 num_coeff = int(polynomial_size*modulus_size)
 dir = "../logs/log_encode/"
-fileN2Full = "encodeN2_withRNS&NTT.txt"
-fileHDFull = "encodeHD_withRNS&NTT.txt"
+fileN2Full = "encodeN2_nonOps.txt"
+fileHDFull = "encodeHD_nonOps.txt"
 
-fileN2Decode = "encodeN2_withRNS&NTT_decode.txt"
-fileHDDecode = "encodeHD_withRNS&NTT_decode.txt"
+fileN2Decode = "encodeN2_nonOps_decode.txt"
+fileHDDecode = "encodeHD_nonOps_decode.txt"
 print(f"Total number of bits: {total_bits}")
 # Hago una matriz de cantidad de coeficientes por cantidad de bits por coeff
 def data_reshape(encoding):
@@ -87,7 +87,7 @@ by_coeff_av, by_bits_av = data_reshape(encodingN2Decode)
 image_creator(encodingN2Decode, by_coeff_av, by_bits_av, "Norm2", "Norm2_decode")
 
 by_coeff_av, by_bits_av = data_reshape(encodingHD)
-image_creator(encodingDecode, by_coeff_av, by_bits_av, "Hamming distance (\%)" , "HD")
+image_creator(encodingHD, by_coeff_av, by_bits_av, "Hamming distance (\%)" , "HD")
 
 by_coeff_av, by_bits_av = data_reshape(encodingHDDecode)
 image_creator(encodingHDDecode, by_coeff_av, by_bits_av, "Norm2", "Norm2_decode")
