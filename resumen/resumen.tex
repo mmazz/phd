@@ -41,6 +41,129 @@ Para la parte de CKKS:
   \item https://blog.openmined.org/ckks-explained-part-1-simple-encoding-and-decoding/
   \item BFV: https://blog.openmined.org/build-an-homomorphic-encryption-scheme-from-scratch-with-python/
 \end{itemize}
+\section{Intro Cripto}
+
+%Mucho de lo siguiente esta basando en el curso de youtube de Neso Academy,
+%Cryptography & Network Security
+\subsection{Algebra abstracta y teoria de numeros}
+
+En la criptografia moderna, la mayoria de esquemas basan su seguridad en
+el algebra abstracto y en teoria de numeros.
+Es decir estos esquemas no usan el calculo ni la trigonometria.
+
+Existen varios algoritmos y conceptos que hace falta entender para tener una base que permita
+estudiar los esquemas de encriptacion moderna.
+Entre ellos se encuentra el algoritmo de division, el algoritmo euclideo y su version
+extendida, la aritmetica modular, grupos, anillos, campos y campos finitos,
+aritmetica polinomial, numeros primos, teorema de Fermat y Euler, testear si un numero es primo,
+ y por ultimo el teorema chino del remanente.
+
+ \paragraph{Numeros primos}
+Sabemos todos que un numero es primo si tiene solo dos divisores, 1 y el mismo, es decir remanente cero.
+Ademas sabemos que cualquier otro numero tiene una factorizacion de numeros primos.
+Por ejemplo, si tenenmos el numero 100, este se factoriza en $2\times2\times5\times5$.
+
+Uno de los motivos del uso de numeros primos en criptografia, es que la multiplicacion
+de dos numeros primos puede ser muy rapida, pero el computo inverso de dado un numero
+encontrar su factorizacion, es muy lenta.
+
+ \paragraph{Aritmetica Modular}
+Es un sistema aritmetico para numeros enteros que se envuelven alrededor
+de un numero llamado modulo al llegar a un cierto valor.
+Se utiliza en criptografia el concepto de congruencia, el cual se lo denota con
+el simbolo $\equiv$ y no el =.
+Basicamente es cuando dos numeros tienen el mismo remanente de un modulo.
+Es decir $a \equiv b (mod m)$ dice que $a$ y $b$ al dividirlo por $m$ tienen el mismo
+remanente.
+En general (o siempre) $b$ es el valor del remanente.
+Ejemplo: $15\equiv 3 (mod 12)$.
+
+Para el caso de remanentes negativos se interpretan de la siguiente forma.
+Se resta el remanente con el modulo, en el cual o es cero o un numero negativo.
+Ese numero negativo es equivalente al remanente.s
+Al sumar ese numero negativo con el modulo, se llega al remanente.
+
+A su vez, la congruencia se puede enunciar de otra forma, de que si $a$ es congruente
+con $b$ entonces existe un $k$ tal que $a=km+b$.
+
+Algunas propiedades:
+\begin{itemize}
+    \item $[(a\text{ mod }n) + (b\text{ mod }n)]\text{ mod }n = (a+b)\text{ mod }n$
+    \item $[(a\text{ mod }n) - (b\text{ mod }n)]\text{ mod }n = (a-b)\text{ mod }n$
+    \item $[(a\text{ mod }n) \times (b\text{ mod }n)]\text{ mod }n = (a\times b)\text{ mod }n$
+    \item Conmutativo en la suma y producto.
+    \item Asociativo en la suma y producto
+    \item Distributivo
+    \item Tiene la identidad de suma (0) y la del producto (1)
+    \item Tiene inversa aditiva. $a+(-a) = 0\text{ mod }n$
+\end{itemize}
+
+
+
+\subsection{Exponenciacion modular}
+Dada $a^b\text{ mod }m$, uno puede agarrar $c \equiv a (\text{mod }m)$, con $c$
+el mas chico posible, incluso el primer negativo.
+Con esto podemos separarlo en b veces $a \text{ mod }m$ las veces que queramos
+y ver si conviene en vez de $a$ poner algunas o todas $c$, resolver de forma
+individual y despues volver a tomar  mod, es decir usar las propiedades.
+
+\subsection{Algoritmo Euclideano}
+Es un algoritmo para encontrar el divisor comun mas grande entre dos numeros
+(GCD Greates Common Divisor o HCF Highest Common Factor).
+Es decir buscamos de cada uno sus divisores (remanente cero) y nos quedamos
+el mas grande que tienen en comun.
+
+Entonces dado dos numeros, vamos a llamar $A$ al mas grande y $B$ al mas chico,
+y hacemos $A \text{ mod } B$ y nos lo guardamos (es decir el remanente).
+Repetimos este paso pero esta vez hacemos que $A=B$ y $B$= al remanente de recien.
+Repetimos esto hasta que $B=0$ y cuando pase eso el resultado es lo que tenemos en $A$.
+
+Existe la forma en pseudocodigo de forma recursivo.
+Basicamente tambien llama al $A$ como el mas grande.
+Si $B$ es cero ya termina, y devuelve $A$.
+Luego se hace de forma recursiva, si $B$ no es cero, entonces se vuelve a llamar
+pero llamando $A=B$ y $B=A\text{ mod }B$ (con los valores sin actualizar).
+
+\subsection{Numeros Co-Primos}
+Basicamente dos numeros son Co-primos si es que no tienen ningun comun divisor mas que el 1.
+Es decir $a$ y $b$ lo son si $gcd(a,b)=1$.
+
+\subsection{Funcion de Euler (Euler totient function)}
+Esta funcion ($\Phi(n)$) nos dice la cantidad de numeros positivos que son menores a n y que son
+co-primos a n.
+Esta funcion dependiendo del n esta definida analiticamente.
+
+\begin{itemize}
+    \item n es primo, entonces $\Phi(n)=(n-1)$.
+    \item n = $p\times q$ (con p y q primos) $\Phi(n) = (p-1)\times (q-1)$
+    \item en los otros casos se vuelve una formula mas compleja... no nos interesa
+\end{itemize}
+
+\paragraph{Teorema chico de Fermat}
+Si $p$ es un numero primo y $a$ es un numero entero positivo no divisible por $p$ entonces
+\begin{equation}
+        a^{p-1} \equiv 1 (\text{mod } p)
+        \label{eq:fermatLittle}
+\end{equation}
+
+
+\paragraph{Teorema de Euler}
+Para cualquier numero positivo $a$ y $n$ co-primos,
+\begin{equation}
+    a^{\Phi(n)}\equiv 1 (\text{ mod }n)
+    \label{eq:eulerTeo}
+\end{equation}
+
+
+\paragraph{Raiz primitva}
+Un numero $\alpha$ es una raiz primitiva modulo $n$ si para todo numero coprimo a $n$
+es congruente a una potencia de $\alpha$ modulo $n$.
+O dicho de otra manera, $\alpha$ es una raiz primitiva del numero primo $p$, si
+todas las potencias de $\alpha$ hasta $\alpha^{p-1}$ mod p, son distintas.
+Por ejemplo 2 es una raiz primitiva de 5.
+
+% llegue hasta:
+%https://www.youtube.com/watch?v=YwaQ4m1eHQo&list=PLBlnK6fEyqRgJU3EsOYDTW7m6SUmW6kII&index=44
 \section{Intro Matematica}
 Una buena fuente de info puede ser la tesis de Yao Chen: Applying Fully Homomorphic
 Encryption: Practices and Problems.
