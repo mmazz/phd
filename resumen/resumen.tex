@@ -164,6 +164,73 @@ Por ejemplo 2 es una raiz primitiva de 5.
 
 % llegue hasta:
 %https://www.youtube.com/watch?v=YwaQ4m1eHQo&list=PLBlnK6fEyqRgJU3EsOYDTW7m6SUmW6kII&index=44
+
+
+
+\paragraph{Inversa multiplicativa}
+Sea un numero A, su inverso multiplicativo bajo modulo n, es cuando se da
+$A\times A^{-1} \equiv 1 \text{ mod }n$.
+Ejemplo, el inverso multiplicativo 3 mod 5, es 2.
+No siempre existe! Si el valor A y n no son co-primos!
+Ejemplo 5 mod 10 no tiene inverso multiplicativo.
+
+Para poder encontrarlo se usa el \textbf{Algoritmo euclideano extendido}.
+Se parece al algoritmo ya visto, se cumple tambien que llamamos al numero $A>B$.
+Donde $A$ y $B$ son los valores del modulo y del valor que buscamos el inverso multiplicativo,
+y los llamamos dependiendo cual es mas grande.
+Esta vez vamos a guardarnos el valor del cociente ($Q$) en cada paso y vamos a
+tener 3 variables nuevas, $T_1$ que se inicializa en cero, $T_2$ que se inicializa en
+uno y $T=T_1-T_2\times Q$.
+En este caso, cuando lleguemos al final el valor del inverso multiplitactivo
+va a estar en $T_1$.
+
+Despues de cada paso, llamamos $A=B$ y $B$ como el remanente, y ahora ademas
+$T_1=T_2$ y $T_2=T$.
+Esto nuevamente se repite hasta que $B$ es cero.
+En el caso de tener un $T_1$ negativo se le suma $T_2$ y da el resultado.
+
+
+
+
+\subsection{Teorema chino del remanente (CRT)}
+Se usa para resolver un set de equaciones de congruencias diferentes con  una unica variable
+pero diferente modulo que son co primos.
+
+\begin{align*}
+    &X \equiv a_1 \text{ (mod } m_1)\\
+    &X \equiv a_2 \text{ (mod } m_2)\\
+    &... \\
+    &X \equiv a_n \text{ (mod } m_n)
+\end{align*}
+
+Para esto se resuelve la sigueinte ecuacion
+
+\begin{equation}
+    X=(a_1M_1M_1^{-1}+a_2M_2M_2^{-1}+...+a_nM_nM_n^{-1})\text{ mod } M
+    \label{eq:crt}
+\end{equation}
+
+Donde $M=m_1\times m_2\times ...\times m_n$, y $M_i=M/m_i$.
+Los $M_i^{-1}$ son los inversos multiplicativos de $M_i$ con modulo $m_i$.
+Es decir $M_i\times M_i^{-1} = 1 \text{ mod }m_i$.
+
+Ej:
+\begin{align*}
+    &X \equiv 2 \text{ (mod } 3)\\
+    &X \equiv 3 \text{ (mod } 5)\\
+    &X \equiv 2 \text{ (mod } 7)
+\end{align*}
+
+$M=3\times5\times7=105$, $M_1=105/3=35$, $M_2=105/5=21$ y $M_3=105/7=15$.
+Usando algo como el algoritmo extendido euclineado podemos calcular el resto.
+En este caso da $M_1^{-1}=2$, $M_2^{-1}=1$ y  $M_3^{-1}=1$.
+Con esto llegamos a que $X=233 \text{ mod } 105 = 23$
+
+En general para el caso de FHE se hace al reves, dado un $X$ se encuentra los
+valores $a_i$ de forma de tener representado un valor muy grande $X$ en terminos
+de valores que se puedan representar en 64bits.
+
+
 \section{Intro Matematica}
 Una buena fuente de info puede ser la tesis de Yao Chen: Applying Fully Homomorphic
 Encryption: Practices and Problems.
