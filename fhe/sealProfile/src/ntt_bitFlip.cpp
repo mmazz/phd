@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
-
+/*
+ * Codifico un input, lo saco de su version NTT, y alli le cambio un bit,
+ * y lo regreso a su representacion NTT.
+ * luego calculo tanto el hamming distance como la norma 2 contra el NTT original.
+ */
 #include <iostream>
 #include <seal/ciphertext.h>
 #include <seal/plaintext.h>
@@ -33,7 +37,7 @@ int main(int argc, char * argv[])
     std::string file_name_norm2 =  "ntt_bitFlip_N2";
 
 
-    double scale = pow(2.0, 30);
+    double scale = pow(2.0, 40);
     int coeff_modulus_size = modulus.size()-1;
 
     size_t size_input = poly_modulus_degree/2;
@@ -103,23 +107,33 @@ int main(int argc, char * argv[])
         util::inverse_ntt_negacyclic_harvey(x_plain_nonNTT.data(0)+(modulus_index * poly_modulus_degree), ntt_tables[modulus_index]);
         util::inverse_ntt_negacyclic_harvey(x_nonNTT_original.data(0)+(modulus_index * poly_modulus_degree), ntt_tables[modulus_index]);
     }
-
     // corroboro que estas dos cosas son iguales
     uint64_t hd_modified_test = hamming_distance(x_plain_nonNTT, x_nonNTT_original);
     if (hd_modified_test != 0)
+        cout << "Zero test fail! " << hd_modified_test << endl;
+    // corroboro que estas dos cosas son iguales
+    hd_modified_test = hamming_distance(x_plain_nonNTT, x_plain_original);
+    if (hd_modified_test == 0)
         cout << "First test fail! " << hd_modified_test << endl;
-
     // Agarro uno y lo vuelo a transformar y la comparo con la que no le aplique INTT
     ntt_transformation(x_plain_nonNTT, ntt_tables, 0, poly_modulus_degree);
-    ntt_transformation(x_plain_nonNTT, ntt_tables, 1, poly_modulus_degree);
     hd_modified_test = hamming_distance(x_plain_nonNTT, x_plain_original);
     if (hd_modified_test != 0)
         cout << "Second test fail! " << hd_modified_test << endl;
 
 
+    // el inverse_ntt_negacyclic_harvey parece que al menos no cambia eso....
+    bool isNTT = x_nonNTT_original.is_ntt_form();
+    cout << "Is in NTT form? " << isNTT << endl;
+
+
     // Dado que dio todo bien le vuelvo aplicar INTT
     for (size_t modulus_index = 0; modulus_index < coeff_modulus_size; modulus_index++)
         util::inverse_ntt_negacyclic_harvey(x_plain_nonNTT.data(0)+(modulus_index * poly_modulus_degree), ntt_tables[modulus_index]);
+
+    hd_modified_test = hamming_distance(x_plain_nonNTT, x_nonNTT_original);
+    if (hd_modified_test != 0)
+        cout << "Third test fail! " << hd_modified_test << endl;
 
 
     size_t coeff_count = x_plain_original.coeff_count();
@@ -142,11 +156,14 @@ int main(int argc, char * argv[])
             if (hd_modified != 1)
                 cout << "More than one bit! Bits modified " << hd_modified << endl;
 
-            ntt_transformation(x_plain_nonNTT, ntt_tables, modulus_index, poly_modulus_degree);
-            res_hamming = hamming_distance(x_plain_nonNTT, x_plain_original);
-            res_norm2 = norm2(x_plain_nonNTT, x_plain_original);
-            saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
-            saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
+            else
+            {
+                ntt_transformation(x_plain_nonNTT, ntt_tables, modulus_index, poly_modulus_degree);
+                res_hamming = hamming_distance(x_plain_nonNTT, x_plain_original);
+                res_norm2 = norm2(x_plain_nonNTT, x_plain_original);
+                saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
+                saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
+            }
             x_plain_nonNTT = x_nonNTT_original;
         }
     }
