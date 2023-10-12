@@ -113,8 +113,7 @@ int main(int argc, char *argv[]) {
        << " with coeffs of bits:" << bits_coeff << endl;
   uint64_t max_coeff = max_valueBit(bits_coeff);
 
-  for (int index_value = 500; index_value < slot_count;
-       index_value += index_rate)
+  for (int index_value = 0; index_value < slot_count; index_value += index_rate)
   {
     cout << index_value << ", " << std::flush;
     for (short bit_change = 0; bit_change < 64; bit_change += bit_rate)

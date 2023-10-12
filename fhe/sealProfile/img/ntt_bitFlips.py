@@ -11,14 +11,14 @@ plt.rc('xtick',labelsize=16)
 plt.rc('ytick',labelsize=16)
 
 
-modulus_size = 2
-coeff_bits = 30
+modulus_size = 1
+coeff_bits = 60
 polynomial_size = 4096
 total_bits = modulus_size*coeff_bits*polynomial_size
 num_coeff = int(polynomial_size*modulus_size)
 dir = "../logs/"
-fileN2Full = "nttN2.txt"
-fileHDFull = "nttHD.txt"
+fileN2Full = "ntt_bitFlip_N2.txt"
+fileHDFull = "ntt_bitFlip_HD.txt"
 
 
 print(f"Total number of bits: {total_bits}")
@@ -55,13 +55,13 @@ def image_creator(data, by_coeff_data, by_bits_data, metric, nameType):
 dfN2Full = pd.read_csv(dir+fileN2Full, header=None,  skip_blank_lines=False)
 dfN2Full = dfN2Full.iloc[1:,:]
 encodingN2 = dfN2Full[dfN2Full.columns[0]].to_numpy(dtype='float')
-print(f"{fileN2Full}: {encodingN2.mean()} ")
+print(f"Norm2: {round(encodingN2.mean(), 2)} ")
 
 dfHDFull = pd.read_csv(dir+fileHDFull, header=None,  skip_blank_lines=False)
 dfHDFull = dfHDFull.iloc[1:,:]
 encodingHD = dfHDFull[dfHDFull.columns[0]].to_numpy(dtype='float')
 encodingHD = encodingHD/(total_bits)*100
-print(f"{fileHDFull}: {encodingHD.mean()}")
+print(f"Hamming Distance: {round(encodingHD.mean(), 2)}%")
 
 
 by_coeff_av, by_bits_av = data_reshape(encodingN2)

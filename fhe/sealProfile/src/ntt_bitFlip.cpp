@@ -25,8 +25,8 @@ using namespace std;
 int main(int argc, char * argv[])
 {
     size_t poly_modulus_degree = 4096;
-    vector<int> modulus = {30, 30, 30};
-    int modulus_bits = 30;
+    vector<int> modulus = {60, 30};
+    int modulus_bits = 60;
 
     std::string dir_name = "logs/";
     std::string file_name_hd = "ntt_bitFlip_HD";

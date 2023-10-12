@@ -27,7 +27,6 @@
 #include <array>
 #include <bitset>
 
-
 inline void saveDataLog(std::string file_name, int index_value, int bit_change, float res, bool new_file)
 {
     std::fstream logFile;
@@ -504,3 +503,14 @@ inline void input_refill(std::vector<double> &input, int poly_modulus_degree, in
         input[i] = random_value;
     }
 }
+
+void nttBit_flip(seal::Plaintext& x_plain, const seal::util::NTTTables *ntt_tables, int index_value,  int bit_change, size_t modulus_index, int poly_modulus_degree)
+{
+    seal::util::inverse_ntt_negacyclic_harvey(x_plain.data(0)+(modulus_index * poly_modulus_degree), ntt_tables[modulus_index]);
+    // probe con doble bit flip del mismo y da bien.
+    x_plain[index_value] = bit_flip(x_plain[index_value], bit_change);
+
+    ntt_transformation(x_plain, ntt_tables, modulus_index, 0);
+}
+
+

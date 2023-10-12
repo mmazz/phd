@@ -30,7 +30,6 @@
 using namespace seal;
 using namespace std;
 
-void nttBit_flip(Plaintext& x_plain, const util::NTTTables *ntt_tables, int index_value,  int bit_change, size_t modulus_index, int poly_modulus_degree);
 
 int main(int argc, char * argv[])
 {
@@ -167,11 +166,4 @@ int main(int argc, char * argv[])
    return 0;
 }
 
-void nttBit_flip(Plaintext& x_plain, const util::NTTTables *ntt_tables, int index_value,  int bit_change, size_t modulus_index, int poly_modulus_degree)
-{
-    util::inverse_ntt_negacyclic_harvey(x_plain.data(0)+(modulus_index * poly_modulus_degree), ntt_tables[modulus_index]);
-    // probe con doble bit flip del mismo y da bien.
-    x_plain[index_value] = bit_flip(x_plain[index_value], bit_change);
 
-    ntt_transformation(x_plain, ntt_tables, modulus_index, 0);
-}

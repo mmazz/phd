@@ -11,8 +11,8 @@ plt.rc('xtick',labelsize=16)
 plt.rc('ytick',labelsize=16)
 
 
-modulus_size = 2
-coeff_bits = 30
+modulus_size = 1
+coeff_bits = 60
 polynomial_size = 4096
 total_bits = modulus_size*coeff_bits*polynomial_size
 num_coeff = int(polynomial_size*modulus_size)
@@ -58,10 +58,10 @@ dfN2Full = dfN2Full.iloc[1:,:]
 encodingN2 = dfN2Full[dfN2Full.columns[0]].to_numpy(dtype='float')
 print(f"{fileN2Full}: {encodingN2.mean()} ")
 
-dfN2Decode = pd.read_csv(dir+fileN2Decode, header=None,  skip_blank_lines=False)
-dfN2Decode = dfN2Decode.iloc[1:,:]
-encodingN2Decode = dfN2Decode[dfN2Decode.columns[0]].to_numpy(dtype='float')
-print(f"{fileN2Decode}: {encodingN2Decode.mean()}")
+#dfN2Decode = pd.read_csv(dir+fileN2Decode, header=None,  skip_blank_lines=False)
+#dfN2Decode = dfN2Decode.iloc[1:,:]
+#encodingN2Decode = dfN2Decode[dfN2Decode.columns[0]].to_numpy(dtype='float')
+#print(f"{fileN2Decode}: {encodingN2Decode.mean()}")
 
 
 dfHDFull = pd.read_csv(dir+fileHDFull, header=None,  skip_blank_lines=False)
@@ -70,11 +70,11 @@ encodingHD = dfHDFull[dfHDFull.columns[0]].to_numpy(dtype='float')
 encodingHD = encodingHD/(total_bits)*100
 print(f"{fileHDFull}: {encodingHD.mean()}")
 
-dfHDDecode = pd.read_csv(dir+fileHDDecode, header=None,  skip_blank_lines=False)
-dfHDDecode = dfHDDecode.iloc[1:,:]
-encodingHDDecode = dfHDDecode[dfHDDecode.columns[0]].to_numpy(dtype='float')
-encodingHDDecode = encodingHDDecode/(total_bits)*100
-print(f"{fileHDDecode}: {encodingHDDecode.mean()}")
+#dfHDDecode = pd.read_csv(dir+fileHDDecode, header=None,  skip_blank_lines=False)
+#dfHDDecode = dfHDDecode.iloc[1:,:]
+#encodingHDDecode = dfHDDecode[dfHDDecode.columns[0]].to_numpy(dtype='float')
+#encodingHDDecode = encodingHDDecode/(total_bits)*100
+#print(f"{fileHDDecode}: {encodingHDDecode.mean()}")
 
 
 
@@ -83,14 +83,14 @@ print(f"{fileHDDecode}: {encodingHDDecode.mean()}")
 by_coeff_av, by_bits_av = data_reshape(encodingN2)
 image_creator(encodingN2, by_coeff_av, by_bits_av, "Norm2", "Norm2")
 
-by_coeff_av, by_bits_av = data_reshape(encodingN2Decode)
-image_creator(encodingN2Decode, by_coeff_av, by_bits_av, "Norm2", "Norm2_decode")
+#by_coeff_av, by_bits_av = data_reshape(encodingN2Decode)
+#image_creator(encodingN2Decode, by_coeff_av, by_bits_av, "Norm2", "Norm2_decode")
 
 by_coeff_av, by_bits_av = data_reshape(encodingHD)
 image_creator(encodingHD, by_coeff_av, by_bits_av, "Hamming distance (\%)" , "HD")
 
-by_coeff_av, by_bits_av = data_reshape(encodingHDDecode)
-image_creator(encodingHDDecode, by_coeff_av, by_bits_av, "Norm2", "Norm2_decode")
+#by_coeff_av, by_bits_av = data_reshape(encodingHDDecode)
+#image_creator(encodingHDDecode, by_coeff_av, by_bits_av, "Norm2", "Norm2_decode")
 
 
 
