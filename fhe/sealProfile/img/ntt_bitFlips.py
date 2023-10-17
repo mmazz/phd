@@ -14,6 +14,7 @@ plt.rc('ytick',labelsize=16)
 modulus_size = 1
 coeff_bits = 60
 polynomial_size = 4096
+polynomial_size = 4*4096
 total_bits = modulus_size*coeff_bits*polynomial_size
 num_coeff = int(polynomial_size*modulus_size)
 dir = "../logs/"

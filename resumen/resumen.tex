@@ -231,6 +231,33 @@ valores $a_i$ de forma de tener representado un valor muy grande $X$ en terminos
 de valores que se puedan representar en 64bits.
 
 
+
+
+\subsection{NTT}
+Numeric Theory Transform (NTT) es una generalizacion del algoritmo Fast Fourier Transform (FFT)
+que es una implementacion de Discrete Fourier Transform (DFT).
+Basicamente se usa para la multiplicacion de polinomios.
+Lo que realiza es pasar cada polinomio en su espacio de coeficiente a un espacio de valuaciones.
+Una de las ventajas extra que trae NTT es que al hacerse con valores enteros y no complejos como en el caso
+de FTT, ya no trae errores de rendondeo.
+Generalmente Chinese Remainder Theorem (CRT) viene de la mano.
+
+NTT usa las n-esima raiz de la unidad bajo un campo finito, $w^n \equiv 1 (\text{mod }p)$ que es equivalente a
+$w \equiv r^k (\text{mod }p)$.
+Mientras que FTT usa simplemente raices de la unidad de toda la vida, $e^{-i2\pi/n}$.
+\todo[inline]{No me queda claro si p tiene que ser si o si primo o es por convenciencia, y si es asi como lo usa openfhe}
+Parte de esto viene de la propiedad de que si $p$ es primo y $a$ es un numero positivo y menor a $p$,
+entonces se cumple que $a^{p-1}\equiv 1 (\text{mod } p)$.
+Esto ultimo no es otra cosa que el teorema chico de Fermat ya visto \ref{eq:fermatLittle}.
+El numero primo $p$ lo solemos escribir como $p = 2^kc+1$.
+Ademas se cumpla que para cualquier numero primo, existe una raiz primitiva $r$ (existen varias), que cuando
+x va de 1 hasta $p-1$, $r^x (\text{mod }p)$ pasa por todos los numeros en ese intervalo (1 hasta $p-1$) en algun orden.
+El orden de ese raiz $r$ es el valor $x$ que genera congruencia con 1, es decir, por lo visto anterior mente
+el orden de $r$ es $p-1$ que sabemos que da congruencia 1.
+
+
+
+
 \section{Intro Matematica}
 Una buena fuente de info puede ser la tesis de Yao Chen: Applying Fully Homomorphic
 Encryption: Practices and Problems.
