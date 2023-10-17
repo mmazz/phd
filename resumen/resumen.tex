@@ -249,12 +249,17 @@ Mientras que FTT usa simplemente raices de la unidad de toda la vida, $e^{-i2\pi
 Parte de esto viene de la propiedad de que si $p$ es primo y $a$ es un numero positivo y menor a $p$,
 entonces se cumple que $a^{p-1}\equiv 1 (\text{mod } p)$.
 Esto ultimo no es otra cosa que el teorema chico de Fermat ya visto \ref{eq:fermatLittle}.
-El numero primo $p$ lo solemos escribir como $p = 2^kc+1$.
 Ademas se cumpla que para cualquier numero primo, existe una raiz primitiva $r$ (existen varias), que cuando
 x va de 1 hasta $p-1$, $r^x (\text{mod }p)$ pasa por todos los numeros en ese intervalo (1 hasta $p-1$) en algun orden.
 El orden de ese raiz $r$ es el valor $x$ que genera congruencia con 1, es decir, por lo visto anterior mente
 el orden de $r$ es $p-1$ que sabemos que da congruencia 1.
+El numero primo $p$ lo solemos escribir como $p = 2^kc+1$.
 
+Con todo esto podemos corroborar que la $2^k$-esima raiz de la unidad en modulo $p$ es $r^c$.
+Para el caso de FHE, $n$ es potencia de dos, que es el grado del polinomio y entonces la $n$-esima raiz de la unidad que veremos
+tiene sentido NTT ya que usa la $2^k$.
+
+Luego de esto es exactamente FTT, solo que en vez de usar $w$ usa $r^c$.
 
 
 
