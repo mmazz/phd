@@ -17,8 +17,8 @@ polynomial_size = 4096
 total_bits = modulus_size*coeff_bits*polynomial_size
 num_coeff = int(polynomial_size*modulus_size)
 dir = "../logs/"
-fileN2Full = "ntt_bitFlip_N2.txt"
-fileHDFull = "ntt_bitFlip_HD.txt"
+fileN2Full = f"ntt_bitFlip_N2_{polynomial_size}.txt"
+fileHDFull = f"ntt_bitFlip_HD_{polynomial_size}.txt"
 
 
 print(f"Total number of bits: {total_bits}")

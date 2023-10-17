@@ -29,12 +29,32 @@ using namespace std;
 int main(int argc, char * argv[])
 {
     size_t poly_modulus_degree = 4096;
+    if (argc>1){
+        int num = atoi(argv[1]);
+        if (num!=12 && num!= 13 && num!=14 && num!=15){
+            cout << "Solo se permiten valores de 12 a 15" << endl;
+        }
+        else
+            poly_modulus_degree = pow(2,num);
+    }
+
+    //size_t poly_modulus_degree = 4096;
     vector<int> modulus = {60, 30};
     int modulus_bits = 60;
 
+    std::string name;
+    if(poly_modulus_degree==4096)
+        name = "_4096";
+    else if(poly_modulus_degree==8192)
+        name = "_8192";
+    else if(poly_modulus_degree==16384)
+        name = "_16384";
+    else
+        name = "_32768";
+
     std::string dir_name = "logs/";
-    std::string file_name_hd = "ntt_bitFlip_HD";
-    std::string file_name_norm2 =  "ntt_bitFlip_N2";
+    std::string file_name_hd = "ntt_bitFlip_HD"+name;
+    std::string file_name_norm2 =  "ntt_bitFlip_N2"+name;
 
 
     double scale = pow(2.0, 40);
