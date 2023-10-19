@@ -131,10 +131,10 @@ int main(int argc, char * argv[])
                 {
                     x_plain = x_plain_original;
                     saveDataLog(dir_name+file_name_hd, 4096*60, !new_file);
-                    saveDataLog(dir_name+file_name_norm2, -1, !new_file);
+                    saveDataLog(dir_name+file_name_norm2, -10000, !new_file);
                     // la mayor cantidad de bits...
                     saveDataLog(dir_name+file_name_hd_decode, 4096*60, !new_file);
-                    saveDataLog(dir_name+file_name_norm2_decode, -1, !new_file);
+                    saveDataLog(dir_name+file_name_norm2_decode, -10000, !new_file);
                 }
 
                 else
