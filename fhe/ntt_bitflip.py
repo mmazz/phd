@@ -29,21 +29,9 @@ class NTT:
         assert self.isInteger(M), 'Not an integer.'
         return isprime(M)
 
-    # factorize algorithm
-    # complexity is O(N^(1/2))
-    # not used
-    def factorize(self, N):
-        factors = []
-        for factor in range(1, int(math.sqrt(N) + 1)):
-            if N % factor == 0:
-                if factor != 1:
-                    factors.append(factor)
-                    factors.append(int(N / factor))
-        factors.sort()
-        return factors
-
     # modular expoential algorithm
     # complexity is O(log N)
+    # base^power mod M
     def modExponent(self, base, power, M):
         result = 1
         power = int(power)
@@ -61,10 +49,10 @@ class NTT:
 
         while new_r != 0:
             quotient = int(r / new_r)
-            tmp_new_t = new_t
-            tmp_t = t
-            tmp_new_r = new_r
-            tmp_r = r
+    #        tmp_new_t = new_t
+    #        tmp_t = t
+    #        tmp_new_r = new_r
+    #        tmp_r = r
             t, new_t = new_t, (t - quotient * new_t)
             r, new_r = new_r, (r % new_r)
         if r > 1:
@@ -125,6 +113,7 @@ class NTT:
 
     # Basic method of NTT
     # The complexity is O(N log N)
+    # w es una root of unity
     def ntt(self, poly, M, N, w):
         """number theoretic transform algorithm"""
         N_bit = N.bit_length() - 1
@@ -152,7 +141,9 @@ class NTT:
         inv_w = self.modInv(w, M)
         inv_N = self.modInv(N, M)
         p = []
+        print(points)
         poly = self.ntt(points, M, N, inv_w)
+        print(poly)
         for i in range(0, N):
             poly[i] = (poly[i] * inv_N) % M
             # TODO: use barrett modular reduction
@@ -173,10 +164,10 @@ else:
 
 
 M = 2013265921
-poly = [1, 2, 3, 4,5,6,7,8]     # 4x^3+3x^2+2x+1
+N = 2
+poly = list(range(1, N+1))
 print("Modulus : %d" % M)
 print("Polynomial : ", poly)
-N = len(poly)
 w = ntt.NthRootOfUnity(M, N)
 ntt_poly = ntt.ntt(poly, M, N, w)
 intt_poly = ntt.intt(ntt_poly, M, N, w)
@@ -215,22 +206,34 @@ bits = 32
 degree = N
 hd_list = []
 n2_list = []
+
 for i in range(degree):
     for j in range(bits):
         original_value = ntt_poly_mod[i]
+        print(ntt_poly_mod[i])
         binary_value = '{:032b}'.format(original_value)
         ntt_poly_mod[i] = bitflip_int(binary_value, bits-j-1)
+        print(ntt_poly_mod[i])
         intt_poly_mod = ntt.intt(ntt_poly_mod, M, N, w)
+       # print(intt_poly)
+        #print(intt_poly_mod)
+        print()
         ntt_poly_mod[i] = original_value
         hd_list.append(hd(poly, intt_poly_mod))
-        n2_list.append(n2(poly, intt_poly_mod))
+        n2_list.append(abs(n2(poly, intt_poly_mod)))
 
-plt.plot(hd_list)
-plt.xlabel("Bit changed")
-plt.ylabel("Hamming distance (%)")
-plt.show()
 
-plt.plot(n2_list)
-plt.xlabel("Bit changed")
-plt.ylabel("Diferencia cuadrada")
+
+fig, ax1 = plt.subplots()
+
+ax2 = ax1.twinx()
+ax1.plot(hd_list, 'g-')
+ax2.plot(n2_list, 'b-')
+
+ax1.set_xlabel('Bit changed')
+ax1.set_ylabel('Hamming distance (%)', color='g')
+ax2.set_ylabel('L1 norm', color='b')
+
+
 plt.show()
+#print(n2_list)

@@ -182,33 +182,6 @@ inline void saveEncodig(std::string file_name, std::vector<int> encoding_diff, b
 
 }
 
-inline double norm2(std::vector<double>  &vecInput, std::vector<double> &vecOutput){
-    double res = 0;
-    double diff = 0;
-    // Itero sobre el del input por si el del output por construccion quedo mas grande
-    for (int i=0; i<vecInput.size(); i++)
-    {
-        diff = vecInput[i] - vecOutput[i];
-        res += pow(diff, 2);
-    }
-    res = std::sqrt(res/vecInput.size());
-    return res;
-}
-
-inline double norm2(seal::Plaintext  &vecInput, seal::Plaintext &vecOutput){
-    double res = 0;
-    double diff = 0;
-    uint64_t coeff_count = vecInput.coeff_count();
-    // Itero sobre el del input por si el del output por construccion quedo mas grande
-    for (int i=0; i<coeff_count; i++)
-    {
-        diff = vecInput[i] - vecOutput[i];
-        res += pow(diff, 2);
-    }
-    res = std::sqrt(res/coeff_count);
-    return res;
-}
-
 
 
 inline double porcentage(std::vector<double>  &vecInput, std::vector<double> &vecOutput){
@@ -317,10 +290,16 @@ inline uint64_t hamming_distance(std::vector<double>& vecInput, std::vector<doub
 inline uint64_t hamming_distance(uint64_t coeff1, uint64_t coeff2)
 {
     uint64_t res = 0;
+    // El xor, me va a dar 0 para los bit iguales y 1 para los que no
     res = coeff1^coeff2;
     uint64_t count = 0;
     while (res) {
+        // Le hace un and con 1, entonces va a dar todo cero, excepto con el primer bit
+        // Si ese bit es 1 queda en 1, si no da cero. y lo suma
+        // Es decir suma sola los bits que son diferentes
         count += res & 1;
+        // shiftea en 1 res, entonces en la sigueinte iteracion, el and le estaria pegando al segundo bit
+        // y  asi por todos.
         res >>= 1;
     }
     return count;
@@ -334,6 +313,7 @@ inline uint64_t hamming_distance(seal::Plaintext &x_plain, seal::Plaintext &x_pl
         count += hamming_distance(x_plain[i], x_plain_original[i]);
     return count;
 }
+
 inline uint64_t hamming_distance(seal::Plaintext &x_plain, seal::Plaintext &x_plain_original, int poly_degree, int offset)
 {
     uint64_t count = 0;
@@ -343,6 +323,32 @@ inline uint64_t hamming_distance(seal::Plaintext &x_plain, seal::Plaintext &x_pl
         count += hamming_distance(x_plain[i+offset_rns], x_plain_original[i+offset_rns]);
     return count;
 }
+
+inline double norm2(std::vector<double>  &vecInput, std::vector<double> &vecOutput){
+    double res = 0;
+    double diff = 0;
+    // Itero sobre el del input por si el del output por construccion quedo mas grande
+    for (int i=0; i<vecInput.size(); i++)
+    {
+        diff = vecInput[i] - vecOutput[i];
+        res += pow(diff, 2);
+    }
+    return res;
+}
+
+inline double norm2(seal::Plaintext  &vecInput, seal::Plaintext &vecOutput){
+    double res = 0;
+    double diff = 0;
+    uint64_t coeff_count = vecInput.coeff_count();
+    // Itero sobre el del input por si el del output por construccion quedo mas grande
+    for (int i=0; i<coeff_count; i++)
+    {
+        diff = vecInput[i] - vecOutput[i];
+        res += pow(diff, 2);
+    }
+    return res;
+}
+
 inline bool check_equality(seal::Plaintext &x_plain, seal::Plaintext &x_plain2){
     int res=0;
     bool res_bool=0;

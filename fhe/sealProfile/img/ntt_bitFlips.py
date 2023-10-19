@@ -13,8 +13,8 @@ plt.rc('ytick',labelsize=16)
 
 modulus_size = 1
 coeff_bits = 60
-polynomial_size = 4096
-polynomial_size = 4*4096
+factor = 1
+polynomial_size = factor * 4096
 total_bits = modulus_size*coeff_bits*polynomial_size
 num_coeff = int(polynomial_size*modulus_size)
 dir = "../logs/"
@@ -33,6 +33,7 @@ def data_reshape(encoding):
     return by_coeff_av, by_bits_av
 
 def image_creator(data, by_coeff_data, by_bits_data, metric, nameType):
+
     plt.plot(data)
     plt.xlabel('Encoding bit')
     plt.ylabel(f"{metric}")
@@ -65,12 +66,30 @@ encodingHD = encodingHD/(total_bits)*100
 print(f"Hamming Distance: {round(encodingHD.mean(), 2)}%")
 
 
-by_coeff_av, by_bits_av = data_reshape(encodingN2)
-image_creator(encodingN2, by_coeff_av, by_bits_av, "Norm2", "Norm2")
+N2_by_coeff_av, N2_by_bits_av = data_reshape(encodingN2)
+#image_creator(encodingN2, by_coeff_av, by_bits_av, "Norm2", "Norm2")
 
-by_coeff_av, by_bits_av = data_reshape(encodingHD)
-image_creator(encodingHD, by_coeff_av, by_bits_av, "HD (\%)", "HD")
+HD_by_coeff_av, HD_by_bits_av = data_reshape(encodingHD)
+#image_creator(encodingHD, by_coeff_av, by_bits_av, "HD (\%)", "HD")
 
+fig, ax1 = plt.subplots()
 
+ax2 = ax1.twinx()
+ax1.plot(HD_by_bits_av, 'g-')
+ax2.plot(N2_by_bits_av, 'b-')
 
+ax1.set_xlabel('Bit changed')
+ax1.set_ylabel('Hamming distance (%)', color='firebrick')
+ax2.set_ylabel('L2 norm', color='steelblue')
+plt.show()
 
+fig, ax1 = plt.subplots()
+
+ax2 = ax1.twinx()
+ax1.plot(HD_by_coeff_av, 'g-')
+ax2.plot(N2_by_coeff_av, 'b-')
+
+ax1.set_xlabel('Coeff changed')
+ax1.set_ylabel('Hamming distance (%)', color='firebrick')
+ax2.set_ylabel('L2 norm', color='steelblue')
+plt.show()
