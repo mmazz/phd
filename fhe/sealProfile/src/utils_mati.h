@@ -62,7 +62,23 @@ inline void saveDataLog(std::string file_name, uint64_t  res, bool new_file)
     logFile.close();
 
 }
+inline void saveDataLog(std::string file_name, double res, bool new_file)
+{
+    std::fstream logFile;
+    // Open File
+    if (new_file==1){
+        //std::cout<< " New log: " << std::endl;
+        logFile.open("/home/mmazz/phd/fhe/sealProfile/"+file_name+".txt", std::ios::out);
+        logFile << "New file: " << std::endl ;
+    }
+    else{
+        logFile.open("/home/mmazz/phd/fhe/sealProfile/"+file_name+".txt", std::ios::app);
+        logFile << res << std::endl ;
+    }
+    // close file stream
+    logFile.close();
 
+}
 //queda el tema de cuantos bits veo....
 //
 inline void bit_check(std::vector<int>& vec, uint64_t coeff_change, uint64_t coeff_original, int offset, int max_bit )
@@ -333,6 +349,7 @@ inline double norm2(std::vector<double>  &vecInput, std::vector<double> &vecOutp
         diff = vecInput[i] - vecOutput[i];
         res += pow(diff, 2);
     }
+    res = std::sqrt(res);
     return res;
 }
 
@@ -346,6 +363,7 @@ inline double norm2(seal::Plaintext  &vecInput, seal::Plaintext &vecOutput){
         diff = vecInput[i] - vecOutput[i];
         res += pow(diff, 2);
     }
+    res = std::sqrt(res);
     return res;
 }
 

@@ -10,6 +10,7 @@
 #include <seal/plaintext.h>
 #include <seal/util/ntt.h>
 #include <string>
+#include <strings.h>
 #include <sys/types.h>
 #include <system_error>
 #include <vector>
@@ -53,9 +54,10 @@ int main(int argc, char * argv[])
         name = "_32768";
 
     std::string dir_name = "logs/";
-    std::string file_name_hd = "ntt_bitFlip_HD"+name;
-    std::string file_name_norm2 =  "ntt_bitFlip_N2"+name;
+    std::string file_name_hd = "antt_bitFlip_HD"+name;
+    std::string file_name_norm2 =  "antt_bitFlip_N2"+name;
 
+    cout << file_name_norm2 << endl;
 
     double scale = pow(2.0, 40);
     int coeff_modulus_size = modulus.size()-1;
@@ -115,8 +117,8 @@ int main(int argc, char * argv[])
 
     bool new_file = 1;
 
-    saveDataLog(dir_name+file_name_hd, 0,  new_file);
-    saveDataLog(dir_name+file_name_norm2, 0,  new_file);
+    saveDataLog(dir_name+file_name_hd, res_hamming,  new_file);
+    saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
     cout << "Starting bitflips with x_plain_size of: " << x_plain_size << endl;
     cout << "Coeff count " << x_plain_nonNTT.coeff_count() << endl;
 
@@ -161,29 +163,32 @@ int main(int argc, char * argv[])
     // Basicamente modifico 1 bit a la codificacion en espacio comun y le aplico NTT y veo como cambio
     // en relacion al NTT original.
     int modulus_index = 0;
+    cout << "Modulus bits: " << modulus_bits << " Poly degree: " << poly_modulus_degree << " coeff count " << coeff_count <<endl;
     for (int index_value=0; index_value<coeff_count; index_value++)
     {
         cout << index_value << ", " << std::flush;
 
         if(index_value>poly_modulus_degree)
             modulus_index = 1;
-        // En este caso elegi 30 bits para el modulo
+        // En este caso elegi 60 bits para el modulo
         for (int bit_change=0; bit_change<modulus_bits; bit_change++)
         {
             x_plain_nonNTT[index_value] = bit_flip(x_plain_nonNTT[index_value], bit_change);
             // Voy chequeando siempre que solo cambie 1 bit
-            uint64_t hd_modified = hamming_distance(x_plain_nonNTT, x_nonNTT_original);
-            if (hd_modified != 1)
-                cout << "More than one bit! Bits modified " << hd_modified << endl;
+          //  uint64_t hd_modified = hamming_distance(x_plain_nonNTT, x_nonNTT_original);
+          //  if (hd_modified != 1)
+          //      cout << "More than one bit! Bits modified " << hd_modified << endl;
 
-            else
-            {
+           // else
+           // {
                 ntt_transformation(x_plain_nonNTT, ntt_tables, modulus_index, poly_modulus_degree);
+
                 res_hamming = hamming_distance(x_plain_nonNTT, x_plain_original);
                 res_norm2 = norm2(x_plain_nonNTT, x_plain_original);
+
                 saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
                 saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
-            }
+            //}
             x_plain_nonNTT = x_nonNTT_original;
         }
     }

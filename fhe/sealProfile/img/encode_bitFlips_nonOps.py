@@ -53,44 +53,81 @@ def image_creator(data, by_coeff_data, by_bits_data, metric, nameType):
     plt.savefig(f"byBits_{nameType}.jpg", bbox_inches="tight")
 
 
-dfN2Full = pd.read_csv(dir+fileN2Full, header=None,  skip_blank_lines=False)
-dfN2Full = dfN2Full.iloc[1:,:]
-encodingN2 = dfN2Full[dfN2Full.columns[0]].to_numpy(dtype='float')
-print(f"{fileN2Full}: {encodingN2.mean()} ")
+#dfN2Full = pd.read_csv(dir+fileN2Full, header=None,  skip_blank_lines=False)
+#dfN2Full = dfN2Full.iloc[1:,:]
+#encodingN2 = dfN2Full[dfN2Full.columns[0]].to_numpy(dtype='float')
+#print(f"{fileN2Full}: {encodingN2.mean()} ")
 
-#dfN2Decode = pd.read_csv(dir+fileN2Decode, header=None,  skip_blank_lines=False)
-#dfN2Decode = dfN2Decode.iloc[1:,:]
-#encodingN2Decode = dfN2Decode[dfN2Decode.columns[0]].to_numpy(dtype='float')
-#print(f"{fileN2Decode}: {encodingN2Decode.mean()}")
-
-
-dfHDFull = pd.read_csv(dir+fileHDFull, header=None,  skip_blank_lines=False)
-dfHDFull = dfHDFull.iloc[1:,:]
-encodingHD = dfHDFull[dfHDFull.columns[0]].to_numpy(dtype='float')
-encodingHD = encodingHD/(total_bits)*100
-print(f"{fileHDFull}: {encodingHD.mean()}")
-
-#dfHDDecode = pd.read_csv(dir+fileHDDecode, header=None,  skip_blank_lines=False)
-#dfHDDecode = dfHDDecode.iloc[1:,:]
-#encodingHDDecode = dfHDDecode[dfHDDecode.columns[0]].to_numpy(dtype='float')
-#encodingHDDecode = encodingHDDecode/(total_bits)*100
-#print(f"{fileHDDecode}: {encodingHDDecode.mean()}")
+dfN2Decode = pd.read_csv(dir+fileN2Decode, header=None,  skip_blank_lines=False)
+dfN2Decode = dfN2Decode.iloc[1:,:]
+encodingN2Decode = dfN2Decode[dfN2Decode.columns[0]].to_numpy(dtype='float')
+encodingN2Decode = np.sqrt(encodingN2Decode)
+print(f"{fileN2Decode}: {encodingN2Decode.mean()}")
 
 
+#dfHDFull = pd.read_csv(dir+fileHDFull, header=None,  skip_blank_lines=False)
+#dfHDFull = dfHDFull.iloc[1:,:]
+#encodingHD = dfHDFull[dfHDFull.columns[0]].to_numpy(dtype='float')
+#encodingHD = encodingHD/(total_bits)*100
+#print(f"{fileHDFull}: {encodingHD.mean()}")
+
+dfHDDecode = pd.read_csv(dir+fileHDDecode, header=None,  skip_blank_lines=False)
+dfHDDecode = dfHDDecode.iloc[1:,:]
+encodingHDDecode = dfHDDecode[dfHDDecode.columns[0]].to_numpy(dtype='float')
+encodingHDDecode = encodingHDDecode/(total_bits)*100
+print(f"{fileHDDecode}: {encodingHDDecode.mean()}")
 
 
 
-by_coeff_av, by_bits_av = data_reshape(encodingN2)
-image_creator(encodingN2, by_coeff_av, by_bits_av, "Norm2", "Norm2")
 
-#by_coeff_av, by_bits_av = data_reshape(encodingN2Decode)
+
+#by_coeff_av, by_bits_av = data_reshape(encodingN2)
+#image_creator(encodingN2, by_coeff_av, by_bits_av, "Norm2", "Norm2")
+
+N2_by_coeff_av, N2_by_bits_av = data_reshape(encodingN2Decode)
 #image_creator(encodingN2Decode, by_coeff_av, by_bits_av, "Norm2", "Norm2_decode")
 
-by_coeff_av, by_bits_av = data_reshape(encodingHD)
-image_creator(encodingHD, by_coeff_av, by_bits_av, "Hamming distance (\%)" , "HD")
+#by_coeff_av, by_bits_av = data_reshape(encodingHD)
+#image_creator(encodingHD, by_coeff_av, by_bits_av, "Hamming distance (\%)" , "HD")
 
-#by_coeff_av, by_bits_av = data_reshape(encodingHDDecode)
+HD_by_coeff_av, HD_by_bits_av = data_reshape(encodingHDDecode)
 #image_creator(encodingHDDecode, by_coeff_av, by_bits_av, "Norm2", "Norm2_decode")
+
+
+plt.plot(encodingN2Decode, color='steelblue')
+
+plt.xlabel('Bit changed')
+plt.ylabel('L2 norm', color='steelblue')
+plt.show()
+
+plt.plot(encodingHDDecode, color='firebrick')
+plt.xlabel('Bit changed')
+plt.ylabel('Hamming distance (\%)', color='firebrick')
+plt.show()
+
+
+
+fig, ax1 = plt.subplots()
+
+ax2 = ax1.twinx()
+ax1.plot(HD_by_bits_av, color='firebrick')
+ax2.plot(N2_by_bits_av, color='steelblue')
+
+ax1.set_xlabel('Bit changed')
+ax1.set_ylabel('Hamming distance (\%)', color='firebrick')
+ax2.set_ylabel('L2 norm', color='steelblue')
+plt.show()
+
+fig, ax1 = plt.subplots()
+
+ax2 = ax1.twinx()
+ax1.plot(HD_by_coeff_av, color='firebrick')
+ax2.plot(N2_by_coeff_av, color='steelblue')
+
+ax1.set_xlabel('Coeff changed')
+ax1.set_ylabel('Hamming distance (\%)', color='firebrick')
+ax2.set_ylabel('L2 norm', color='steelblue')
+plt.show()
 
 
 

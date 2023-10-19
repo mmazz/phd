@@ -96,16 +96,18 @@ int main(int argc, char * argv[])
     uint64_t res_hamming_decode = 0;
     double res_norm2 = 0;
     double res_norm2_decode = 0;
-
+    uint64_t max_hd = 60*coeff_modulus_size;
+    double max_n2 = -100000;
     int modulus_index = 0;
     int modulus_bits = 0;
     int index_value = 0;
     bool new_file = 1;
+    saveDataLog(dir_name+file_name_hd, res_hamming,  new_file);
+    saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
+    saveDataLog(dir_name+file_name_hd_decode, res_hamming_decode, new_file);
+    saveDataLog(dir_name+file_name_norm2_decode, res_norm2_decode, new_file);
 
-    saveDataLog(dir_name+file_name_hd, 0,  new_file);
-    saveDataLog(dir_name+file_name_norm2, 0,  new_file);
-    saveDataLog(dir_name+file_name_hd_decode, 0, new_file);
-    saveDataLog(dir_name+file_name_norm2_decode, 0, new_file);
+
 
     cout << "Starting bitflips with x_plain_size of: " << x_plain_size << endl;
 
@@ -130,11 +132,11 @@ int main(int argc, char * argv[])
                 if (x_plain[index_value] >= modulus_value)
                 {
                     x_plain = x_plain_original;
-                    saveDataLog(dir_name+file_name_hd, 4096*60, !new_file);
-                    saveDataLog(dir_name+file_name_norm2, -10000, !new_file);
+                    saveDataLog(dir_name+file_name_hd, max_hd, !new_file);
+                    saveDataLog(dir_name+file_name_norm2, max_n2, !new_file);
                     // la mayor cantidad de bits...
-                    saveDataLog(dir_name+file_name_hd_decode, 4096*60, !new_file);
-                    saveDataLog(dir_name+file_name_norm2_decode, -10000, !new_file);
+                    saveDataLog(dir_name+file_name_hd_decode, max_hd, !new_file);
+                    saveDataLog(dir_name+file_name_norm2_decode, max_n2, !new_file);
                 }
 
                 else
