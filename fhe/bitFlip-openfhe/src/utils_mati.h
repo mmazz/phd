@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "lattice/hal/lat-backend.h"
 #include "math/hal/intnat/ubintnat.h"
 #include "openfhe.h"
 #include <algorithm>
@@ -26,21 +27,21 @@
 #include <array>
 #include <bitset>
 
-
 using namespace lbcrypto;
 
 using Integer  = intnat::NativeIntegerT<long unsigned int>;
+
 inline void saveDataLog(std::string file_name, int index_value, int bit_change, float res, bool new_file)
 {
     std::fstream logFile;
     // Open File
     if (new_file==1){
         std::cout<< " New log: " << std::endl;
-        logFile.open("/home/mmazz/phd/fhe/sealProfile/log_"+file_name+".txt", std::ios::out);
+        logFile.open("/home/mmazz/phd/fhe/bitFlip-openfhe/log_"+file_name+".txt", std::ios::out);
         logFile << "New file: " << std::endl ;
     }
     else{
-        logFile.open("/home/mmazz/phd/fhe/sealProfile/log_"+file_name+".txt", std::ios::app);
+        logFile.open("/home/mmazz/phd/fhe/bitFlip-openfhe/log_"+file_name+".txt", std::ios::app);
         logFile << "Diff: " << res << " index_value: "<< index_value << " bit_changed: " << bit_change << std::endl ;
     }
     // close file stream
@@ -54,17 +55,35 @@ inline void saveDataLog(std::string file_name, uint64_t  res, bool new_file)
     // Open File
     if (new_file==1){
         //std::cout<< " New log: " << std::endl;
-        logFile.open("/home/mmazz/phd/fhe/sealProfile/"+file_name+".txt", std::ios::out);
+        logFile.open("/home/mmazz/phd/fhe/bitFlip-openfhe/"+file_name+".txt", std::ios::out);
         logFile << "New file: " << std::endl ;
     }
     else{
-        logFile.open("/home/mmazz/phd/fhe/sealProfile/"+file_name+".txt", std::ios::app);
+        logFile.open("/home/mmazz/phd/fhe/bitFlip-openfhe/"+file_name+".txt", std::ios::app);
         logFile << res << std::endl ;
     }
     // close file stream
     logFile.close();
 
 }
+inline void saveDataLog(std::string file_name, double res, bool new_file)
+{
+    std::fstream logFile;
+    // Open File
+    if (new_file==1){
+        //std::cout<< " New log: " << std::endl;
+        logFile.open("/home/mmazz/phd/fhe/bitFlip-openfhe/"+file_name+".txt", std::ios::out);
+        logFile << "New file: " << std::endl ;
+    }
+    else{
+        logFile.open("/home/mmazz/phd/fhe/bitFlip-openfhe/"+file_name+".txt", std::ios::app);
+        logFile << res << std::endl ;
+    }
+    // close file stream
+    logFile.close();
+
+}
+
 
 //queda el tema de cuantos bits veo....
 //
@@ -151,19 +170,6 @@ inline void saveEncodig(std::string file_name, std::vector<int> encoding_diff, b
 
 }
 
-inline double norm2(std::vector<double>  &vecInput, std::vector<double> &vecOutput){
-    double res = 0;
-    double diff = 0;
-    // Itero sobre el del input por si el del output por construccion quedo mas grande
-    for (size_t i=0; i<vecInput.size(); i++)
-    {
-        diff = vecInput[i] - vecOutput[i];
-        res += pow(diff, 2);
-    }
-    res = std::sqrt(res/vecInput.size());
-    return res;
-}
-
 
 
 
@@ -214,6 +220,33 @@ inline uint64_t bit_flip(Integer original, size_t bit){
 //    double res_double = *((double*)&res);
 //    return res_double;//_double;
 //}
+inline double norm2(std::vector<double>  &vecInput, std::vector<double> &vecOutput){
+    double res = 0;
+    double diff = 0;
+    // Itero sobre el del input por si el del output por construccion quedo mas grande
+    for (size_t i=0; i<vecInput.size(); i++)
+    {
+        diff = vecInput[i] - vecOutput[i];
+        res += pow(diff, 2);
+    }
+    res = std::sqrt(res);
+    return res;
+}
+
+inline double norm2(NativePoly &x_plain, NativePoly &x_plain_original){
+    double res = 0;
+    uint64_t diff = 0;
+    // Itero sobre el del input por si el del output por construccion quedo mas grande
+    for (size_t i=0; i<x_plain.GetLength(); i++)
+    {
+        diff = (uint64_t)x_plain[i] - (uint64_t)x_plain_original[i];
+        res += pow(diff, 2);
+    }
+    res = std::sqrt(res);
+    return res;
+}
+
+
 
 inline uint64_t hamming_distance(double coeff1, double coeff2)
 {
@@ -252,6 +285,8 @@ inline uint64_t hamming_distance(uint64_t coeff1, uint64_t coeff2)
     }
     return count;
 }
+
+
 // se podria paralelizar...
 inline uint64_t hamming_distance(std::vector<uint64_t> &x_plain, std::vector<uint64_t> &x_plain_original, uint64_t coeff_count)
 {
@@ -262,3 +297,15 @@ inline uint64_t hamming_distance(std::vector<uint64_t> &x_plain, std::vector<uin
     return count;
 }
 
+// se podria paralelizar...
+inline uint64_t hamming_distance(NativePoly &x_plain, NativePoly &x_plain_original)
+{
+    uint64_t count = 0;
+    // el vector output puede tener otro size... entonces miro el input
+    auto coeff_count = x_plain.GetLength();
+    for(unsigned int i = 0; i < coeff_count; i++)
+    {
+        count += hamming_distance((uint64_t)x_plain[i], (uint64_t)x_plain_original[i]);
+    }
+    return count;
+}
