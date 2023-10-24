@@ -37,17 +37,20 @@ def intt(input_ntt, Ainv, q):
     return ninv*(Ainv@input_ntt)%q
 
 
-n = 4
+n = 8
 ninv= 5761
+ninv= 15
 q = 7681
-input = [1, 2, 3, 4]
-
+q = 17
+input = [i+1 for i in range(n)]
+print(input)
 
 w = 3383
 winv = 4298
+w = 9
+winv = 2
 A = vandermonde(n,w)%q
 Ainv = vandermonde(n,winv)
-input = [random.randint(0, q-1) for i in range(n)]
 input_ntt = ntt(input, A, q)
 output = intt(input_ntt, Ainv, q)
 
@@ -62,8 +65,6 @@ else:
 
 A = vandermonde_cyclic(n,q,w)
 Ainv = vandermonde_cyclic(n,q,winv)
-input = [random.randint(0, q-1) for i in range(n)]
-input = [1, 2, 3, 4]
 input_ntt = ntt(input, A, q)
 output = intt(input_ntt, Ainv, q)
 if (output == input).all():
@@ -80,8 +81,6 @@ w = 1925
 winv = 1213
 A = vandermonde_negacyclic(n,q,w)
 Ainv = vandermonde_Inegacyclic(n,q,winv)
-input = [random.randint(0, q-1) for i in range(n)]
-input = [1, 2, 3, 4]
 input_ntt = ntt(input, A, q)
 output = intt(input_ntt, Ainv, q)
 
