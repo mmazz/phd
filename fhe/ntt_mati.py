@@ -1,55 +1,94 @@
-import random
 import numpy as np
+import random
 
-def mod_inv(r):
-    for i in range(2,1000):
-        rinv = r*i%M
-        if rinv==1:
-            return i
-    print("error")
-    return 0
+def vandermonde(n,w):
+    A = np.ones((n,n), dtype=int)
+    for i in range(0,n):
+        for j in range(0,n):
+            A[i][j] = w**((j*i)%n)
+    return A
 
-n = 4 # largo del vector que voy a armar de input
-k = 0
-M = 0
-primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
-for i in range(1,10):
-    M = i*n+1
-    if M in primes:
-        print(i,M)
-        k = i
-        break
+def vandermonde_cyclic(n,q,w):
+    A = np.ones((n,n), dtype=int)
+    for i in range(0,n):
+        for j in range(0,n):
+            A[i][j] =  w**((j*i)%n)%q
+    return A
 
-print(M)
-r = 0
-for i in range(2,100):
-    r = i
-    if i**((M-1))%M==1:
-        print(i,r)
-        break
 
-print(r)
+def vandermonde_negacyclic(n,q,w):
+    A = np.ones((n,n), dtype=int)
+    for i in range(0,n):
+        for j in range(0,n):
+            A[i][j] = w**((2*j*i+j)%(2*n))%q
+    return A
 
-a = np.array([[ 1, 1    , 1   , 1],
-              [ 1, r    , r**2, r**3],
-              [ 1, r**2 , r**4, r**6],
-              [ 1, r**3 , r**6, r**9]])
-input = np.array([1, 1, 3, 1])
-n_ntt = a.dot(input)%M
-print(n_ntt)
+def vandermonde_Inegacyclic(n,q,w):
+    A = np.ones((n,n), dtype=int)
+    for i in range(0,n):
+        for j in range(0,n):
+            A[i][j] = w**((2*j*i+i)%(2*n))%q
+    return A
 
-aneg = np.array([[ 1, 1            , 1            , 1            ],
-                 [ 1, mod_inv(r)   , mod_inv(r**2), mod_inv(r**3)],
-                 [ 1, mod_inv(r**2), mod_inv(r**4), mod_inv(r**6)],
-                 [ 1, mod_inv(r**3), mod_inv(r**6), mod_inv(r**9)]])
-print(aneg%M)
-output = mod_inv(r**2)*aneg.dot(n_ntt)%M
+def ntt(input, A, q):
+    return (A@input)%q
+
+def intt(input_ntt, Ainv, q):
+    return ninv*(Ainv@input_ntt)%q
+
+
+n = 4
+ninv= 5761
+q = 7681
+input = [1, 2, 3, 4]
+
+
+w = 3383
+winv = 4298
+A = vandermonde(n,w)%q
+Ainv = vandermonde(n,winv)
+input = [random.randint(0, q-1) for i in range(n)]
+input_ntt = ntt(input, A, q)
+output = intt(input_ntt, Ainv, q)
 
 if (output == input).all():
-    print("true")
+    print("Linear true")
 else:
-    print("false")
+    print("Linear false")
     print(input)
     print("vs")
     print(output)
 
+
+A = vandermonde_cyclic(n,q,w)
+Ainv = vandermonde_cyclic(n,q,winv)
+input = [random.randint(0, q-1) for i in range(n)]
+input = [1, 2, 3, 4]
+input_ntt = ntt(input, A, q)
+output = intt(input_ntt, Ainv, q)
+if (output == input).all():
+    print("Cyclic true")
+else:
+    print("Cyclic false")
+    print(input)
+    print("vs")
+    print(output)
+
+
+
+w = 1925
+winv = 1213
+A = vandermonde_negacyclic(n,q,w)
+Ainv = vandermonde_Inegacyclic(n,q,winv)
+input = [random.randint(0, q-1) for i in range(n)]
+input = [1, 2, 3, 4]
+input_ntt = ntt(input, A, q)
+output = intt(input_ntt, Ainv, q)
+
+if (output == input).all():
+    print("NegaCyclic true")
+else:
+    print("BegaCylcic false")
+    print(input)
+    print("vs")
+    print(output)
