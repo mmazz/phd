@@ -122,6 +122,16 @@ int main(int argc, char * argv[])
     cout << "Starting bitflips with x_plain_size of: " << x_plain_size << endl;
     cout << "Coeff count " << x_plain_nonNTT.coeff_count() << endl;
 
+
+//    for (int i = 0; i<ntt_tables[0].coeff_count(); i++)
+//    {
+//        std::cout << ntt_tables[0].get_root() << std::endl;
+//    }
+
+
+
+
+
     int count = 0;
     // Ne guardo la info sin ntt
     for (size_t modulus_index = 0; modulus_index < coeff_modulus_size; modulus_index++)

@@ -261,8 +261,28 @@ tiene sentido NTT ya que usa la $2^k$.
 
 Luego de esto es exactamente FTT, solo que en vez de usar $w$ usa $r^c$.
 
+\subsection{Campos finitos}
+Para que sea un campo finito se requieren varias propiedades, como la computatividad, asociatividad, identidad y distributividad, tanto
+para la suma como la multiplicacion.
+Ademas tiene que haber un inversos aditivos y multiplicativos.
+Cuando usamos campos con modulo, esto hace que no todo elemento del campo tenga inverso multiplicativo.
+Pero esto si se cumple si el modulo es un numero primo y es por esto que se suelen usar.
 
+Como es el caso de CKKS y otros esquemas, se usan campos finitos como los polinomios irreducibles.
 
+Con esto surjen tambien otras definiciones similares pero menos restrictivas, que no requieren
+las siguientes cosas:
+\begin{table}[h!]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+Ring          & Commutativity, identity element and inverse for multiplication \\ \hline
+Abelian group & Multiplication                                                 \\ \hline
+Group         & Multiplication and commutative adition                         \\ \hline
+\end{tabular}
+\end{table}
+
+Con esto se tiene que todo campo finito es un anillo, que todo anillo es un grupo abeliano y que todo grupo abeliano es un grupo.
 \section{Intro Matematica}
 Una buena fuente de info puede ser la tesis de Yao Chen: Applying Fully Homomorphic
 Encryption: Practices and Problems.
