@@ -1,6 +1,8 @@
 import numpy as np
 import mpmath as mp
 # To print nicely the starting modulus qL
+import arithmetic64 as arithmetic
+import distributions64 as dist
 import locale
 locale.setlocale(locale.LC_ALL, '')
 from dataclasses import dataclass
@@ -35,12 +37,12 @@ class CKKSScheme:
     """
 
     def __init__(self, M:int, h:int, scale:int, P:int, level:int, q0:int, arithmetic64=False, verbose=True):
-        if arithmetic64:
-           import arithmetic64 as arithmetic
-           import distributions64 as dist
-        else:
-           import arithmetic as arithmetic
-           import distributions as dist
+#        if arithmetic64:
+#           import arithmetic64 as arithmetic
+#           import distributions64 as dist
+#        else:
+#           import arithmetic as arithmetic
+#           import distributions as dist
 
         self.arithmetic = arithmetic
         self.dist = dist
