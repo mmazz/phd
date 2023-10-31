@@ -26,6 +26,8 @@
 #include <bitset>
 #include <chrono>
 
+
+// ver de guardarme todos los vectores resutl, y luego graficar todos y hacer una animacion.
 /*
  * Codifico una imagen, le cambio un bit particular a un coeficiente particular de
  * uno de los polinomios de RNS particular y
@@ -35,8 +37,8 @@
 using namespace seal;
 using namespace std;
 
-int bit_change = 10;
-int index_value = 0;
+int bit_change = 59;
+int index_value = 2000;
 size_t modulus_index = 1;
 bool NTT_ON = false;
 
@@ -98,7 +100,7 @@ int main(int argc, char * argv[])
     encoder.decode(plain_result, result);
 
     std::ofstream outfile_nonBitFlip;
-    outfile_nonBitFlip.open("data/example_nonBitflip.txt", std::ios_base::out);
+    outfile_nonBitFlip.open("data/img_encode_nonBitflip.txt", std::ios_base::out);
     for(int i=0; i<input.size()-1; i++)
         outfile_nonBitFlip<< result[i] << ",";
 
@@ -109,12 +111,6 @@ int main(int argc, char * argv[])
     int modulus_index = 0;
     int modulus_bits = 0;
     bool new_file = 1;
-    std::ofstream outfile;
-
-    outfile.open("data/example_nonbitflip.txt", std::ios_base::out);
-    for(int i=0; i<input.size()-1; i++)
-        outfile << result[i] << ",";
-    outfile << result[input.size()-1] << endl;
 
     uint64_t modulus_value=0;
     modulus_value = coeff_modulus[modulus_index].value();
@@ -133,33 +129,30 @@ int main(int argc, char * argv[])
 
     else
     {
+        std::ofstream outfile_decode;
+        std::ofstream outfile;
+
         uint64_t hd_bitflip = hamming_distance(x_plain, x_plain_original);
         //cout << "Hamming distance x_plain bit flip: " << hd_bitflip << endl;
         //cout << "Coeff count " << x_plain.coeff_count() << endl;
         encoder.decode(x_plain, result);
         res_hamming = hamming_distance(input, result)*100/(4096*60);
         res_norm2 = norm2(input, result);
-
-        std::ofstream outfile_decode;
         cout << "hamming distance: " << res_hamming << endl;
         cout << "N2:  " << res_norm2 << endl;
-        outfile_decode.open("data/img_encode_bitFlip_decode.txt", std::ios_base::out);
-
+        outfile_decode.open("data/img_encode_bitFlip_nonOps_decode.txt", std::ios_base::out);
         for(int i=0; i<input.size()-1; i++)
             outfile_decode << result[i] << ",";
+
         outfile_decode << result[input.size()-1] << endl;
         encryptor.encrypt(x_plain, x_encrypted);
         decryptor.decrypt(x_encrypted, plain_result);
         encoder.decode(plain_result, result);
         res_hamming = hamming_distance(input, result)*100/(4096*60);
         res_norm2 = norm2(input, result);
-
-        std::ofstream outfile;
-
         cout << "hamming distance 2: " << res_hamming << endl;
         cout << "N2 2:  " << res_norm2 << endl;
         outfile.open("data/img_encode_bitFlip_nonOps.txt", std::ios_base::out);
-        //outfile.open("data/example_bitflip.txt", std::ios_base::out);
         for(int i=0; i<input.size()-1; i++)
             outfile << result[i] << ",";
         outfile << result[input.size()-1] << endl;
