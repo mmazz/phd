@@ -19,17 +19,17 @@ plt.imshow(data_matrix)
 plt.savefig("original.png")
 plt.show()
 
-data_matrix = np.loadtxt(dir+file_notChange,  delimiter=",").reshape(28,28)*10000
+#data_matrix = np.loadtxt(dir+file_notChange,  delimiter=",").reshape(28,28)*10000
 
-plt.imshow(data_matrix)
-plt.title("Decripted with no change")
-plt.show()
+#plt.imshow(data_matrix)
+#plt.title("Decripted with no change")
+#plt.show()
 
-data_matrix = np.loadtxt(dir+file_bitflip_decode,  delimiter=",", dtype=int).reshape(28,28)*10000
+#data_matrix = np.loadtxt(dir+file_bitflip_decode,  delimiter=",", dtype=int).reshape(28,28)*10000
 
-plt.imshow(data_matrix)
-plt.title("Only decode with bitflip")
-plt.show()
+#plt.imshow(data_matrix)
+#plt.title("Only decode with bitflip")
+#plt.show()
 
 #df = pd.read_csv(dir+file_bitflip, delimiter=',')
 data_matrix = np.loadtxt(dir+file_bitflip, delimiter=",").reshape(28,28)
@@ -39,5 +39,5 @@ data_matrix = np.loadtxt(dir+file_bitflip, delimiter=",").reshape(28,28)
 #plt.style.use('grayscale')
 plt.imshow(data_matrix)
 plt.title("Decrypted with bitflip")
-plt.savefig("bitflip.png")
+plt.savefig("bitflip.png", bbox_inches ="tight", format="png", dpi=30)
 plt.show()
