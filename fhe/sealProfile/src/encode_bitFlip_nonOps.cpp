@@ -37,8 +37,8 @@ int main(int argc, char * argv[])
     vector<int> modulus = {60, 30};
 
     std::string dir_name = "logs/log_encode/";
-    std::string file_name_hd = "encodeHD_nonOps";
-    std::string file_name_norm2 =  "encodeN2_nonOps";
+    //std::string file_name_hd = "encodeHD_nonOps";
+    //std::string file_name_norm2 =  "encodeN2_nonOps";
     std::string file_name_hd_decode = "encodeHD_nonOps_decode";
     std::string file_name_norm2_decode = "encodeN2_nonOps_decode";
 
@@ -102,8 +102,8 @@ int main(int argc, char * argv[])
     int modulus_bits = 0;
     int index_value = 0;
     bool new_file = 1;
-    saveDataLog(dir_name+file_name_hd, res_hamming,  new_file);
-    saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
+ //   saveDataLog(dir_name+file_name_hd, res_hamming,  new_file);
+ //   saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
     saveDataLog(dir_name+file_name_hd_decode, res_hamming_decode, new_file);
     saveDataLog(dir_name+file_name_norm2_decode, res_norm2_decode, new_file);
 
@@ -132,8 +132,8 @@ int main(int argc, char * argv[])
                 if (x_plain[index_value] >= modulus_value)
                 {
                     x_plain = x_plain_original;
-                    saveDataLog(dir_name+file_name_hd, max_hd, !new_file);
-                    saveDataLog(dir_name+file_name_norm2, max_n2, !new_file);
+             //       saveDataLog(dir_name+file_name_hd, max_hd, !new_file);
+              //      saveDataLog(dir_name+file_name_norm2, max_n2, !new_file);
                     // la mayor cantidad de bits...
                     saveDataLog(dir_name+file_name_hd_decode, max_hd, !new_file);
                     saveDataLog(dir_name+file_name_norm2_decode, max_n2, !new_file);
@@ -147,14 +147,14 @@ int main(int argc, char * argv[])
                     saveDataLog(dir_name+file_name_hd_decode, res_hamming_decode, !new_file);
                     saveDataLog(dir_name+file_name_norm2_decode, res_norm2_decode, !new_file);
 
-                    encryptor.encrypt(x_plain, x_encrypted);
-                    decryptor.decrypt(x_encrypted, plain_result);
-                    encoder.decode(plain_result, result);
-                    res_hamming = hamming_distance(input, result);
-                    res_norm2 = norm2(input, result);
+                  //  encryptor.encrypt(x_plain, x_encrypted);
+                 //   decryptor.decrypt(x_encrypted, plain_result);
+                 //   encoder.decode(plain_result, result);
+                 //   res_hamming = hamming_distance(input, result);
+                 //   res_norm2 = norm2(input, result);
                     //cout << x_plain_original[index_value]<<  " vs "  << x_plain[index_value] << " , indexvalue: " << index_value << " bitchange: " << bit_change << " hd: " << res_hamming << " n2: "<< res_norm2 << endl;
-                    saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
-                    saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
+                 //   saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
+                  //  saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
 
                 //    uint64_t hd_decode = hamming_distance(x_plain, plain_result);
                 //    uint64_t hd_res = hamming_distance(result, result_decode);
