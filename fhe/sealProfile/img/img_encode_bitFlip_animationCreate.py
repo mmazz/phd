@@ -26,6 +26,7 @@ for i in range(amount_imgs):
         plt.imshow(data_matrix)
         plt.title(f"Coeff={coeff}, bit chaged={bit}, HD={hd}, norm2={norm2}")
         plt.savefig(dir_fig+"animation"+str(count)+".png", bbox_inches ="tight", format="png", dpi=700)
+        # Esto borra los ejes, si no se va volviendo cada vez mas lento en cada iteracion
         plt.cla()
         bit += 1
         count += 1
