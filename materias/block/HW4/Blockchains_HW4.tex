@@ -1,0 +1,258 @@
+\documentclass[12pt,addpoints,answers]{exam}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amsfonts,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{mathtools}
+\usepackage{hyperref}
+\usepackage{fullpage}
+\usepackage{microtype}
+\usepackage{xspace}
+\usepackage[svgnames]{xcolor}
+\usepackage[sc]{mathpazo}
+\usepackage{enumitem}
+\usepackage{bm}
+
+\pagestyle{head}
+
+% TIRET DEFINITIONS
+
+\newlength{\saveparindent}
+\setlength{\saveparindent}{\parindent}
+\newlength{\saveparskip}
+\setlength{\saveparskip}{\parskip}
+\newcounter{ctr}
+\newcounter{savectr}
+\newcounter{ectr}
+\newcounter{sctr}
+
+
+\newenvironment{tiret}{%
+\begin{list}{\hspace{2pt}\rule[0.5ex]{6pt}{1pt}\hfill}{\labelwidth=15pt%
+\labelsep=5pt \leftmargin=20pt \topsep=3pt%
+\setlength{\listparindent}{\saveparindent}%
+\setlength{\parsep}{\saveparskip}%
+\setlength{\itemsep}{0pt} }}{\end{list}}
+
+
+%----------Header--------------------%
+\def\course{{\sc Foundations and Applications of Blockchains}}
+\def\term{Depto. de Computaci\'{o}n, $2^{\textrm{do}}$ Cuatrimestre 2023}
+\def\prof{Lecturer: Juan Garay}
+\newcommand{\handout}[5]{
+   \renewcommand{\thepage}{\arabic{page}}
+   \begin{center}
+   \framebox{
+      \vbox{
+    \hbox to 5.78in { \hfill \large{\course} \hfill }
+    \vspace{2mm}
+%    \hbox to 5.78in { \hfill \large{\prof} \hfill }
+%       \vspace{2mm}
+       \hbox to 5.78in { {\Large \hfill \textbf{#5}  \hfill} }
+       \vspace{2mm}
+       \hbox to 5.78in { \term \hfill \emph{#2}}
+       \hbox to 5.78in { {#3 \hfill \emph{#4}}}
+      }
+   }
+   \end{center}
+   \vspace*{4mm}
+}
+\newcommand{\hw}[4]{\handout{#1}{#2}{#3}{#4}{Homework #1}}
+
+% -- For ignoring stuff -- %
+\newcommand{\ignore}[1]{}
+
+\begin{document}
+
+%----Specs: change accordingly-----%
+\newif\ifstudent % comment out false
+\studenttrue
+% \studentfalse
+
+\def\hwnum{4}
+\def\issuedate{26/10/23}
+\def\duedate{9/11/23, 8:00pm} %
+\def\yourname{} % put your name here
+%------------------------------%
+
+\ifstudent
+\hw{\hwnum}{\issuedate}{Student: \yourname}{Due: \duedate}%
+\else
+\hw{\hwnum}{\issuedate}{\prof}{Due: \duedate}%
+\fi
+
+% \ignore{
+
+\noindent \textbf{Instructions}
+
+\begin{itemize}
+    \item Upload your solution to Campus; make sure it's only one file, and clearly write your name on the first page. Name the file \textsf{`$<$your last name$>$\_HW3.pdf.'}
+    % {\bf Important:} Make sure to tap {\bf Turn in} after you upload your solution.
+
+     If you are proficient with \LaTeX, you may also typeset your submission and submit in PDF format. To do so, uncomment the ``\%\textbackslash begin\{solution\}'' and ``\%\textbackslash end\{solution\}'' lines and write your solution between those two command lines.
+
+      \item Your solutions will be graded on \emph{correctness} and
+    \emph{clarity}. You should only submit work that you believe to be
+    correct.
+    % , and you will get significantly more partial credit if you     clearly identify the gap(s) in your solution.
+
+    \item You may collaborate with others on this problem set.  However,
+    you must \textbf{{write up your own solutions}} and \textbf{{list
+      your collaborators and any external sources}} for each
+    problem. Be ready to explain your solutions orally to a member of the course staff
+    if asked.
+
+
+\end{itemize}
+
+\noindent This homework contains \numquestions\ questions,
+% \numpages\ pages
+for a total of \numpoints \ points.
+% and \numbonuspoints\ bonus points.
+
+%\medskip
+\newpage
+
+
+\begin{questions}
+
+\question \textbf{Bitcoin backbone: Chains of variable difficulty.}
+      \begin{parts}
+  \part[5] Describe Bahack's ``difficulty raising'' attack.
+
+    \begin{solution} %Uncomment and type your solution here
+ Es una forma de manipular la dificultad de la siguiente \textit{epoch}.
+        Para ello el adversario mina y esconde una secuencia de una cierta cantidad de bloques
+        la cual le elije sus marcas de tiempo.
+        Con esto, lo que intenta el adversario es realizar una secuencia en la cual
+        segun el paper a pesar de que falle, eventualmente puede tener exito.
+        Lo que hace es intentar minar un par de bloques sobre la actual cadena maxima valida,
+        eligiendo la marca de tiempo mencionada antes como la que aparece en el primer bloque
+        para manipular la dificultad del segundo bloque, que en el caso de tener exito (es decir
+        minar estos dos bloques en un intervalo) estaria superando el peso de la cadena honesta.
+
+    \end{solution}
+
+  \part[5] What aspect of Bitcoin's target recalculation function makes the attack ineffective? Elaborate.
+
+
+    \begin{solution} %Uncomment and type your solution here
+        Basicamente el cambio esta acotado.
+        De esta forma se previene que el adversario pueda aumentar la dificultad del
+        siguiente \textit{epoch} de forma aleatoria.
+        Basicamente hacemos que la dificultad aumente como la multiplcacion  de una
+        constante fija elegida con la dificultad actual, o se divide (en caso de reducir la
+        dificultad) a la dificultad actual con esta constante fija.
+    \end{solution}
+
+\end{parts}
+
+\newpage
+
+
+\question \textbf{Proofs of Stake (PoS).}
+      \begin{parts}
+      \part[5] Consider the \textit{long range attack} on a PoS blockchain in a permissionless environment. Assume that an honest-stake majority always holds, and that all the parties are aware of the global clock. Describe the scenarios wherein the honest parties lose their advantages, and explain why freshly joining parties cannot distinguish an honest chain from other chains by the longest-chain selection rule.
+
+    \begin{solution} %Uncomment and type your solution here
+        El escenario en el cual los participantes honestos pierden su ventaja y que a su ves
+        genere que nuevos participantes no puedan distinguir entre la cadena honesta con otras usando
+        la regla de seleccion de la cadena mas larga, es en el caso de corrupcion adaptativa.
+        Que como los lideres de cada espacio es conocido y que encima estos son solo una pequeña porcion
+        de los participantes, los adversarios podrian ir para atras para corromperlos, y hacerlos
+        crear una nueva cadena, la cual seria igual de larga que la cadena honesta.
+        De esta manera, la apuesta mayoritaria honesta no seria suficiente ya que cuando un nuevo
+        participante entre, no podria distinguir entre las cadenas utilizando la regla ya mensionada.
+    \end{solution}
+
+    \part[5] A PoS protocol performs leader election based on the stakes each party owns. Recall that the initial stake distribution is hard-coded in the genesis block. Does a PoS protocol assume a PKI? Further, the stakes in a party's account have monetary values. Where can the initial stakes come from?
+
+    \begin{solution} %Uncomment and type your solution here
+        Se asume una Infraestructura de clave pública (PKI) y la apuesta inicial puede ser o bien
+        dada derivada al utilizar la PKI o bien por un distribuidor de confianza.
+    \end{solution}
+
+\end{parts}
+
+\newpage
+
+\question  \textbf{Verifiable Random Functions (VRFs).}
+\begin{parts}
+
+\part[4] Enumerate the security properties a VRF should satisfy.
+
+   \begin{solution} %Uncomment and type your solution here
+     \begin{itemize}
+         \item Unicidad: Para una llave privada SK y datos X, no existe dos pares de valores ($Y_1$, $\pi_1$), ($Y_2$, $\pi_2$) (output de la funcion EVAL(SK,X))
+             que generen el valor verdadero para la funcion Verify, es decir para la clave publica VK asociada a SK,
+             $Verify(VK, X, Y_1, \pi_1)$=$Verify(VK, X, Y_2, \pi_2)$.
+         \item Probabilidad: Si tengo ($Y$, $\pi$) = $Eval(SK, X)$ entonces $Verify(VK, X, Y, \pi)$ = 1 (True).
+         \item Pseudorandom: Ningun valor de la funcion puede ser distinguido de algo aleatorio. Incluso si contamos con un set de otros valores de la funcion junto con
+             sus pruebas correspondientes.
+     \end{itemize}
+    \end{solution}
+
+\part[6] We stated in class that given a hash function, modeled as a \textit{random oracle}, and an unforgeable signature scheme, VRFs are readily realizable.  Show that that's indeed the case by proposing a construction and arguing its security---i.e., it achieves the desired security properties. Follow the VRF terminology we used in class.
+
+    \begin{solution} %Uncomment and type your solution here
+        Vamos a usar alguna firma digital la cual cumpla con la propiedad de que no se puede forjar
+        la firma.
+        Con esto, vamos a construir de forma tal que un evaluador no pueda generar una prueba valida
+        para un input X sin conocer la llave privada.
+        Ademas quiere construir algo que mantenga la unicidad, entonces si uso una firma digital deterministica
+        y ademas uso un oraculo random deterministico, lo estaria cumpliendo.
+
+        La construcción podría ser la siguiente, donde el evaluador que tiene la llave privada
+        toma una entrada X, y le calcula el Hash de la firma de dicho input X.
+        Donde entonces tendríamos que $Y=H(firma(X))$, $\pi= firma(X)$.
+        Con esto tendríamos la validación que buscamos.
+
+        De esta manera me queda que si la salida $Y$ no es valida, entonces $H(firma(X))!=Y$,
+        la verificación también va a dar 0 al computar $H(\pi)$, y se ve que no es igual cero.
+        Ademas si la prueba $\pi$ no es valida, es decir la firma no es valida,
+        y la verificación va a dar 0.
+        Si la salida $Y$ y la firma son validas, entonces el verificador al computar $H(\pi)$ va a
+        obtener $Y$ dando una verificación verdadera, 1.
+
+           \end{solution}
+
+\end{parts}
+
+\newpage
+
+\question \textbf{The {\em Ouroboros} protocol.}
+         \begin{parts}
+
+         \part[5] We saw in class that in the Ouroboros protocol the slot leader election process is abstracted out and modeled as an ``ideal functionality.'' Describe one realistic approach to elect the slot leader, and explain why there are $\bot$ symbols in the characteristic strings.
+
+     \begin{solution} %Uncomment and type your solution here
+        La selección de líder se puede hacer mediante Verifiable Random Functions (VRF).
+         Para que se mantenga una porción de la apuesta $\alpha_i$ para un dado participante $p_i$,
+         se podría definir una función, tal que si para dicho participante
+         al evaluarlo con VRF su salida es menor que lo que da dicha función, es electo como lider.
+         Y hay $\perp$ símbolos ya que hay algunas ronda no van a tener líder.
+         Dicha función la podemos definir como: $\phi_f(\alpha_i)=1-(1-f)^{\alpha_i}$
+    \end{solution}
+
+        \part[5] Describe the implementation of the {\em dynamic} stake setting. Why can't the parties use the most recent stake distribution (i.e., the stake distribution at the end of the previous epoch)?
+
+    \begin{solution} %Uncomment and type your solution here
+        Los participantes no pueden usar la mas reciente distribución de apuesta debido en parte a
+        la propiedad de \textit{common prefix}.
+        Ya que el \textit{leadger} que ven los participantes honestos va a ser posiblemente
+        distinto en los últimos bloques.
+        Entonces en cada ronda los participantes honestos pueden ver diferentes distribuciones de
+        apuestas en cada finalización de la ronda previa, haciendo que no puedan usar la distribucion
+        de la ronda previa.
+    \end{solution}
+
+    \end{parts}
+
+
+\newpage
+
+
+~\\
+
+\end{questions}
+
+\end{document}
