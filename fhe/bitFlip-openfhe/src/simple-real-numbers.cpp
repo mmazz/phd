@@ -23,7 +23,6 @@ int main() {
     cc->Enable(KEYSWITCH);
     cc->Enable(LEVELEDSHE);
     std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension() << std::endl << std::endl;
-    std::vector<int> test = {1, 2, 3};
     auto keys = cc->KeyGen();
     cc->EvalMultKeyGen(keys.secretKey);
     cc->EvalRotateKeyGen(keys.secretKey, {1, -2});
@@ -41,58 +40,66 @@ int main() {
     DCRTPoly plainElem = ptxt1->GetElement<DCRTPoly>();
 
     size_t RNS_size = ptxt1->GetElement<DCRTPoly>().GetAllElements().size();
-    //for (size_t i = 0; i < RNS_size; i++)
-    for (size_t i = 0; i < 1; i++)
+    for (size_t i = 0; i < RNS_size; i++)
     {
         //size_t poly_degree = ptxt1->GetElement<DCRTPoly>().GetAllElements()[i].GetLength();
-        //for (size_t j = 0; j < poly_degree; j++)
-        for (size_t j = 0; j < 1; j++)
+        for (size_t j = 0; j < cc->GetRingDimension(); j++)
         {
+            std::cout << j << std::endl;
             auto original = ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j];
-            std::cout << "Original " <<ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] << std::endl;
-            for(size_t bit=9; bit<10; bit++)
+            //std::cout << "Original " <<ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] << std::endl;
+            for(size_t bit=0; bit<64; bit++)
 
             {
-                std::cout << ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] << "vs " <<  bit_flip(original, bit) << std::endl;
+                //std::cout << ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] << " vs " <<  bit_flip(original, bit) << std::endl;
                 ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = bit_flip(original, bit);
                 auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
                 Plaintext result;
-                cc->Decrypt(keys.secretKey, c1, &result);
-                result->SetLength(28*28);
-                std::cout << "Estimated precision in bits: " << result << std::endl;
-                std::cout << "BitChanged " << bit << " " << ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] << std::endl;
-                //ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = original;
+                try
+                {
+                    cc->Decrypt(keys.secretKey, c1, &result);
+                    result->SetLength(28*28);
+                    std::cout << "Estimated precision in bits: " << result << std::endl;
+                    std::cout << "BitChanged " << bit << " " << ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] << std::endl;
+                }
+                catch(math_error& e)
+                {
+
+                    //std::cout<< "Excepction: " << e.what() << std::endl;
+                }
+
+                ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = original;
             }
-            std::cout << "Polynomial " << i << " " << plainElem.GetAllElements()[i][j] << std::endl;
+            //std::cout << "Polynomial " << i << " " << plainElem.GetAllElements()[i][j] << std::endl;
         }
     }
 
     std::cout << "RNS size: " << RNS_size << " Polynomial degree: " << plainElem.GetAllElements()[0].GetLength() << std::endl;
-
-    // Encrypt the encoded vectors
-    auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
-
-
-    // Step 4: Evaluation
-    // Step 5: Decryption and output
-    Plaintext result;
-    // We set the cout precision to 8 decimal digits for a nicer output.
-    // If you want to see the error/noise introduced by CKKS, bump it up
-    // to 15 and it should become visible.
-    std::cout.precision(8);
-
-    std::cout << std::endl << "Results of homomorphic computations: " << std::endl;
-
-    cc->Decrypt(keys.secretKey, c1, &result);
-    // get output of the image
-    result->SetLength(28*28);
-    std::cout << "Estimated precision in bits: " << result->GetLogPrecision() << std::endl;
-
-    std::ofstream outfile_nonBitFlip;
-    outfile_nonBitFlip.open("data/example_nonBitflip.txt", std::ios_base::out);
-
-    outfile_nonBitFlip << result << std::endl;
-
+//
+//    // Encrypt the encoded vectors
+//    auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+//
+//
+//    // Step 4: Evaluation
+//    // Step 5: Decryption and output
+//    Plaintext result;
+//    // We set the cout precision to 8 decimal digits for a nicer output.
+//    // If you want to see the error/noise introduced by CKKS, bump it up
+//    // to 15 and it should become visible.
+//    std::cout.precision(8);
+//
+//    std::cout << std::endl << "Results of homomorphic computations: " << std::endl;
+//
+//    cc->Decrypt(keys.secretKey, c1, &result);
+//    // get output of the image
+//    result->SetLength(28*28);
+//    std::cout << "Estimated precision in bits: " << result->GetLogPrecision() << std::endl;
+//
+//    std::ofstream outfile_nonBitFlip;
+//    outfile_nonBitFlip.open("data/example_nonBitflip.txt", std::ios_base::out);
+//
+//    outfile_nonBitFlip << result << std::endl;
+//
 
     return 0;
 }
