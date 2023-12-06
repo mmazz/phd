@@ -12,8 +12,8 @@ int main() {
     uint32_t multDepth = 1;
     uint32_t scaleModSize = 50;
     uint32_t firstModSize = 60;
-    uint32_t batchSize = 1<<10;
-    uint32_t ringDim= 1<<11;
+    uint32_t batchSize = 1024;
+    uint32_t ringDim= 2048;
     ScalingTechnique rescaleTech = FIXEDMANUAL;
 
     CCParams<CryptoContextCKKSRNS> parameters;
@@ -53,7 +53,7 @@ int main() {
 
     std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension() << " RNS size: " << RNS_size << std::endl << std::endl;
 
-    if (RNS_size > 1)
+    if (RNS_size == 2)
     {
         auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
         cc->Decrypt(keys.secretKey, c1, &result);

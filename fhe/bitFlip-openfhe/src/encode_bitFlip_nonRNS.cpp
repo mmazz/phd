@@ -12,8 +12,8 @@ int main() {
     uint32_t multDepth = 0;
     uint32_t scaleModSize = 50;
     uint32_t firstModSize = 60;
-    uint32_t batchSize = 1<<10;
-    uint32_t ringDim= 1<<11;
+    uint32_t batchSize = 1024;
+    uint32_t ringDim= 2048;
     ScalingTechnique rescaleTech = FIXEDMANUAL;
 
     CCParams<CryptoContextCKKSRNS> parameters;

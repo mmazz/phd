@@ -220,11 +220,11 @@ inline uint64_t bit_flip(Integer original, size_t bit){
 //    double res_double = *((double*)&res);
 //    return res_double;//_double;
 //}
-inline double norm2(std::vector<double>  &vecInput, std::vector<double> &vecOutput){
+inline double norm2(std::vector<double>  &vecInput, std::vector<double> &vecOutput, size_t size){
     double res = 0;
     double diff = 0;
     // Itero sobre el del input por si el del output por construccion quedo mas grande
-    for (size_t i=0; i<vecInput.size(); i++)
+    for (size_t i=0; i<size; i++)
     {
         diff = vecInput[i] - vecOutput[i];
         res += pow(diff, 2);
@@ -264,11 +264,11 @@ inline uint64_t hamming_distance(double coeff1, double coeff2)
 }
 
 // se podria paralelizar...
-inline uint64_t hamming_distance(std::vector<double>& vecInput, std::vector<double>& vecOutput)
+inline uint64_t hamming_distance(std::vector<double>& vecInput, std::vector<double>& vecOutput, size_t size)
 {
     uint64_t count = 0;
     // el vector output puede tener otro size... entonces miro el input
-    for(unsigned int i = 0; i < vecInput.size(); i++)
+    for(size_t i = 0; i<size; i++)
         count += hamming_distance(vecInput[i], vecOutput[i]);
     return count;
 }

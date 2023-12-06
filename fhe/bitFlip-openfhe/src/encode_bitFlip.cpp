@@ -12,8 +12,8 @@ int main() {
     uint32_t multDepth = 1;
     uint32_t scaleModSize = 50;
     uint32_t firstModSize = 60;
-    uint32_t batchSize = 1<<10;
-    uint32_t ringDim= 1<<11;
+    uint32_t batchSize = 1024;
+    uint32_t ringDim= 2048;
     ScalingTechnique rescaleTech = FIXEDMANUAL;
 
     CCParams<CryptoContextCKKSRNS> parameters;
@@ -27,8 +27,8 @@ int main() {
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
     std::string dir_name = "logs/log_encode/";
-    std::string file_name_hd = "encodeHD_withRNS&NTT";
-    std::string file_name_norm2 =  "encodeN2_withRNS&NTT";
+    std::string file_name_hd = "encodeHD";
+    std::string file_name_norm2 =  "encodeN2";
 
 
     // Enable the features that you wish to use
@@ -52,50 +52,53 @@ int main() {
     size_t RNS_size = ptxt1->GetElement<DCRTPoly>().GetAllElements().size();
 
     std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension() << " RNS size: " << RNS_size << std::endl << std::endl;
-    auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
-    cc->Decrypt(keys.secretKey, c1, &result);
-    result->SetLength(dataSize);
-    std::cout << result << std::endl;
-    resultData = result->GetRealPackedValue();
-    size_t test = 0;
-    for (size_t i=0; i<dataSize; i++)
+    if (RNS_size == 2)
     {
-        if(round(input[i])!=round(resultData[i]))
+        auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+        cc->Decrypt(keys.secretKey, c1, &result);
+        result->SetLength(dataSize);
+        std::cout << result << std::endl;
+        resultData = result->GetRealPackedValue();
+        size_t test = 0;
+        for (size_t i=0; i<dataSize; i++)
         {
-            std::cout << "Error: " <<  input[i] << " != " << resultData[i] << std::endl;
-            test++;
-        }
-    }
-
-    if(test==0)
-    {
-        uint64_t res_hamming = 0;
-        double res_norm2 = 0;
-
-        bool new_file = 1;
-
-        saveDataLog(dir_name+file_name_hd, res_hamming,  new_file);
-        saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
-        for (size_t i = 0; i < RNS_size; i++)
-        {
-            for (size_t j = 0; j < cc->GetRingDimension(); j++)
+            if(round(input[i])!=round(resultData[i]))
             {
-                std::cout << j << std::endl;
-                auto original = ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j];
-                for(size_t bit=0; bit<64; bit++)
+                std::cout << "Error: " <<  input[i] << " != " << resultData[i] << std::endl;
+                test++;
+            }
+        }
+
+        if(test==0)
+        {
+            uint64_t res_hamming = 0;
+            double res_norm2 = 0;
+
+            bool new_file = 1;
+
+            saveDataLog(dir_name+file_name_hd, res_hamming,  new_file);
+            saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
+            for (size_t i = 0; i < RNS_size; i++)
+            {
+                for (size_t j = 0; j < cc->GetRingDimension(); j++)
                 {
-                    ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = bit_flip(original, bit);
-                    auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
-                    cc->Decrypt(keys.secretKey, c1, &result);
-                    result->SetLength(dataSize);
-                    resultData = result->GetRealPackedValue();
-                    res_hamming = hamming_distance(input, resultData, dataSize);
-                    res_norm2 = norm2(input, resultData, dataSize);
+                    std::cout << j << std::endl;
+                    auto original = ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j];
+                    for(size_t bit=0; bit<64; bit++)
+                    {
+                        ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = bit_flip(original, bit);
+                        auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+                        cc->Decrypt(keys.secretKey, c1, &result);
+                        result->SetLength(dataSize);
+                        resultData = result->GetRealPackedValue();
+                        res_hamming = hamming_distance(input, resultData, dataSize);
+                        res_norm2 = norm2(input, resultData, dataSize);
 
-                    saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
-                    saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
-                    ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = original;
+                        saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
+                        saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
+                        ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = original;
 
+                    }
                 }
             }
         }
