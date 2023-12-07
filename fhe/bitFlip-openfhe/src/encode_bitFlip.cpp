@@ -2,6 +2,7 @@
 #include "math/hal/intnat/transformnat.h"
 #include <cstdint>
 #define PROFILE
+#define FIXED_SEED
 #include "openfhe.h"
 #include "iostream"
 #include "utils_mati.h"
@@ -10,7 +11,7 @@ using namespace lbcrypto;
 int main() {
     // Step 1: Setup CryptoContext
     uint32_t multDepth = 1;
-    uint32_t scaleModSize = 50;
+    uint32_t scaleModSize = 30;
     uint32_t firstModSize = 60;
     uint32_t batchSize = 1024;
     uint32_t ringDim= 2048;
@@ -60,15 +61,16 @@ int main() {
         std::cout << result << std::endl;
         resultData = result->GetRealPackedValue();
         size_t test = 0;
-        for (size_t i=0; i<dataSize; i++)
+        size_t i = 0;
+        while(test==0 && i < dataSize)
         {
             if(round(input[i])!=round(resultData[i]))
             {
                 std::cout << "Error: " <<  input[i] << " != " << resultData[i] << std::endl;
                 test++;
             }
+            i++;
         }
-
         if(test==0)
         {
             uint64_t res_hamming = 0;

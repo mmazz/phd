@@ -10,11 +10,12 @@ using namespace lbcrypto;
 int main() {
     // Step 1: Setup CryptoContext
     uint32_t multDepth = 0;
-    uint32_t scaleModSize = 50;
+    uint32_t scaleModSize = 30;
     uint32_t firstModSize = 60;
     uint32_t batchSize = 1024;
     uint32_t ringDim= 2048;
     ScalingTechnique rescaleTech = FIXEDMANUAL;
+    size_t dataSize = 28*28;
 
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
@@ -35,7 +36,6 @@ int main() {
     cc->Enable(LEVELEDSHE);
     auto keys = cc->KeyGen();
 
-    size_t dataSize = 28*28;
     std::ifstream file("data/example.txt");
     std::vector<double> input(std::istream_iterator<double>{file}, std::istream_iterator<double>{});
     input.erase(input.begin()); // pop front
@@ -45,6 +45,7 @@ int main() {
         input.push_back(0);
     // Encoding as plaintexts
     Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(input);
+    std::cout << input << std::endl;
     DCRTPoly plainElem = ptxt1->GetElement<DCRTPoly>();
     Plaintext result;
     std::vector<double> resultData(dataSize);
@@ -59,13 +60,15 @@ int main() {
         std::cout << result << std::endl;
         resultData = result->GetRealPackedValue();
         size_t test = 0;
-        for (size_t i=0; i<dataSize; i++)
+        size_t i = 0;
+        while(test==0 && i < dataSize)
         {
             if(round(input[i])!=round(resultData[i]))
             {
                 std::cout << "Error: " <<  input[i] << " != " << resultData[i] << std::endl;
                 test++;
             }
+            i++;
         }
 
         if(test==0)
