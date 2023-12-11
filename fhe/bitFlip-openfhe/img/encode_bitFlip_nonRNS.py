@@ -34,7 +34,6 @@ def data_reshape(encoding):
 dfN2 = pd.read_csv(dir+fileN2, header=None,  skip_blank_lines=False)
 dfN2 = dfN2.iloc[1:,:]
 encodingN2 = dfN2[dfN2.columns[0]].to_numpy(dtype='float')
-encodingN2 = np.sqrt(encodingN2)
 print(f"{fileN2}: {encodingN2.mean()}")
 
 dfHD = pd.read_csv(dir+fileHD, header=None,  skip_blank_lines=False)

@@ -23,7 +23,12 @@ fileHD = "encodeHD_nonOps.txt"
 print(f"Total number of bits: {total_bits}")
 # Hago una matriz de cantidad de coeficientes por cantidad de bits por coeff
 def data_reshape(encoding):
+    count = 0
     bitflip_split = np.reshape(encoding, (num_coeff, coeff_bits))
+    for i in range(len(bitflip_split[0])):
+        count += bitflip_split[0][i]
+        print(i, bitflip_split[0][i])
+    print(count)
     by_coeff = bitflip_split.sum(axis=1)
     by_bits = bitflip_split.sum(axis=0)
     by_coeff_av = (by_coeff/coeff_bits)
@@ -34,7 +39,6 @@ def data_reshape(encoding):
 dfN2 = pd.read_csv(dir+fileN2, header=None,  skip_blank_lines=False)
 dfN2 = dfN2.iloc[1:,:]
 encodingN2 = dfN2[dfN2.columns[0]].to_numpy(dtype='float')
-encodingN2 = np.sqrt(encodingN2)
 print(f"{fileN2}: {encodingN2.mean()}")
 
 dfHD = pd.read_csv(dir+fileHD, header=None,  skip_blank_lines=False)
