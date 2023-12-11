@@ -15,9 +15,11 @@ max_diff = 255
 input_size = 28*28
 max_diff_tot = np.sqrt(max_diff**2 * input_size)
 RNS_size = 1
-coeff_bits = 64
+num_bits = 64
 polynomial_size = 2048
-total_bits = RNS_size*coeff_bits*polynomial_size
+total_bits = RNS_size*num_bits*polynomial_size
+# Aca estoy mirando los bits del input no del encoding
+total_bits_input = num_bits*input_size
 num_coeff = int(polynomial_size*RNS_size)
 dir = "../logs/log_encode/"
 fileN2 = "encodeN2_nonRNS.txt"
@@ -28,10 +30,10 @@ fileHD = "encodeHD_nonRNS.txt"
 print(f"Total number of bits: {total_bits}")
 # Hago una matriz de cantidad de coeficientes por cantidad de bits por coeff
 def data_reshape(encoding):
-    bitflip_split = np.reshape(encoding, (num_coeff, coeff_bits))
+    bitflip_split = np.reshape(encoding, (num_coeff, num_bits))
     by_coeff = bitflip_split.sum(axis=1)
     by_bits = bitflip_split.sum(axis=0)
-    by_coeff_av = (by_coeff/coeff_bits)
+    by_coeff_av = (by_coeff/num_bits)
     by_bits_av = (by_bits/num_coeff)
     return by_coeff_av, by_bits_av
 
@@ -44,7 +46,7 @@ print(f"{fileN2}: {encodingN2.mean()}")
 dfHD = pd.read_csv(dir+fileHD, header=None,  skip_blank_lines=False)
 dfHD = dfHD.iloc[1:,:]
 encodingHD = dfHD[dfHD.columns[0]].to_numpy(dtype='float')
-encodingHD = encodingHD/(total_bits)*100
+encodingHD = encodingHD/(total_bits_input)*100
 print(f"{fileHD}: {encodingHD.mean()}")
 
 
@@ -66,7 +68,6 @@ ax1.set_xlabel('Bit changed')
 ax1.set_ylabel('Hamming distance (\%)', color='firebrick')
 ax2.set_ylabel(y_label, color='steelblue')
 plt.savefig("encode_bitFlip_nonRNS_bybit", bbox_inches='tight')
-plt.show()
 
 fig, ax1 = plt.subplots()
 
@@ -78,7 +79,6 @@ ax1.set_xlabel('Coeff changed')
 ax1.set_ylabel('Hamming distance (\%)', color='firebrick')
 ax2.set_ylabel(y_label, color='steelblue')
 plt.savefig("encode_bitFlip_nonRNS_bycoeff", bbox_inches='tight')
-plt.show()
 
 
 
