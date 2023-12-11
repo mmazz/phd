@@ -64,7 +64,7 @@ ax2.plot(N2_by_bits_av, color='steelblue')
 
 ax1.set_xlabel('Bit changed')
 ax1.set_ylabel('Hamming distance (\%)', color='firebrick')
-ax2.set_ylabel('y_label, color='steelblue')
+ax2.set_ylabel(y_label, color='steelblue')
 plt.savefig("encode_bitFlip_nonRNS_bybit", bbox_inches='tight')
 plt.show()
 
@@ -76,7 +76,7 @@ ax2.plot(N2_by_coeff_av, color='steelblue')
 
 ax1.set_xlabel('Coeff changed')
 ax1.set_ylabel('Hamming distance (\%)', color='firebrick')
-ax2.set_ylabel('y_label, color='steelblue')
+ax2.set_ylabel(y_label, color='steelblue')
 plt.savefig("encode_bitFlip_nonRNS_bycoeff", bbox_inches='tight')
 plt.show()
 
