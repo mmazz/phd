@@ -2,7 +2,7 @@
 #include "math/hal/intnat/transformnat.h"
 #include <cstdint>
 #define PROFILE
-#define FIXED_SEED
+//#define FIXED_SEED
 #include "openfhe.h"
 #include "iostream"
 #include "utils_mati.h"

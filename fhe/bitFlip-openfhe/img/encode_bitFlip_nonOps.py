@@ -25,10 +25,6 @@ print(f"Total number of bits: {total_bits}")
 def data_reshape(encoding):
     count = 0
     bitflip_split = np.reshape(encoding, (num_coeff, coeff_bits))
-    for i in range(len(bitflip_split[0])):
-        count += bitflip_split[0][i]
-        print(i, bitflip_split[0][i])
-    print(count)
     by_coeff = bitflip_split.sum(axis=1)
     by_bits = bitflip_split.sum(axis=0)
     by_coeff_av = (by_coeff/coeff_bits)
@@ -63,6 +59,7 @@ ax1.set_ylabel('Hamming distance (\%)', color='firebrick')
 ax2.set_ylabel('L2 norm', color='steelblue')
 plt.savefig("encode_bitFlip_nonOps_bybit")
 plt.show()
+
 
 fig, ax1 = plt.subplots()
 
