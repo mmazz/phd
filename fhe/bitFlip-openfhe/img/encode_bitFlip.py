@@ -10,7 +10,10 @@ matplotlib.rcParams.update({'font.size': 20})
 plt.rc('xtick',labelsize=16)
 plt.rc('ytick',labelsize=16)
 
-
+bounded = True
+max_diff = 255
+input_size = 28*28
+max_diff_tot = np.sqrt(max_diff**2 * input_size)
 RNS_size = 2
 coeff_bits = 64
 polynomial_size = 2048
@@ -18,6 +21,8 @@ total_bits = RNS_size*coeff_bits*polynomial_size
 num_coeff = int(polynomial_size*RNS_size)
 dir = "../logs/log_encode/"
 fileN2 = "encodeN2.txt"
+if (bounded):
+    fileN2 = "encodeN2_bounded.txt"
 fileHD = "encodeHD.txt"
 
 print(f"Total number of bits: {total_bits}")
@@ -43,7 +48,13 @@ encodingHD = encodingHD/(total_bits)*100
 print(f"{fileHD}: {encodingHD.mean()}")
 
 
+y_label = 'L2 norm'
 N2_by_coeff_av, N2_by_bits_av = data_reshape(encodingN2)
+
+if (bounded):
+    y_label = y_label + ' (\%)'
+    N2_by_coeff_av = N2_by_coeff_av*100/max_diff_tot
+    N2_by_bits_av = N2_by_bits_av*100/max_diff_tot
 
 HD_by_coeff_av, HD_by_bits_av = data_reshape(encodingHD)
 
@@ -55,8 +66,8 @@ ax2.plot(N2_by_bits_av, color='steelblue')
 
 ax1.set_xlabel('Bit changed')
 ax1.set_ylabel('Hamming distance (\%)', color='firebrick')
-ax2.set_ylabel('L2 norm', color='steelblue')
-plt.savefig("encode_bitFlip_bybit")
+ax2.set_ylabel('y_label, color='steelblue')
+plt.savefig("encode_bitFlip_bybit", bbox_inches='tight')
 plt.show()
 
 fig, ax1 = plt.subplots()
@@ -67,8 +78,8 @@ ax2.plot(N2_by_coeff_av, color='steelblue')
 
 ax1.set_xlabel('Coeff changed')
 ax1.set_ylabel('Hamming distance (\%)', color='firebrick')
-ax2.set_ylabel('L2 norm', color='steelblue')
-plt.savefig("encode_bitFlip_bycoeff")
+ax2.set_ylabel('y_label, color='steelblue')
+plt.savefig("encode_bitFlip_bycoeff", bbox_inches='tight')
 plt.show()
 
 

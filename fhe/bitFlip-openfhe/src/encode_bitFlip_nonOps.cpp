@@ -31,6 +31,7 @@ int main() {
     std::string dir_name = "logs/log_encode/";
     std::string file_name_hd = "encodeHD_nonOps";
     std::string file_name_norm2 =  "encodeN2_nonOps";
+    std::string file_name_norm2_bounded =  "encodeN2_nonOps_bounded";
 
     // Enable the features that you wish to use
     cc->Enable(PKE);
@@ -38,6 +39,7 @@ int main() {
     auto keys = cc->KeyGen();
 
     // Input setup
+    int max_diff = 255;
     size_t dataSize = 28*28;
     std::ifstream file("data/example.txt");
     std::vector<double> input(std::istream_iterator<double>{file}, std::istream_iterator<double>{});
@@ -77,10 +79,12 @@ int main() {
         {
             uint64_t res_hamming = 0;
             double res_norm2 = 0;
+            double res_norm2_bounded = 0;
             bool new_file = 1;
 
             saveDataLog(dir_name+file_name_hd, res_hamming,  new_file);
             saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
+            saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded,  new_file);
             auto original_Coeff =  plainElem.GetAllElements()[0];
             for (size_t j = 0; j < cc->GetRingDimension(); j++)
             {
@@ -97,9 +101,12 @@ int main() {
                     resultData = result->GetRealPackedValue();
                     res_hamming = hamming_distance(input, resultData, dataSize);
                     res_norm2 = norm2(input, resultData, dataSize);
-
+                    res_norm2_bounded = norm2_bounded(input, resultData, dataSize, max_diff);
+                    if (res_norm2_bounded > pow(255,2)*28*28)
+                        std::cout << "Error: " <<res_norm2_bounded << std::endl;
                     saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
                     saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
+                    saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded, !new_file);
                     // Cambian todos los coefficientes, tengo que resetearlo entero
                     ptxt1->GetElement<DCRTPoly>().GetAllElements()[0] = original_Coeff;
 

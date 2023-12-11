@@ -233,6 +233,22 @@ inline double norm2(std::vector<double>  &vecInput, std::vector<double> &vecOutp
     return res;
 }
 
+inline double norm2_bounded(std::vector<double>  &vecInput, std::vector<double> &vecOutput, size_t size, int max_diff){
+    double res = 0;
+    double diff = 0;
+    // Itero sobre el del input por si el del output por construccion quedo mas grande
+    for (size_t i=0; i<size; i++)
+    {
+        diff = fabs(vecInput[i] - vecOutput[i]);
+        if(diff>(double)max_diff)
+            res += pow((double)max_diff, 2);
+        else
+            res += pow(diff, 2);
+    }
+    res = std::sqrt(res);
+    return res;
+}
+
 inline double norm2(NativePoly &x_plain, NativePoly &x_plain_original){
     double res = 0;
     uint64_t diff = 0;

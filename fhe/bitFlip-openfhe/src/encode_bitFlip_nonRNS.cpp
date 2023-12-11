@@ -16,7 +16,6 @@ int main() {
     uint32_t batchSize = 1024;
     uint32_t ringDim= 2048;
     ScalingTechnique rescaleTech = FIXEDMANUAL;
-    size_t dataSize = 28*28;
 
     CCParams<CryptoContextCKKSRNS> parameters;
     parameters.SetMultiplicativeDepth(multDepth);
@@ -31,12 +30,15 @@ int main() {
     std::string dir_name = "logs/log_encode/";
     std::string file_name_hd = "encodeHD_nonRNS";
     std::string file_name_norm2 =  "encodeN2_nonRNS";
+    std::string file_name_norm2_bounded =  "encodeN2_nonRNS_bounded";
 
     // Enable the features that you wish to use
     cc->Enable(PKE);
     cc->Enable(LEVELEDSHE);
     auto keys = cc->KeyGen();
 
+    int max_diff = 255;
+    size_t dataSize = 28*28;
     std::ifstream file("data/example.txt");
     std::vector<double> input(std::istream_iterator<double>{file}, std::istream_iterator<double>{});
     input.erase(input.begin()); // pop front
@@ -76,10 +78,13 @@ int main() {
         {
             uint64_t res_hamming = 0;
             double res_norm2 = 0;
+            double res_norm2_bounded = 0;
             bool new_file = 1;
 
             saveDataLog(dir_name+file_name_hd, res_hamming,  new_file);
             saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
+            saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded,  new_file);
+
             for (size_t j = 0; j < cc->GetRingDimension(); j++)
             {
                 std::cout << j << std::endl;
@@ -93,9 +98,12 @@ int main() {
                     resultData = result->GetRealPackedValue();
                     res_hamming = hamming_distance(input, resultData, dataSize);
                     res_norm2 = norm2(input, resultData, dataSize);
+                    res_norm2_bounded = norm2_bounded(input, resultData, dataSize, max_diff);
 
                     saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
                     saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
+                    saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded, !new_file);
+
                     ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][j] = original;
 
                 }
