@@ -29,58 +29,89 @@ fileHD = "encodeHD.txt"
 
 print(f"Total number of bits: {total_bits}")
 # Hago una matriz de cantidad de coeficientes por cantidad de bits por coeff
-def data_reshape(encoding):
-    bitflip_split = np.reshape(encoding, (num_coeff, num_bits))
+def data_reshape(encoding, num_rows, num_cols, bounded):
+    if (bounded):
+        encoding = encoding*100/max_diff_tot
+    bitflip_split = np.reshape(encoding, (num_rows, num_cols))
+    bycoeff_max = []
+    bycoeff_min = []
+    for row in bitflip_split:
+        bycoeff_max.append(max(row))
+        bycoeff_min.append(min(row))
+
+    bybits_max = []
+    bybits_min = []
+    for column in bitflip_split.T:
+        bybits_max.append(max(column))
+        bybits_min.append(min(column))
+
     by_coeff = bitflip_split.sum(axis=1)
     by_bits = bitflip_split.sum(axis=0)
-    by_coeff_av = (by_coeff/num_bits)
-    by_bits_av = (by_bits/num_coeff)
-    return by_coeff_av, by_bits_av
+    by_coeff_av = (by_coeff/num_cols)
+    by_bits_av = (by_bits/num_rows)
+    return by_coeff_av, by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min
+
+def data_read(dir, file, HD, total_bits):
+    df = pd.read_csv(dir+file, header=None,  skip_blank_lines=False)
+    df = df.iloc[1:,:]
+    input = df[df.columns[0]].to_numpy(dtype='float')
+    if (HD):
+        input = input/(total_bits)*100
+    print(f"{fileHD}: {input.mean()}")
+    return input
+
+bybits_max = []
+bybits_min = []
+bycoeff_max = []
+bycoeff_min = []
 
 
-dfN2 = pd.read_csv(dir+fileN2, header=None,  skip_blank_lines=False)
-dfN2 = dfN2.iloc[1:,:]
-encodingN2 = dfN2[dfN2.columns[0]].to_numpy(dtype='float')
-print(f"{fileN2}: {encodingN2.mean()}")
+encodingN2 = data_read(dir, fileN2, False, total_bits)
 
-dfHD = pd.read_csv(dir+fileHD, header=None,  skip_blank_lines=False)
-dfHD = dfHD.iloc[1:,:]
-encodingHD = dfHD[dfHD.columns[0]].to_numpy(dtype='float')
-encodingHD = encodingHD/(total_bits_input)*100
-print(f"{fileHD}: {encodingHD.mean()}")
+encodingHD = data_read(dir, fileHD, True, total_bits_input)
 
 
 y_label = 'L2 norm'
-N2_by_coeff_av, N2_by_bits_av = data_reshape(encodingN2)
+N2_by_coeff_av, N2_by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min  = data_reshape(encodingN2, num_coeff, num_bits, True)
 
 if (bounded):
     y_label = y_label + ' (\%)'
-    N2_by_coeff_av = N2_by_coeff_av*100/max_diff_tot
-    N2_by_bits_av = N2_by_bits_av*100/max_diff_tot
 
-HD_by_coeff_av, HD_by_bits_av = data_reshape(encodingHD)
 
-fig, ax1 = plt.subplots()
 
-ax2 = ax1.twinx()
-ax1.plot(HD_by_bits_av, color='firebrick')
-ax2.plot(N2_by_bits_av, color='steelblue')
+plt.plot(N2_by_bits_av, color='firebrick')
+plt.plot(bybits_max, 'orange')
+plt.plot(bybits_min, color='green')
+plt.xlabel('Bit changed')
+plt.ylabel('Norm2 (\%)', color='firebrick')
+plt.savefig("encode_N2_bitFlip_bybit", bbox_inches='tight')
+plt.show()
 
-ax1.set_xlabel('Bit changed')
-ax1.set_ylabel('Hamming distance (\%)', color='firebrick')
-ax2.set_ylabel(y_label, color='steelblue')
-plt.savefig("encode_bitFlip_bybit", bbox_inches='tight')
+plt.plot(N2_by_coeff_av, color='firebrick')
+plt.plot(bycoeff_max, 'orange')
+plt.plot(bycoeff_min, color='green')
+plt.xlabel('Coeff changed')
+plt.ylabel('Norm2 (\%)', color='firebrick')
+plt.savefig("encode_N2_bitFlip_bycoeff", bbox_inches='tight')
+plt.show()
 
-fig, ax1 = plt.subplots()
+HD_by_coeff_av, HD_by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min  = data_reshape(encodingHD, num_coeff, num_bits, False)
 
-ax2 = ax1.twinx()
-ax1.plot(HD_by_coeff_av, color='firebrick')
-ax2.plot(N2_by_coeff_av, color='steelblue')
+plt.plot(HD_by_bits_av, color='firebrick')
+plt.plot(bybits_max, 'orange')
+plt.plot(bybits_min, color='green')
+plt.xlabel('Bit changed')
+plt.ylabel('HD (\%)', color='firebrick')
+plt.savefig("encode_HD_bitFlip_bybit", bbox_inches='tight')
+plt.show()
 
-ax1.set_xlabel('Coeff changed')
-ax1.set_ylabel('Hamming distance (\%)', color='firebrick')
-ax2.set_ylabel(y_label, color='steelblue')
-plt.savefig("encode_bitFlip_bycoeff", bbox_inches='tight')
+plt.plot(HD_by_coeff_av, color='firebrick')
+plt.plot(bycoeff_max, 'orange')
+plt.plot(bycoeff_min, color='green')
+plt.xlabel('Coeff changed')
+plt.ylabel('HD (\%)', color='firebrick')
+plt.savefig("encode_HD_bitFlip_bycoeff", bbox_inches='tight')
+plt.show()
 
 
 

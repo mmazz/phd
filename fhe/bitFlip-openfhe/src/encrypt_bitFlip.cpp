@@ -30,13 +30,14 @@ int main() {
     std::string dir_name = "logs/log_encrypt/";
     std::string file_name_hd = "encryptHD";
     std::string file_name_norm2 =  "encryptN2";
-
+    std::string file_name_norm2_bounded =  "encryptN2_bounded";
 
     // Enable the features that you wish to use
     cc->Enable(PKE);
     cc->Enable(LEVELEDSHE);
     auto keys = cc->KeyGen();
 
+    int max_diff = 255;
     size_t dataSize = 28*28;
     std::ifstream file("data/example.txt");
     std::vector<double> input(std::istream_iterator<double>{file}, std::istream_iterator<double>{});
@@ -75,11 +76,12 @@ int main() {
         {
             uint64_t res_hamming = 0;
             double res_norm2 = 0;
-
+            double res_norm2_bounded = 0;
             bool new_file = 1;
 
             saveDataLog(dir_name+file_name_hd, res_hamming,  new_file);
             saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
+            saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded,  new_file);
             auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
 
             // k es el polinomio c0 o c1
@@ -100,10 +102,11 @@ int main() {
                             resultData = result->GetRealPackedValue();
                             res_hamming = hamming_distance(input, resultData, dataSize);
                             res_norm2 = norm2(input, resultData, dataSize);
+                            res_norm2_bounded = norm2_bounded(input, resultData, dataSize, max_diff);
 
                             saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
                             saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
-
+                            saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded, !new_file);
                             c1->GetElements()[k].GetAllElements()[i][j] = original;
                         }
                     }

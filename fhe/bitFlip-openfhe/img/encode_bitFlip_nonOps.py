@@ -9,6 +9,10 @@ plt.rcParams.update({
 matplotlib.rcParams.update({'font.size': 20})
 plt.rc('xtick',labelsize=16)
 plt.rc('ytick',labelsize=16)
+'''
+Hay dos tipos de Norma2, una que acote la diferencia al maximo valor posible del input que es 255 y la otra que no.
+Entonces si bopunded es True uso esos datos y si no uso los de sin acotar
+'''
 
 
 bounded = True

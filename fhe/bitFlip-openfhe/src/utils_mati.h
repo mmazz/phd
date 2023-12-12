@@ -313,15 +313,49 @@ inline uint64_t hamming_distance(std::vector<uint64_t> &x_plain, std::vector<uin
     return count;
 }
 
+inline uint64_t hamming_distance(DCRTPoly &x_plain, DCRTPoly &x_plain_original, size_t RNS_size)
+{
+    uint64_t count = 0;
+    // el vector output puede tener otro size... entonces miro el input
+    auto x_plain_elems = x_plain.GetAllElements();
+    auto x_plain_original_elems = x_plain_original.GetAllElements();
+
+    for (size_t i = 0; i < RNS_size; i++)
+    {
+        size_t ringDim = x_plain.GetRingDimension();
+        for(size_t j = 0; j < ringDim; j++)
+            count += hamming_distance((uint64_t)x_plain_elems[i][j], (uint64_t)x_plain_original_elems[i][j]);
+    }
+    return count;
+}
 // se podria paralelizar...
+inline uint64_t hamming_distance(std::vector<DCRTPoly> &x_encrypt, std::vector<DCRTPoly> &x_encrypt_original, size_t RNS_size)
+{
+    uint64_t count = 0;
+    // el vector output puede tener otro size... entonces miro el input
+    for (size_t k=0 ; k<2; k++)
+    {
+        auto x_encrypt_elems = x_encrypt[k].GetAllElements();
+        auto x_encrypt_original_elems = x_encrypt_original[k].GetAllElements();
+
+
+        for (size_t i = 0; i < RNS_size; i++)
+        {
+            size_t ringDim = x_encrypt[k].GetRingDimension();
+            for(size_t j = 0; j < ringDim; j++)
+                count += hamming_distance((uint64_t)x_encrypt_elems[i][j], (uint64_t)x_encrypt_original_elems[i][j]);
+        }
+    }
+    return count;
+}
 inline uint64_t hamming_distance(NativePoly &x_plain, NativePoly &x_plain_original)
 {
     uint64_t count = 0;
     // el vector output puede tener otro size... entonces miro el input
     auto coeff_count = x_plain.GetLength();
     for(unsigned int i = 0; i < coeff_count; i++)
-    {
         count += hamming_distance((uint64_t)x_plain[i], (uint64_t)x_plain_original[i]);
-    }
     return count;
 }
+
+

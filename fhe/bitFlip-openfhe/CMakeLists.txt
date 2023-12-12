@@ -67,6 +67,7 @@ set(GTEST_LIBRARIES gtest gmock gtest_main gmock_main pthread)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/logs)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/logs/log_encrypt)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/logs/log_encode)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/logs/log_input)
 
 file (GLOB EXAMPLES_SRC_FILES CONFIGURE_DEPENDS ${CMAKE_BINARY_DIR}/src/*.cpp)
 foreach (app ${EXAMPLES_SRC_FILES})
