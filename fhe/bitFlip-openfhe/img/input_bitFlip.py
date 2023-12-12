@@ -158,7 +158,8 @@ plt.savefig("input_N2_bitFlip_bycoeff", bbox_inches='tight')
 plt.show()
 
 
-inputHD_output = data_read(dir, fileHD_output, True, total_bits)
+# Estoy haciendo ahora con uint8_t por eso el divido 4
+inputHD_output = data_read(dir, fileHD_output, True, total_bits/4)
 HD_by_coeff_av, HD_by_bits_av , bycoeff_max, bycoeff_min, bybits_max, bybits_min= data_reshape(inputHD_output, input_size, num_bits, False)
 
 plt.title("Input cambia 1 bit: HD entre outputs")

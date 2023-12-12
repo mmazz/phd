@@ -279,6 +279,7 @@ inline uint64_t hamming_distance(double coeff1, double coeff2)
     return count;
 }
 
+
 // se podria paralelizar...
 inline uint64_t hamming_distance(std::vector<double>& vecInput, std::vector<double>& vecOutput, size_t size)
 {
@@ -288,8 +289,31 @@ inline uint64_t hamming_distance(std::vector<double>& vecInput, std::vector<doub
         count += hamming_distance(vecInput[i], vecOutput[i]);
     return count;
 }
+inline uint64_t hamming_distance(std::vector<uint8_t>& vecInput, std::vector<double>& vecOutput, size_t size)
+{
+    uint64_t count = 0;
+    // el vector output puede tener otro size... entonces miro el input
+    for(size_t i = 0; i<size; i++)
+        count += hamming_distance(vecInput[i], (uint64_t)vecOutput[i]);
+    return count;
+}
 
-
+inline uint64_t hamming_distance(uint8_t coeff1, uint64_t coeff2)
+{
+    uint8_t coeff2_8b = 0;
+    if(coeff2 > 255)
+        coeff2_8b = 255;
+    else
+        coeff2_8b = (uint8_t) coeff2;
+    uint8_t res = 0;
+    res = coeff1^coeff2_8b;
+    uint8_t count = 0;
+    while (res) {
+        count += res & 1;
+        res >>= 1;
+    }
+    return count;
+}
 inline uint64_t hamming_distance(uint64_t coeff1, uint64_t coeff2)
 {
     uint64_t res = 0;

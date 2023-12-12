@@ -45,6 +45,11 @@ int main() {
 
     int max_diff = 255;
     size_t dataSize = 28*28;
+    std::ifstream file2("data/example.txt");
+    std::vector<uint8_t> input_8(std::istream_iterator<uint8_t>{file2}, std::istream_iterator<uint8_t>{});
+    input_8.erase(input_8.begin()); // pop front
+
+
     std::ifstream file("data/example.txt");
     std::vector<double> input(std::istream_iterator<double>{file}, std::istream_iterator<double>{});
     input.erase(input.begin()); // pop front
@@ -129,7 +134,7 @@ int main() {
                     cc->Decrypt(keys.secretKey, c1, &result);
                     result->SetLength(dataSize);
                     resultData = result->GetRealPackedValue();
-                    res_hamming_output = hamming_distance(input, resultData, dataSize);
+                    res_hamming_output = hamming_distance(input_8, resultData, dataSize);
                     res_norm2 = norm2(input, resultData, dataSize);
                     res_norm2_bounded = norm2_bounded(input, resultData, dataSize, max_diff);
                     saveDataLog(dir_name+file_name_hd_output, res_hamming_output, !new_file);
