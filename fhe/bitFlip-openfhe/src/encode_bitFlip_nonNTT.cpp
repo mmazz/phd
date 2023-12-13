@@ -28,7 +28,7 @@ int main() {
 
     std::string dir_name = "logs/log_encode/";
     std::string file_name_hd = "encodeHD_nonNTT";
-    std::string file_name_norm2 =  "encodeN2_nonNTT";
+  //  std::string file_name_norm2 =  "encodeN2_nonNTT";
     std::string file_name_norm2_bounded =  "encodeN2_nonNTT_bounded";
 
     // Enable the features that you wish to use
@@ -48,7 +48,17 @@ int main() {
 
     // Encoding as plaintexts
     Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(input);
+    auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+    auto encryptElem = c1->GetElements();
     DCRTPoly plainElem = ptxt1->GetElement<DCRTPoly>();
+
+    // Me haga un backup
+    Plaintext ptxt_original = cc->MakeCKKSPackedPlaintext(input);
+    auto c1_original = cc->Encrypt(keys.publicKey, ptxt_original);
+    auto encryptElem_original = c1_original->GetElements();
+    DCRTPoly plainElem_original = ptxt_original->GetElement<DCRTPoly>();
+    auto elems_original =  plainElem_original.GetAllElements();
+
     Plaintext result;
     std::vector<double> resultData(dataSize);
     size_t RNS_size = ptxt1->GetElement<DCRTPoly>().GetAllElements().size();
@@ -76,40 +86,45 @@ int main() {
         if(test==0)
         {
             uint64_t res_hamming = 0;
-            double res_norm2 = 0;
+           // double res_norm2 = 0;
             double res_norm2_bounded = 0;
             bool new_file = 1;
 
             saveDataLog(dir_name+file_name_hd, res_hamming,  new_file);
-            saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
+           // saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
             saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded,  new_file);
 
-            auto original_Coeff =  plainElem.GetAllElements()[0];
             for (size_t i = 0; i < RNS_size; i++)
             {
+                auto original_Coeff =  plainElem.GetAllElements()[i];
                 for (size_t j = 0; j < cc->GetRingDimension(); j++)
                 {
                     std::cout << j << std::endl;
                     for(size_t bit=0; bit<64; bit++)
                     {
+                        // Paso la codificacion al formato de coeficientes (INTT)
                         ptxt1->GetElement<DCRTPoly>().SwitchFormat();
-                        auto original = ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][j];
-                        ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][j] = bit_flip(original, bit);
+                        // Me quedo con un coefficiente. Tengo un backup de todos ya que cambian todos aca
+                        auto original = ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j];
+                        ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = bit_flip(original, bit);
+                        // Vuelvo al espacio de evaluacion (NTT)
                         ptxt1->GetElement<DCRTPoly>().SwitchFormat();
                         auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+                        encryptElem = c1->GetElements();
+                        res_hamming = hamming_distance(encryptElem, encryptElem_original, RNS_size);
+                        saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
+
                         cc->Decrypt(keys.secretKey, c1, &result);
                         result->SetLength(dataSize);
                         resultData = result->GetRealPackedValue();
-                        res_hamming = hamming_distance(input, resultData, dataSize);
-                        res_norm2 = norm2(input, resultData, dataSize);
+                       // res_norm2 = norm2(input, resultData, dataSize);
                         res_norm2_bounded = norm2_bounded(input, resultData, dataSize, max_diff);
 
-                        saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
-                        saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
+                    //    saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
                         saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded, !new_file);
 
                         // Cambian todos los coefficientes, tengo que resetearlo entero
-                        ptxt1->GetElement<DCRTPoly>().GetAllElements()[0] = original_Coeff;
+                        ptxt1->GetElement<DCRTPoly>().GetAllElements()[i] = original_Coeff;
 
                     }
                 }

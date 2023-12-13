@@ -29,7 +29,7 @@ int main() {
 
     std::string dir_name = "logs/log_encode/";
     std::string file_name_hd = "encodeHD";
-    std::string file_name_norm2 =  "encodeN2";
+    //std::string file_name_norm2 =  "encodeN2";
     std::string file_name_norm2_bounded =  "encodeN2_bounded";
 
     // Enable the features that you wish to use
@@ -48,12 +48,23 @@ int main() {
         input.push_back(0);
     // Encoding as plaintexts
     Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(input);
+    auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+    auto encryptElem = c1->GetElements();
     DCRTPoly plainElem = ptxt1->GetElement<DCRTPoly>();
+
+    // Me haga un backup
+    Plaintext ptxt_original = cc->MakeCKKSPackedPlaintext(input);
+    auto c1_original = cc->Encrypt(keys.publicKey, ptxt_original);
+    auto encryptElem_original = c1_original->GetElements();
+    DCRTPoly plainElem_original = ptxt_original->GetElement<DCRTPoly>();
+    auto elems_original =  plainElem_original.GetAllElements();
+
     Plaintext result;
     std::vector<double> resultData(dataSize);
     size_t RNS_size = ptxt1->GetElement<DCRTPoly>().GetAllElements().size();
 
     std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension() << " RNS size: " << RNS_size << std::endl << std::endl;
+    // Chequeo que realmente estoy usando la cantidad de limbs de RNS que busco
     if (RNS_size == 2)
     {
         auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
@@ -63,6 +74,7 @@ int main() {
         resultData = result->GetRealPackedValue();
         size_t test = 0;
         size_t i = 0;
+        // Chequeo que con los parametros que elegi puedo encriptar y desencriptar correctamente
         while(test==0 && i < dataSize)
         {
             if(round(input[i])!=round(resultData[i]))
@@ -72,15 +84,17 @@ int main() {
             }
             i++;
         }
+
+        // Si la prueba fue correcta sigo
         if(test==0)
         {
             uint64_t res_hamming = 0;
-            double res_norm2 = 0;
+            //double res_norm2 = 0;
             double res_norm2_bounded = 0;
             bool new_file = 1;
 
             saveDataLog(dir_name+file_name_hd, res_hamming,  new_file);
-            saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
+            //saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
             saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded,  new_file);
 
             for (size_t i = 0; i < RNS_size; i++)
@@ -91,17 +105,22 @@ int main() {
                     auto original = ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j];
                     for(size_t bit=0; bit<64; bit++)
                     {
+                        // Cambio un bit de la codificacion
                         ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = bit_flip(original, bit);
                         auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+                        encryptElem = c1->GetElements();
+                        // Le caluclo el HD a la encriptacion
+                        res_hamming = hamming_distance(encryptElem, encryptElem_original, RNS_size);
+                        saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
+
                         cc->Decrypt(keys.secretKey, c1, &result);
                         result->SetLength(dataSize);
                         resultData = result->GetRealPackedValue();
-                        res_hamming = hamming_distance(input, resultData, dataSize);
-                        res_norm2 = norm2(input, resultData, dataSize);
+                        // Calculo la norma 2 del input/output
+                       // res_norm2 = norm2(input, resultData, dataSize);
                         res_norm2_bounded = norm2_bounded(input, resultData, dataSize, max_diff);
 
-                        saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
-                        saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
+                       // saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
                         saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded, !new_file);
 
                         ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = original;
