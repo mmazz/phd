@@ -106,7 +106,7 @@ int main() {
                     ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][j] = bit_flip(original, bit);
                     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
                     encryptElem = c1->GetElements();
-                    res_hamming = hamming_distance(input, resultData, dataSize);
+                    res_hamming = hamming_distance(encryptElem, encryptElem_original, RNS_size);
                     saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
                     cc->Decrypt(keys.secretKey, c1, &result);
                     result->SetLength(dataSize);

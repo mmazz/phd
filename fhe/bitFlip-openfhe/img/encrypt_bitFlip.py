@@ -73,7 +73,6 @@ if(ejecute):
     bycoeff_min = []
 
     encodingN2 = data_read(dir, fileN2, False, total_bits)
-    encodingHD = data_read(dir, fileHD, True, total_bits)
 
     y_label = 'L2 norm (\%)'
     N2_by_coeff_av, N2_by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min  = data_reshape(encodingN2, num_coeff, num_bits, True, max_diff_tot)
