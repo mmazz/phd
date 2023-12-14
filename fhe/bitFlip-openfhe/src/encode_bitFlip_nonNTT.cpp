@@ -29,7 +29,7 @@ int main() {
 
     std::string dir_name = "logs/log_encode/";
     std::string file_name_hd = "encodeHD_nonNTT";
-    std::string file_name_hd_RNS = "encodeHD_nonNTT_RNS";
+    std::string file_name_hd_RNS = "encodeHD_nonNTT_RNSActive";
   //  std::string file_name_norm2 =  "encodeN2_nonNTT";
     std::string file_name_norm2_bounded =  "encodeN2_nonNTT_bounded";
 
@@ -93,10 +93,10 @@ int main() {
             double res_norm2_bounded = 0;
             bool new_file = 1;
 
-            saveDataLog(dir_name+file_name_hd, res_hamming,  new_file);
-            saveDataLog(dir_name+file_name_hd_RNS, res_hamming_RNS,  new_file);
+            saveDataLog(dir_name+file_name_hd, res_hamming,  new_file, RNS_size);
+            saveDataLog(dir_name+file_name_hd_RNS, res_hamming_RNS,  new_file, RNS_size);
            // saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
-            saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded,  new_file);
+            saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded,  new_file, RNS_size);
 
             for (size_t i = 0; i < RNS_size; i++)
             {
@@ -115,10 +115,9 @@ int main() {
                         ptxt1->GetElement<DCRTPoly>().SwitchFormat();
                         auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
                         encryptElem = c1->GetElements();
-                        res_hamming = hamming_distance(encryptElem, encryptElem_original, RNS_size);
-                        saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
-                        res_hamming_RNS = hamming_distance_RNS(encryptElem, encryptElem_original, RNS_size, i);
-                        saveDataLog(dir_name+file_name_hd_RNS, res_hamming_RNS, !new_file);
+                        auto [res_hamming, res_hamming_RNS] = hamming_distance_RNS(encryptElem, encryptElem_original, RNS_size, i);
+                        saveDataLog(dir_name+file_name_hd, res_hamming, !new_file, RNS_size);
+                        saveDataLog(dir_name+file_name_hd_RNS, res_hamming_RNS, !new_file, RNS_size);
 
                         cc->Decrypt(keys.secretKey, c1, &result);
                         result->SetLength(dataSize);
@@ -127,7 +126,7 @@ int main() {
                         res_norm2_bounded = norm2_bounded(input, resultData, dataSize, max_diff);
 
                     //    saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
-                        saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded, !new_file);
+                        saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded, !new_file, RNS_size);
 
                         // Cambian todos los coefficientes, tengo que resetearlo entero
                         ptxt1->GetElement<DCRTPoly>().GetAllElements()[i] = original_Coeff;

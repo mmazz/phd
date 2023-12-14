@@ -96,9 +96,9 @@ int main() {
             double res_norm2_bounded = 0;
             bool new_file = 1;
 
-            saveDataLog(dir_name+file_name_hd, res_hamming,  new_file);
-            saveDataLog(dir_name+file_name_hd_encrypt, res_hamming_encrypt,  new_file);
-            saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded,  new_file);
+            saveDataLog(dir_name+file_name_hd, res_hamming,  new_file, RNS_size);
+            saveDataLog(dir_name+file_name_hd_encrypt, res_hamming_encrypt,  new_file, RNS_size);
+            saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded,  new_file, RNS_size);
 
 
             for (size_t i = 0; i < dataSize; i++)
@@ -114,20 +114,20 @@ int main() {
                     auto elems =  plainElem.GetAllElements();
                     // calculo el HD entre las codificaciones
                     res_hamming = hamming_distance(plainElem, plainElem_original, RNS_size);
-                    saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
+                    saveDataLog(dir_name+file_name_hd, res_hamming, !new_file, RNS_size);
 
                     // encritpo y calculo el HD
                     c1 = cc->Encrypt(keys.publicKey, ptxt1);
                     encryptElem = c1->GetElements();
                     res_hamming_encrypt = hamming_distance(encryptElem, encryptElem_original, RNS_size);
-                    saveDataLog(dir_name+file_name_hd_encrypt, res_hamming_encrypt,  !new_file);
+                    saveDataLog(dir_name+file_name_hd_encrypt, res_hamming_encrypt,  !new_file, RNS_size);
 
                     // desencripto y calculo HD y N2 de input/output
                     cc->Decrypt(keys.secretKey, c1, &result);
                     result->SetLength(dataSize);
                     resultData = result->GetRealPackedValue();
                     res_norm2_bounded = norm2_bounded(input, resultData, dataSize, max_diff);
-                    saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded, !new_file);
+                    saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded, !new_file, RNS_size);
 
                     input[i] = original;
                 }

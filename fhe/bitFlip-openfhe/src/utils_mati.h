@@ -26,6 +26,7 @@
 #include <vector>
 #include <array>
 #include <bitset>
+#include <tuple>
 
 using namespace lbcrypto;
 
@@ -66,14 +67,14 @@ inline void saveDataLog(std::string file_name, uint64_t  res, bool new_file)
     logFile.close();
 
 }
-inline void saveDataLog(std::string file_name, double res, bool new_file)
+inline void saveDataLog(std::string file_name, double res, bool new_file, size_t rns_size)
 {
     std::fstream logFile;
     // Open File
     if (new_file==1){
         //std::cout<< " New log: " << std::endl;
         logFile.open("/home/mmazz/phd/fhe/bitFlip-openfhe/"+file_name+".txt", std::ios::out);
-        logFile << "New file: " << std::endl ;
+        logFile << "New file: "<< rns_size << std::endl ;
     }
     else{
         logFile.open("/home/mmazz/phd/fhe/bitFlip-openfhe/"+file_name+".txt", std::ios::app);
@@ -372,10 +373,12 @@ inline uint64_t hamming_distance(std::vector<DCRTPoly> &x_encrypt, std::vector<D
     }
     return count;
 }
+
 // Calcula el HD del limb de RNS que no fue modificado
-inline uint64_t hamming_distance_RNS(std::vector<DCRTPoly> &x_encrypt, std::vector<DCRTPoly> &x_encrypt_original, size_t RNS_size, size_t RNS_limb)
+inline std::tuple<uint64_t, uint64_t>hamming_distance_RNS(std::vector<DCRTPoly> &x_encrypt, std::vector<DCRTPoly> &x_encrypt_original, size_t RNS_size, size_t RNS_limb)
 {
-    uint64_t count = 0;
+    uint64_t count_nonRNS_active = 0;
+    uint64_t count_RNS_active = 0;
     // el vector output puede tener otro size... entonces miro el input
     for (size_t k=0 ; k<2; k++)
     {
@@ -389,12 +392,18 @@ inline uint64_t hamming_distance_RNS(std::vector<DCRTPoly> &x_encrypt, std::vect
             if(i!=RNS_limb)
             {
                 for(size_t j = 0; j < ringDim; j++)
-                        count += hamming_distance((uint64_t)x_encrypt_elems[i][j], (uint64_t)x_encrypt_original_elems[i][j]);
+                    count_nonRNS_active += hamming_distance((uint64_t)x_encrypt_elems[i][j], (uint64_t)x_encrypt_original_elems[i][j]);
+            }
+            else
+            {
+                for(size_t j = 0; j < ringDim; j++)
+                    count_RNS_active += hamming_distance((uint64_t)x_encrypt_elems[i][j], (uint64_t)x_encrypt_original_elems[i][j]);
             }
         }
     }
-    return count;
+    return {count_nonRNS_active, count_RNS_active };
 }
+
 inline uint64_t hamming_distance(NativePoly &x_plain, NativePoly &x_plain_original)
 {
     uint64_t count = 0;

@@ -75,7 +75,7 @@ int main() {
             double res_norm2_bounded = 0;
             bool new_file = 1;
 
-            saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded,  new_file);
+            saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded,  new_file, RNS_size);
             auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
 
             // k es el polinomio c0 o c1
@@ -96,7 +96,7 @@ int main() {
                             resultData = result->GetRealPackedValue();
                             res_norm2_bounded = norm2_bounded(input, resultData, dataSize, max_diff);
 
-                            saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded, !new_file);
+                            saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded, !new_file, RNS_size);
                             c1->GetElements()[k].GetAllElements()[i][j] = original;
                         }
                     }

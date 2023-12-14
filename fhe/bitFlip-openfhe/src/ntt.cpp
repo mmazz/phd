@@ -64,8 +64,8 @@ int main() {
     std::string dir_name = "logs/";
     std::string file_name_hd = "ntt_bitFlip_HD";
     std::string file_name_norm2 =  "ntt_bitFlip_N2";
-    saveDataLog(dir_name+file_name_hd, res_hd,  new_file);
-    saveDataLog(dir_name+file_name_norm2, res_n2,  new_file);
+    saveDataLog(dir_name+file_name_hd, res_hd,  new_file, 0);
+    saveDataLog(dir_name+file_name_norm2, res_n2,  new_file,0);
 
     size_t bits_modulus = 60;
     int size_poly = NativepolysCoef->at(0).GetLength();
@@ -81,8 +81,8 @@ int main() {
             NativepolysCoef->at(0).SwitchFormat();
             res_hd = hamming_distance(NativepolysCoef->at(0), NativepolysCoef_original->at(0));
             res_n2 = norm2(NativepolysCoef->at(0), NativepolysCoef_original->at(0));
-            saveDataLog(dir_name+file_name_hd, res_hd, !new_file);
-            saveDataLog(dir_name+file_name_norm2, res_n2, !new_file);
+            saveDataLog(dir_name+file_name_hd, res_hd, !new_file,0);
+            saveDataLog(dir_name+file_name_norm2, res_n2, !new_file,0);
             for (unsigned int i=0; i<NativepolysCoef->at(0).GetLength(); i++)
                 NativepolysCoef->at(0)[i] = NativepolysCoef_original->at(0)[i];
         }

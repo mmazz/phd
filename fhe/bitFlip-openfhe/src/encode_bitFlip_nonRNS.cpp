@@ -91,9 +91,9 @@ int main() {
             double res_norm2_bounded = 0;
             bool new_file = 1;
 
-            saveDataLog(dir_name+file_name_hd, res_hamming,  new_file);
+            saveDataLog(dir_name+file_name_hd, res_hamming,  new_file, RNS_size);
            // saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
-            saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded,  new_file);
+            saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded,  new_file, RNS_size);
 
             for (size_t j = 0; j < cc->GetRingDimension(); j++)
             {
@@ -107,7 +107,8 @@ int main() {
                     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
                     encryptElem = c1->GetElements();
                     res_hamming = hamming_distance(encryptElem, encryptElem_original, RNS_size);
-                    saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
+                    saveDataLog(dir_name+file_name_hd, res_hamming, !new_file, RNS_size);
+
                     cc->Decrypt(keys.secretKey, c1, &result);
                     result->SetLength(dataSize);
                     resultData = result->GetRealPackedValue();
@@ -115,7 +116,7 @@ int main() {
                     res_norm2_bounded = norm2_bounded(input, resultData, dataSize, max_diff);
 
                    // saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
-                    saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded, !new_file);
+                    saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded, !new_file, RNS_size);
 
                     ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][j] = original;
 
