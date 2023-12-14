@@ -1,3 +1,4 @@
+
 #include "ciphertext-fwd.h"
 #include "math/hal/intnat/transformnat.h"
 #include <cstdint>
@@ -10,7 +11,7 @@
 using namespace lbcrypto;
 int main() {
     // Step 1: Setup CryptoContext
-    uint32_t multDepth = 1;
+    uint32_t multDepth = 0;
     uint32_t scaleModSize = 30;
     uint32_t firstModSize = 60;
     uint32_t batchSize = 1024;
@@ -28,7 +29,7 @@ int main() {
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
     std::string dir_name = "logs/log_encrypt/";
-    std::string file_name_norm2_bounded =  "encryptN2_bounded";
+    std::string file_name_norm2_bounded =  "encryptN2_nonOps_bounded";
 
     // Enable the features that you wish to use
     cc->Enable(PKE);
@@ -52,7 +53,7 @@ int main() {
     size_t RNS_size = ptxt1->GetElement<DCRTPoly>().GetAllElements().size();
 
     std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension() << " RNS size: " << RNS_size << std::endl << std::endl;
-    if (RNS_size == 2)
+    if (RNS_size == 1)
     {
         auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
         cc->Decrypt(keys.secretKey, c1, &result);
@@ -81,27 +82,28 @@ int main() {
             // k es el polinomio c0 o c1
             for (size_t k=0; k<2; k++)
             {
-                for (size_t i = 0; i < RNS_size; i++)
+                // no tengo RNS por eso la componente 0
+                auto original_coeff =  c1->GetElements()[k].GetAllElements()[0];
+                for (size_t j = 0; j < cc->GetRingDimension(); j++)
                 {
-                    for (size_t j = 0; j < cc->GetRingDimension(); j++)
+                    std::cout << j << std::endl;
+                    for(size_t bit=0; bit<64; bit++)
                     {
-                        std::cout << j << std::endl;
-                        auto original = c1->GetElements()[k].GetAllElements()[i][j];
-                        for(size_t bit=0; bit<64; bit++)
-                        {
-                            //std::cout << c1->GetElements() << std::endl;
-                            c1->GetElements()[k].GetAllElements()[i][j] = bit_flip(original, bit);
-                            cc->Decrypt(keys.secretKey, c1, &result);
-                            result->SetLength(dataSize);
-                            resultData = result->GetRealPackedValue();
-                            res_norm2_bounded = norm2_bounded(input, resultData, dataSize, max_diff);
+                        c1->GetElements()[k].SwitchFormat();
+                        auto original = c1->GetElements()[k].GetAllElements()[0][j];
+                        //std::cout << c1->GetElements() << std::endl;
+                        c1->GetElements()[k].GetAllElements()[0][j] = bit_flip(original, bit);
+                        c1->GetElements()[k].SwitchFormat();
+                        cc->Decrypt(keys.secretKey, c1, &result);
+                        result->SetLength(dataSize);
+                        resultData = result->GetRealPackedValue();
+                        res_norm2_bounded = norm2_bounded(input, resultData, dataSize, max_diff);
 
-                            saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded, !new_file);
-                            c1->GetElements()[k].GetAllElements()[i][j] = original;
-                        }
+                        saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded, !new_file);
+                        c1->GetElements()[k].GetAllElements()[0] = original_coeff;
                     }
                 }
-            }
+        }
         }
     }
     return 0;

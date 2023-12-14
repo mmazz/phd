@@ -2,6 +2,16 @@ import sys
 import matplotlib.pyplot  as plt
 import numpy as np
 from utils import *
+'''
+Graficador de los datos del experimento sobre cambiar un bit en la etapa de codificacion.
+En lina de comando poner un de los siguientes 4 casos:
+    0: Con optimizaciones (OpenFHE default)
+    1: Sin RNS
+    2: Sin NTT
+    3: Sin RNS ni NTT
+Si ademas agregamos un 1, esta nos pondra titulos en los graficos y nos ira mostrando por pantalla cada grafico
+'''
+
 
 dir = "../logs/log_encode/"
 max_diff = 255
@@ -71,44 +81,49 @@ if(ejecute):
     y_label = 'L2 norm (\%)'
     N2_by_coeff_av, N2_by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min  = data_reshape(encodingN2, num_coeff, num_bits, True, max_diff_tot)
 
-    plt.title("Cambio de un bit en la codificacion, comparacion entre input/output")
-    plt.plot(N2_by_bits_av, color='firebrick')
-    plt.plot(bybits_max, 'orange')
-    plt.plot(bybits_min, color='green')
+    plt.plot(N2_by_bits_av, color='green')
+    plt.plot(bybits_max, 'firebrick')
+    plt.plot(bybits_min, color='steelblue')
     plt.xlabel('Bit changed')
-    plt.ylabel('Norm2 (\%)', color='firebrick')
+    plt.ylabel('Norm2 (\%)', color='green')
     plt.savefig("encode_N2_bitFlip"+extra+"_bybit", bbox_inches='tight')
     if(verbose):
+        plt.title("Cambio de un bit en la codificacion, comparacion entre input/output")
         plt.show()
+    plt.clf()
 
-    plt.title("Cambio de un bit en la codificacion, comparacion entre input/output")
-    plt.plot(N2_by_coeff_av, color='firebrick')
-    plt.plot(bycoeff_max, 'orange')
-    plt.plot(bycoeff_min, color='green')
+
+    plt.plot(N2_by_coeff_av, color='green')
+    plt.plot(bycoeff_max, 'firebrick')
+    plt.plot(bycoeff_min, color='steelblue')
     plt.xlabel('Coeff changed')
-    plt.ylabel('Norm2 (\%)', color='firebrick')
+    plt.ylabel('Norm2 (\%)', color='green')
     plt.savefig("encode_N2_bitFlip"+extra+"_bycoeff", bbox_inches='tight')
     if(verbose):
+        plt.title("Cambio de un bit en la codificacion, comparacion entre input/output")
         plt.show()
+    plt.clf()
 
     HD_by_coeff_av, HD_by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min  = data_reshape(encodingHD, num_coeff, num_bits, False, max_diff_tot)
 
-    plt.title("Cambio de un bit en la codificacion, comparacion entre encriptaciones")
-    plt.plot(HD_by_bits_av, color='firebrick')
-    plt.plot(bybits_max, 'orange')
-    plt.plot(bybits_min, color='green')
+    plt.plot(HD_by_bits_av, color='green')
+    plt.plot(bybits_max, 'firebrick')
+    plt.plot(bybits_min, color='steelblue')
     plt.xlabel('Bit changed')
-    plt.ylabel('HD (\%)', color='firebrick')
+    plt.ylabel('HD (\%)', color='green')
     plt.savefig("encode_HD_bitFlip"+extra+"_bybit", bbox_inches='tight')
     if(verbose):
+        plt.title("Cambio de un bit en la codificacion, comparacion entre encriptaciones")
         plt.show()
+    plt.clf()
 
-    plt.title("Cambio de un bit en la codificacion, comparacion entre encriptaciones")
-    plt.plot(HD_by_coeff_av, color='firebrick')
-    plt.plot(bycoeff_max, 'orange')
-    plt.plot(bycoeff_min, color='green')
+    plt.plot(HD_by_coeff_av, color='green')
+    plt.plot(bycoeff_max, 'firebrick')
+    plt.plot(bycoeff_min, color='steelblue')
     plt.xlabel('Coeff changed')
-    plt.ylabel('HD (\%)', color='firebrick')
+    plt.ylabel('HD (\%)', color='green')
     plt.savefig("encode_HD_bitFlip"+extra+"_bycoeff", bbox_inches='tight')
     if(verbose):
+        plt.title("Cambio de un bit en la codificacion, comparacion entre encriptaciones")
         plt.show()
+    plt.clf()

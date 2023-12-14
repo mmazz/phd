@@ -21,10 +21,10 @@ def data_read(dir, file, HD, total_bits):
     return input
 
 # Hago una matriz de cantidad de coeficientes por cantidad de bits por coeff
-def data_reshape(encoding, num_rows, num_cols, bounded, max_diff_tot):
+def data_reshape(data, num_rows, num_cols, bounded, max_diff_tot):
     if (bounded):
-        encoding = encoding*100/max_diff_tot
-    bitflip_split = np.reshape(encoding, (num_rows, num_cols))
+        data = data*100/max_diff_tot
+    bitflip_split = np.reshape(data, (num_rows, num_cols))
     bycoeff_max = []
     bycoeff_min = []
     for row in bitflip_split:

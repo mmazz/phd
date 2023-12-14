@@ -1,87 +1,105 @@
+import sys
 import matplotlib.pyplot  as plt
 import numpy as np
-import matplotlib
-import pandas as pd
+from utils import *
+'''
+Graficador de los datos del experimento sobre cambiar un bit en la etapa de encriptacion.
+En lina de comando poner un de los siguientes 4 casos:
+    0: Con optimizaciones (OpenFHE default)
+    1: Sin RNS
+    2: Sin NTT
+    3: Sin RNS ni NTT
+Si ademas agregamos un 1, esta nos pondra titulos en los graficos y nos ira mostrando por pantalla cada grafico
+'''
 
-plt.rcParams.update({
-    "text.usetex": True,
-})
-matplotlib.rcParams.update({'font.size': 20})
-plt.rc('xtick',labelsize=16)
-plt.rc('ytick',labelsize=16)
 
-bounded = True
+
+dir = "../logs/log_encrypt/"
 max_diff = 255
 input_size = 28*28
 max_diff_tot = np.sqrt(max_diff**2 * input_size)
-RNS_size = 2
+RNS_size = 1
 num_bits = 64
 polynomial_size = 2*2048
 total_bits = RNS_size*num_bits*polynomial_size
 num_coeff = int(polynomial_size*RNS_size)
-dir = "../logs/log_encrypt/"
-fileN2 = "encryptN2.txt"
-if (bounded):
+fileN2 = ""
+extra = ""
+ejecute = True
+verbose = 0
+
+
+print(sys.argv[0], sys.argv[1])
+if(len(sys.argv)==1):
+    print("Please pass the parameter to know wich type of file you are asking for")
+    print("0 = OpenFHE with Optimizations")
+    print("1 = OpenFHE with no RNS")
+    print("2 = OpenFHE with no NTT")
+    print("3 = OpenFHE with no Optimizations")
+    ejecute  = False
+
+elif(sys.argv[1]==str(0)):
+    print("OpenFHE with Optimizations")
     fileN2 = "encryptN2_bounded.txt"
-fileHD = "encryptHD.txt"
+    RNS_size = 2
+    total_bits = 2*total_bits
+    num_coeff = 2*num_coeff
 
-print(f"Total number of bits: {total_bits}")
-# Hago una matriz de cantidad de coeficientes por cantidad de bits por coeff
-def data_reshape(encoding):
-    bitflip_split = np.reshape(encoding, (num_coeff, num_bits))
-    by_coeff = bitflip_split.sum(axis=1)
-    by_bits = bitflip_split.sum(axis=0)
-    by_coeff_av = (by_coeff/num_bits)
-    by_bits_av = (by_bits/num_coeff)
-    return by_coeff_av, by_bits_av
+elif(sys.argv[1]==str(1)):
+    print("OpenFHE with no RNS")
+    fileN2 = "encryptN2_nonRNS_bounded.txt"
+    extra = "_nonRNS"
+
+elif(sys.argv[1]==str(2)):
+    print("OpenFHE with no NTT")
+    fileN2 = "encryptN2_nonNTT_bounded.txt"
+    RNS_size = 2
+    total_bits = 2*total_bits
+    num_coeff = 2*num_coeff
+    extra = "_nonNTT"
+
+elif(sys.argv[1]==str(3)):
+    print("OpenFHE with no Optimizations")
+    fileN2 = "encryptN2_nonOps_bounded.txt"
+    extra = "_nonOps"
+
+if(len(sys.argv)>2):
+    verbose = sys.argv[2]
+
+if(ejecute):
+    bybits_max = []
+    bybits_min = []
+    bycoeff_max = []
+    bycoeff_min = []
+
+    encodingN2 = data_read(dir, fileN2, False, total_bits)
+    encodingHD = data_read(dir, fileHD, True, total_bits)
+
+    y_label = 'L2 norm (\%)'
+    N2_by_coeff_av, N2_by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min  = data_reshape(encodingN2, num_coeff, num_bits, True, max_diff_tot)
+
+    plt.plot(N2_by_bits_av, color='green')
+    plt.plot(bybits_max, 'firebrick')
+    plt.plot(bybits_min, color='steelblue')
+    plt.xlabel('Bit changed')
+    plt.ylabel('Norm2 (\%)', color='green')
+    plt.savefig("encrypt_N2_bitFlip"+extra+"_bybit", bbox_inches='tight')
+    if(verbose):
+        plt.title("Cambio de un bit en la encriptacion, comparacion entre input/output")
+        plt.show()
+    plt.clf()
 
 
-dfN2 = pd.read_csv(dir+fileN2, header=None,  skip_blank_lines=False)
-dfN2 = dfN2.iloc[1:,:]
-encodingN2 = dfN2[dfN2.columns[0]].to_numpy(dtype='float')
-encodingN2 = np.sqrt(encodingN2)
-print(f"{fileN2}: {encodingN2.mean()}")
-
-dfHD = pd.read_csv(dir+fileHD, header=None,  skip_blank_lines=False)
-dfHD = dfHD.iloc[1:,:]
-encodingHD = dfHD[dfHD.columns[0]].to_numpy(dtype='float')
-encodingHD = encodingHD/(total_bits)*100
-print(f"{fileHD}: {encodingHD.mean()}")
-
-
-y_label = 'L2 norm'
-N2_by_coeff_av, N2_by_bits_av = data_reshape(encodingN2)
-
-if (bounded):
-    y_label = y_label + ' (\%)'
-    N2_by_coeff_av = N2_by_coeff_av*100/max_diff_tot
-    N2_by_bits_av = N2_by_bits_av*100/max_diff_tot
-
-
-HD_by_coeff_av, HD_by_bits_av = data_reshape(encodingHD)
-
-fig, ax1 = plt.subplots()
-
-ax2 = ax1.twinx()
-ax1.plot(HD_by_bits_av, color='firebrick')
-ax2.plot(N2_by_bits_av, color='steelblue')
-
-ax1.set_xlabel('Bit changed')
-ax1.set_ylabel('Hamming distance (\%)', color='firebrick')
-ax2.set_ylabel(y_label, color='steelblue')
-plt.savefig("encrypt_bitFlip_bybit", bbox_inches='tight')
-
-fig, ax1 = plt.subplots()
-
-ax2 = ax1.twinx()
-ax1.plot(HD_by_coeff_av, color='firebrick')
-ax2.plot(N2_by_coeff_av, color='steelblue')
-
-ax1.set_xlabel('Coeff changed')
-ax1.set_ylabel('Hamming distance (\%)', color='firebrick')
-ax2.set_ylabel(y_label, color='steelblue')
-plt.savefig("encrypt_bitFlip_bycoeff", bbox_inches='tight')
-
+    plt.plot(N2_by_coeff_av, color='green')
+    plt.plot(bycoeff_max, 'firebrick')
+    plt.plot(bycoeff_min, color='steelblue')
+    plt.xlabel('Coeff changed')
+    plt.ylabel('Norm2 (\%)', color='green')
+    plt.savefig("encrypt_N2_bitFlip"+extra+"_bycoeff", bbox_inches='tight')
+    if(verbose):
+        plt.title("Cambio de un bit en la encriptacion, comparacion entre input/output")
+        plt.show()
+    plt.clf()
 
 
 

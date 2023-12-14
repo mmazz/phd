@@ -52,7 +52,7 @@ int main() {
     Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(input);
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
     auto encryptElem = c1->GetElements();
-    DCRTPoly plainElem = ptxt1->GetElement<DCRTPoly>();
+    //DCRTPoly plainElem = ptxt1->GetElement<DCRTPoly>();
 
     // Me haga un backup
     Plaintext ptxt_original = cc->MakeCKKSPackedPlaintext(input);
@@ -95,7 +95,7 @@ int main() {
            // saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
             saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded,  new_file);
             // Me quedo con la componente cero por que aca no tengo RNS y es el unico
-            auto original_Coeff =  plainElem.GetAllElements()[0];
+            auto original_Coeff = ptxt1->GetElement<DCRTPoly>().GetAllElements()[0];
             for (size_t j = 0; j < cc->GetRingDimension(); j++)
             {
                 std::cout << j << std::endl;
@@ -108,7 +108,7 @@ int main() {
                     ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][j] = bit_flip(original, bit);
                     // Vuelvo al espacio de evaluacion (NTT)
                     ptxt1->GetElement<DCRTPoly>().SwitchFormat();
-                    auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+                    c1 = cc->Encrypt(keys.publicKey, ptxt1);
                     encryptElem = c1->GetElements();
                     res_hamming = hamming_distance(input, resultData, dataSize);
                     saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);

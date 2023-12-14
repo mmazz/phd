@@ -1,8 +1,8 @@
 all:
-	python encode_bitFlip.py
-	python encode_bitFlip_nonOps.py
-	python encode_bitFlip_nonNTT.py
-	python encode_bitFlip_nonRNS.py
+	python encode_bitFlip.py 0
+	python encode_bitFlip.py 1
+	python encode_bitFlip.py 2
+	python encode_bitFlip.py 3
 
 clean:
 	rm -rf *.png

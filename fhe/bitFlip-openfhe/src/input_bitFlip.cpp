@@ -34,8 +34,7 @@ int main() {
     std::string dir_name = "logs/log_input/";
     std::string file_name_hd = "inputHD";
     std::string file_name_hd_encrypt = "inputHD_encrypt";
-    std::string file_name_hd_output= "inputHD_output";
-    std::string file_name_norm2 =  "inputN2";
+   // std::string file_name_norm2 =  "inputN2";
     std::string file_name_norm2_bounded =  "inputN2_bounded";
 
     // Enable the features that you wish to use
@@ -49,7 +48,6 @@ int main() {
     std::vector<uint8_t> input_8(std::istream_iterator<uint8_t>{file2}, std::istream_iterator<uint8_t>{});
     input_8.erase(input_8.begin()); // pop front
 
-
     std::ifstream file("data/example.txt");
     std::vector<double> input(std::istream_iterator<double>{file}, std::istream_iterator<double>{});
     input.erase(input.begin()); // pop front
@@ -57,7 +55,6 @@ int main() {
     // padding of zeros
     for (size_t i=input.size(); i<batchSize; i++)
         input.push_back(0);
-
     // Encoding as plaintexts
     Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(input);
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
@@ -97,15 +94,13 @@ int main() {
         {
             uint64_t res_hamming = 0;
             uint64_t res_hamming_encrypt = 0;
-            uint64_t res_hamming_output= 0;
-            double res_norm2 = 0;
+            //double res_norm2 = 0;
             double res_norm2_bounded = 0;
             bool new_file = 1;
 
             saveDataLog(dir_name+file_name_hd, res_hamming,  new_file);
             saveDataLog(dir_name+file_name_hd_encrypt, res_hamming_encrypt,  new_file);
-            saveDataLog(dir_name+file_name_hd_output, res_hamming_output,  new_file);
-            saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
+            //saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
             saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded,  new_file);
 
 
@@ -134,11 +129,9 @@ int main() {
                     cc->Decrypt(keys.secretKey, c1, &result);
                     result->SetLength(dataSize);
                     resultData = result->GetRealPackedValue();
-                    res_hamming_output = hamming_distance(input_8, resultData, dataSize);
-                    res_norm2 = norm2(input, resultData, dataSize);
+                   // res_norm2 = norm2(input, resultData, dataSize);
                     res_norm2_bounded = norm2_bounded(input, resultData, dataSize, max_diff);
-                    saveDataLog(dir_name+file_name_hd_output, res_hamming_output, !new_file);
-                    saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
+                   // saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
                     saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded, !new_file);
                     input[i] = original;
                 }
