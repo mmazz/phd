@@ -384,8 +384,11 @@ inline uint64_t hamming_distance_RNS(std::vector<DCRTPoly> &x_encrypt, std::vect
 
 
         size_t ringDim = x_encrypt[k].GetRingDimension();
+        int i = 0;
+        if (RNS_limb==0)
+            i = 1;
         for(size_t j = 0; j < ringDim; j++)
-            count += hamming_distance((uint64_t)x_encrypt_elems[RNS_limb][j], (uint64_t)x_encrypt_original_elems[RNS_limb][j]);
+            count += hamming_distance((uint64_t)x_encrypt_elems[i][j], (uint64_t)x_encrypt_original_elems[i][j]);
     }
     return count;
 }

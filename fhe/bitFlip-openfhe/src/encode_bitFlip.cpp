@@ -29,6 +29,7 @@ int main() {
 
     std::string dir_name = "logs/log_encode/";
     std::string file_name_hd = "encodeHD";
+    std::string file_name_hd_RNS = "encodeHD_RNS";
     //std::string file_name_norm2 =  "encodeN2";
     std::string file_name_norm2_bounded =  "encodeN2_bounded";
 
@@ -88,11 +89,13 @@ int main() {
         // Si la prueba fue correcta sigo
         if(test==0)
         {
+            uint64_t res_hamming_RNS = 0;
             uint64_t res_hamming = 0;
             //double res_norm2 = 0;
             double res_norm2_bounded = 0;
             bool new_file = 1;
 
+            saveDataLog(dir_name+file_name_hd_RNS, res_hamming_RNS,  new_file);
             saveDataLog(dir_name+file_name_hd, res_hamming,  new_file);
             //saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
             saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded,  new_file);
@@ -113,6 +116,9 @@ int main() {
                         res_hamming = hamming_distance(encryptElem, encryptElem_original, RNS_size);
                         saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
 
+                        // Podria agregarlo directamente al HD comun y que compute ambas
+                        res_hamming_RNS = hamming_distance_RNS(encryptElem, encryptElem_original, i);
+                        saveDataLog(dir_name+file_name_hd_RNS, res_hamming_RNS, !new_file);
                         cc->Decrypt(keys.secretKey, c1, &result);
                         result->SetLength(dataSize);
                         resultData = result->GetRealPackedValue();

@@ -43,9 +43,11 @@ elif(sys.argv[1]==str(0)):
     print("OpenFHE with Optimizations")
     fileN2 = "encodeN2_bounded.txt"
     fileHD = "encodeHD.txt"
+    fileHD_RNS = "encodeHD_RNS.txt"
     RNS_size = 2
     total_bits = RNS_size*num_bits*polynomial_size
     num_coeff = int(polynomial_size*RNS_size)
+    non_RNS = True
 
 elif(sys.argv[1]==str(1)):
     print("OpenFHE with no RNS")
@@ -68,9 +70,7 @@ elif(sys.argv[1]==str(3)):
     print("OpenFHE with no Optimizations")
     fileN2 = "encodeN2_nonOps_bounded.txt"
     fileHD = "encodeHD_nonOps.txt"
-    fileHD_RNS = "encodeHD_nonOps_RNS.txt"
     extra = "_nonOps"
-    non_RNS = True
 
 if(len(sys.argv)>2):
     verbose = sys.argv[2]
