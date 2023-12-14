@@ -11,12 +11,12 @@ matplotlib.rcParams.update({'font.size': 20})
 plt.rc('xtick',labelsize=16)
 plt.rc('ytick',labelsize=16)
 
-def data_read(dir, file, HD, total_bits):
+def data_read(dir, file, HD, total_bits_hdCompare):
     df = pd.read_csv(dir+file, header=None,  skip_blank_lines=False)
     df = df.iloc[1:,:]
     input = df[df.columns[0]].to_numpy(dtype='float')
     if (HD):
-        input = input/(total_bits)*100
+        input = input/total_bits_hdCompare*100
     print(f"{file}: {input.mean()}")
     return input
 

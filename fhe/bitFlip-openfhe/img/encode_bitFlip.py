@@ -20,7 +20,8 @@ max_diff_tot = np.sqrt(max_diff**2 * input_size)
 RNS_size = 1
 num_bits = 64
 polynomial_size = 2048
-total_bits = RNS_size*num_bits*polynomial_size
+# el 2 es por que estoy comparando las encriptaciones
+total_bits_HDCompare = 2*RNS_size*num_bits*polynomial_size
 num_coeff = int(polynomial_size*RNS_size)
 fileN2 = ""
 fileHD = ""
@@ -45,7 +46,7 @@ elif(sys.argv[1]==str(0)):
     fileHD = "encodeHD.txt"
     fileHD_RNS = "encodeHD_RNS.txt"
     RNS_size = 2
-    total_bits = RNS_size*num_bits*polynomial_size
+    total_bits_HDCompare = RNS_size*num_bits*polynomial_size
     num_coeff = int(polynomial_size*RNS_size)
     non_RNS = True
 
@@ -61,7 +62,7 @@ elif(sys.argv[1]==str(2)):
     fileHD = "encodeHD_nonNTT.txt"
     fileHD_RNS = "encodeHD_nonNTT_RNS.txt"
     RNS_size = 2
-    total_bits = RNS_size*num_bits*polynomial_size
+    total_bits_HDCompare = RNS_size*num_bits*polynomial_size
     num_coeff = int(polynomial_size*RNS_size)
     extra = "_nonNTT"
     non_RNS = True
@@ -81,8 +82,8 @@ if(ejecute):
     bycoeff_max = []
     bycoeff_min = []
 
-    encodingN2 = data_read(dir, fileN2, False, total_bits)
-    encodingHD = data_read(dir, fileHD, True, total_bits)
+    encodingN2 = data_read(dir, fileN2, False, total_bits_HDCompare)
+    encodingHD = data_read(dir, fileHD, True, total_bits_HDCompare)
 
     y_label = 'L2 norm (\%)'
     N2_by_coeff_av, N2_by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min  = data_reshape(encodingN2, num_coeff, num_bits, True, max_diff_tot)
@@ -137,7 +138,7 @@ if(ejecute):
     if(non_RNS):
         # Divido por 2 el total_bits, por que aca estoy mirando solo la mitad de la codificacion
         # Ya que solo me quede con una sola limb del RNS
-        encodingHD_RNS = data_read(dir, fileHD_RNS, True, int(total_bits/2))
+        encodingHD_RNS = data_read(dir, fileHD_RNS, True, int(total_bits_HDCompare/2))
         HD_by_coeff_av, HD_by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min  = data_reshape(encodingHD_RNS, num_coeff, num_bits, False, max_diff_tot)
 
         plt.plot(HD_by_bits_av, color='green')

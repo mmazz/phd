@@ -373,7 +373,7 @@ inline uint64_t hamming_distance(std::vector<DCRTPoly> &x_encrypt, std::vector<D
     return count;
 }
 // Calcula el HD del limb de RNS que no fue modificado
-inline uint64_t hamming_distance_RNS(std::vector<DCRTPoly> &x_encrypt, std::vector<DCRTPoly> &x_encrypt_original, size_t RNS_limb)
+inline uint64_t hamming_distance_RNS(std::vector<DCRTPoly> &x_encrypt, std::vector<DCRTPoly> &x_encrypt_original, size_t RNS_size, size_t RNS_limb)
 {
     uint64_t count = 0;
     // el vector output puede tener otro size... entonces miro el input
@@ -384,11 +384,14 @@ inline uint64_t hamming_distance_RNS(std::vector<DCRTPoly> &x_encrypt, std::vect
 
 
         size_t ringDim = x_encrypt[k].GetRingDimension();
-        int i = 0;
-        if (RNS_limb==0)
-            i = 1;
-        for(size_t j = 0; j < ringDim; j++)
-            count += hamming_distance((uint64_t)x_encrypt_elems[i][j], (uint64_t)x_encrypt_original_elems[i][j]);
+        for(size_t i=0; i<RNS_size; i++)
+        {
+            if(i!=RNS_limb)
+            {
+                for(size_t j = 0; j < ringDim; j++)
+                        count += hamming_distance((uint64_t)x_encrypt_elems[i][j], (uint64_t)x_encrypt_original_elems[i][j]);
+            }
+        }
     }
     return count;
 }

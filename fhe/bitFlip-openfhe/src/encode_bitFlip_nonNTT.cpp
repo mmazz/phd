@@ -117,7 +117,7 @@ int main() {
                         encryptElem = c1->GetElements();
                         res_hamming = hamming_distance(encryptElem, encryptElem_original, RNS_size);
                         saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
-                        res_hamming_RNS = hamming_distance_RNS(encryptElem, encryptElem_original, i);
+                        res_hamming_RNS = hamming_distance_RNS(encryptElem, encryptElem_original, RNS_size, i);
                         saveDataLog(dir_name+file_name_hd_RNS, res_hamming_RNS, !new_file);
 
                         cc->Decrypt(keys.secretKey, c1, &result);

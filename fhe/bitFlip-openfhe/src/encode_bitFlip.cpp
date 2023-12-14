@@ -117,7 +117,7 @@ int main() {
                         saveDataLog(dir_name+file_name_hd, res_hamming, !new_file);
 
                         // Podria agregarlo directamente al HD comun y que compute ambas
-                        res_hamming_RNS = hamming_distance_RNS(encryptElem, encryptElem_original, i);
+                        res_hamming_RNS = hamming_distance_RNS(encryptElem, encryptElem_original, RNS_size, i);
                         saveDataLog(dir_name+file_name_hd_RNS, res_hamming_RNS, !new_file);
                         cc->Decrypt(keys.secretKey, c1, &result);
                         result->SetLength(dataSize);
