@@ -2,9 +2,10 @@
 
 ## Hardcoded OpenFHE
 
-- openfhe-development/src/pke/include/encoding/ckkspackedencoding.h
-    - Saque lo extra que imprime, asi me lo llevo directo a un archivo.
-
+- openfhe-develpment/src/pke/lib/encoding/ckkspackedencoding.cpp: 535. Comente el if real para que nunca entre. Puse un if (logstd < 0)
+- openfhe-development/src/core/include/math/distributiongenerator.h descomente el define FIXED_SEED
+- Para lo anterior funcione instalar OpenFHE con $cmake .. -DWITH_OPENMP=OFF, en la carpeta build.
+- Para asegurarse que funcione borrar el CMakeCache.txt de la carpeta donde tenemos los files nuestros.
 
 ## Entendiendo OpenbFHE
 
