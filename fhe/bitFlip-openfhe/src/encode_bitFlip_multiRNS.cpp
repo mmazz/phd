@@ -12,7 +12,7 @@ int main() {
     // Step 1: Setup CryptoContext
     uint32_t multDepth = 4;
     uint32_t scaleModSize = 30;
-    uint32_t firstModSize = 60;
+    uint32_t firstModSize = 30;
     uint32_t batchSize = 1024;
     uint32_t ringDim= 2048;
     ScalingTechnique rescaleTech = FIXEDMANUAL;
@@ -28,10 +28,11 @@ int main() {
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
     std::string dir_name = "logs/log_encode/";
-    std::string file_name_hd = "encodeHD_multiRNS";
-    std::string file_name_hd_RNS = "encodeHD_multiRNS_RNSactive";
+    std::string file_name_hd = "encodeHD_multiRNS_limbsNotChanged_30bits";
+    std::string file_name_hd_RNS = "encodeHD_multiRNS_limbChanged_30bits";
+    std::string file_name_hd_positions = "encodeHD_multiRNS_positions_30bits";
     //std::string file_name_norm2 =  "encodeN2";
-    std::string file_name_norm2_bounded =  "encodeN2_multiRNS_bounded";
+    std::string file_name_norm2_bounded =  "encodeN2_multiRNS_bounded_30bits";
 
     // Enable the features that you wish to use
     cc->Enable(PKE);
@@ -89,22 +90,24 @@ int main() {
         // Si la prueba fue correcta sigo
         if(test==0)
         {
-            uint64_t res_hamming = 0;
-            uint64_t res_hamming_RNS = 0;
+            uint64_t HD_RNS_limbsNotChanged = 0;
+            uint64_t HD_RNS_limbChanged = 0;
+            int count = 0;
             //double res_norm2 = 0;
-            double res_norm2_bounded = 0;
+            double N2_bounded = 0;
             bool new_file = 1;
-
-            saveDataLog(dir_name+file_name_hd, res_hamming,  new_file, RNS_size);
-            saveDataLog(dir_name+file_name_hd_RNS, res_hamming_RNS, new_file, RNS_size);
+            std::vector<uint64_t> res(2*RNS_size*cc->GetRingDimension(), 0);
+            saveDataLog(dir_name+file_name_hd, HD_RNS_limbsNotChanged,  new_file, RNS_size);
+            saveDataLog(dir_name+file_name_hd_RNS, HD_RNS_limbChanged, new_file, RNS_size);
             //saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
-            saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded,  new_file, RNS_size);
+            saveDataLog(dir_name+file_name_norm2_bounded, N2_bounded,  new_file, RNS_size);
 
             for (size_t i = 0; i < RNS_size; i++)
             {
+
                 for (size_t j = 0; j < cc->GetRingDimension(); j++)
                 {
-                    std::cout << j << std::endl;
+                    std::cout << count << std::endl;
                     auto original = ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j];
                     for(size_t bit=0; bit<64; bit++)
                     {
@@ -114,26 +117,34 @@ int main() {
                         encryptElem = c1->GetElements();
                         // Le caluclo el HD a la encriptacion
 
-                        // Podria agregarlo directamente al HD comun y que compute ambas
-                        auto [res_hamming, res_hamming_RNS] = hamming_distance_RNS(encryptElem, encryptElem_original, RNS_size, i);
-                        saveDataLog(dir_name+file_name_hd, res_hamming, !new_file, RNS_size);
-                        saveDataLog(dir_name+file_name_hd_RNS, res_hamming_RNS, !new_file, RNS_size);
+                        auto [HD_RNS_limbsNotChanged, HD_RNS_limbsChanged] = hamming_distance_RNS(encryptElem, encryptElem_original, RNS_size, i);
+                        hamming_distance_position(res, encryptElem, encryptElem_original, RNS_size);
+                        saveDataLog(dir_name+file_name_hd, HD_RNS_limbsNotChanged, !new_file, RNS_size);
+                        saveDataLog(dir_name+file_name_hd_RNS, HD_RNS_limbsChanged, !new_file, RNS_size);
 
                         cc->Decrypt(keys.secretKey, c1, &result);
                         result->SetLength(dataSize);
                         resultData = result->GetRealPackedValue();
                         // Calculo la norma 2 del input/output
                        // res_norm2 = norm2(input, resultData, dataSize);
-                        res_norm2_bounded = norm2_bounded(input, resultData, dataSize, max_diff);
+                        N2_bounded = norm2_bounded(input, resultData, dataSize, max_diff);
 
                        // saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
-                        saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded, !new_file, RNS_size);
+                        saveDataLog(dir_name+file_name_norm2_bounded, N2_bounded, !new_file, RNS_size);
 
                         ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = original;
 
                     }
+                    count++;
                 }
             }
+            for(size_t i=0; i<res.size(); i++)
+                std::cout << res[i] << ", ";
+            std::fstream logFile;
+            logFile.open("/home/mmazz/phd/fhe/bitFlip-openfhe/logs/log_encode/"+file_name_hd_positions+".txt", std::ios::out);
+            for(size_t i=0; i<res.size(); i++)
+                logFile << res[i] << ", ";
+            logFile.close();
         }
     }
     return 0;

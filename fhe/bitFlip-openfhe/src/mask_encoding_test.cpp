@@ -10,7 +10,7 @@
 using namespace lbcrypto;
 int main() {
     // Step 1: Setup CryptoContext
-    uint32_t multDepth = 1;
+    uint32_t multDepth = 0;
     uint32_t scaleModSize = 30;
     uint32_t firstModSize = 60;
     uint32_t batchSize = 1024;
@@ -38,7 +38,6 @@ int main() {
     cc->Enable(LEVELEDSHE);
     auto keys = cc->KeyGen();
 
-    int max_diff = 255;
     size_t dataSize = 28*28;
     std::ifstream file("data/example.txt");
     std::vector<double> input(std::istream_iterator<double>{file}, std::istream_iterator<double>{});
@@ -66,12 +65,11 @@ int main() {
 
     std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension() << " RNS size: " << RNS_size << std::endl << std::endl;
     // Chequeo que realmente estoy usando la cantidad de limbs de RNS que busco
-    if (RNS_size == 2)
+    if (RNS_size == 1)
     {
         auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
         cc->Decrypt(keys.secretKey, c1, &result);
         result->SetLength(dataSize);
-        std::cout << result << std::endl;
         resultData = result->GetRealPackedValue();
         size_t test = 0;
         size_t i = 0;
@@ -89,52 +87,34 @@ int main() {
         // Si la prueba fue correcta sigo
         if(test==0)
         {
-            uint64_t HD_RNS_limbsNotChanged = 0;
+
+
+            ptxt1->GetElement<DCRTPoly>().SwitchFormat();
+            ptxt_original->GetElement<DCRTPoly>().SwitchFormat();
+            auto original = ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][9];
+            auto original2 = ptxt_original->GetElement<DCRTPoly>().GetAllElements()[0][9];
+            // Cambio un bit de la codificacion
+            ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][9] = bit_flip(original, 63) % ptxt1->GetElementModulus();
+            std::cout << original << " " << original2 << std::endl;
+            ptxt_original->GetElement<DCRTPoly>().GetAllElements()[0][9] = bit_flip(original2, 63);
+            std::cout << bit_flip(original, 63) << " mod " <<  ptxt1->GetElementModulus()<< " = " << bit_flip(original, 63) % ptxt1->GetElementModulus() << std::endl;
+            std::cout <<  bit_flip(original2, 63)<< std::endl;
+            ptxt1->GetElement<DCRTPoly>().SwitchFormat();
+            ptxt_original->GetElement<DCRTPoly>().SwitchFormat();
+            auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+            auto c2 = cc->Encrypt(keys.publicKey, ptxt_original);
+            encryptElem = c1->GetElements();
+            encryptElem_original = c2->GetElements();
+
             uint64_t HD_RNS_limbChanged = 0;
-            //double res_norm2 = 0;
-            double res_norm2_bounded = 0;
-            bool new_file = 1;
+            // Podria agregarlo directamente al HD comun y que compute ambas
+            HD_RNS_limbChanged = hamming_distance(encryptElem, encryptElem_original, RNS_size);
 
-            saveDataLog(dir_name+file_name_hd, HD_RNS_limbsNotChanged,  new_file, RNS_size);
-            saveDataLog(dir_name+file_name_hd_RNS, HD_RNS_limbChanged, new_file, RNS_size);
-            //saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
-            saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded,  new_file, RNS_size);
+            std::cout << HD_RNS_limbChanged << std::endl;
 
-            for (size_t i = 0; i < RNS_size; i++)
-            {
-                for (size_t j = 0; j < cc->GetRingDimension(); j++)
-                {
-                    std::cout << j << std::endl;
-                    auto original = ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j];
-                    for(size_t bit=0; bit<64; bit++)
-                    {
-                        // Cambio un bit de la codificacion
-                        ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = bit_flip(original, bit);
-                        auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
-                        encryptElem = c1->GetElements();
-                        // Le caluclo el HD a la encriptacion
 
-                        // Podria agregarlo directamente al HD comun y que compute ambas
-                        auto [HD_RNS_limbsNotChanged, HD_RNS_limbsChanged] = hamming_distance_RNS(encryptElem, encryptElem_original, RNS_size, i);
-                        saveDataLog(dir_name+file_name_hd, HD_RNS_limbsNotChanged, !new_file, RNS_size);
-                        saveDataLog(dir_name+file_name_hd_RNS, HD_RNS_limbsChanged, !new_file, RNS_size);
-
-                        cc->Decrypt(keys.secretKey, c1, &result);
-                        result->SetLength(dataSize);
-                        resultData = result->GetRealPackedValue();
-                        // Calculo la norma 2 del input/output
-                       // res_norm2 = norm2(input, resultData, dataSize);
-                        res_norm2_bounded = norm2_bounded(input, resultData, dataSize, max_diff);
-
-                       // saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
-                        saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded, !new_file, RNS_size);
-
-                        ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = original;
-
-                    }
-                }
-            }
         }
+
     }
     return 0;
 }
