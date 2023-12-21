@@ -96,8 +96,10 @@ int main() {
             //double res_norm2 = 0;
             double N2_bounded = 0;
             bool new_file = 1;
-            uint64_t encryption_bits = scaleModSize;
-            std::vector<uint64_t> res(2*RNS_size*encryption_bits*cc->GetRingDimension(), 0);
+            auto ringDim = cc->GetRingDimension();
+            size_t bits_coeff = 64;
+            int total_loops  = RNS_size*ringDim*bits_coeff;
+            std::vector<uint64_t> res(2*RNS_size*bits_coeff*ringDim, 0);
             saveDataLog(dir_name+file_name_hd, HD_RNS_limbsNotChanged,  new_file, RNS_size);
             saveDataLog(dir_name+file_name_hd_RNS, HD_RNS_limbChanged, new_file, RNS_size);
             //saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
@@ -106,11 +108,11 @@ int main() {
             for (size_t i = 0; i < RNS_size; i++)
             {
 
-                for (size_t j = 0; j < cc->GetRingDimension(); j++)
+                for (size_t j = 0; j < ringDim; j++)
                 {
-                    std::cout << count << std::endl;
+                    std::cout << count<<" : " << total_loops << std::endl;
                     auto original = ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j];
-                    for(size_t bit=0; bit<64; bit++)
+                    for(size_t bit=0; bit<bits_coeff; bit++)
                     {
                         // Cambio un bit de la codificacion
                         ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = bit_flip(original, bit);
@@ -119,7 +121,7 @@ int main() {
                         // Le caluclo el HD a la encriptacion
 
                         auto [HD_RNS_limbsNotChanged, HD_RNS_limbsChanged] = hamming_distance_RNS(encryptElem, encryptElem_original, RNS_size, i);
-                        hamming_distance_position(res, encryptElem, encryptElem_original, RNS_size);
+                        hamming_distance_position(res, encryptElem, encryptElem_original, RNS_size, 64);
                         saveDataLog(dir_name+file_name_hd, HD_RNS_limbsNotChanged, !new_file, RNS_size);
                         saveDataLog(dir_name+file_name_hd_RNS, HD_RNS_limbsChanged, !new_file, RNS_size);
 
