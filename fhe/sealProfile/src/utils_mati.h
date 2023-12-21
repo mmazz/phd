@@ -537,4 +537,23 @@ void nttBit_flip(seal::Plaintext& x_plain, const seal::util::NTTTables *ntt_tabl
     ntt_transformation(x_plain, ntt_tables, modulus_index, 0);
 }
 
+// Calcula el HD del limb de RNS que no fue modificado
+inline std::tuple<uint64_t, uint64_t>hamming_distance_RNS(seal::Ciphertext &x_encrypt, seal::Ciphertext &x_encrypt_original, size_t RNS_size, size_t RNS_limb, size_t ringDim)
+{
+    uint64_t count_nonRNS_active = 0;
+    uint64_t count_RNS_active = 0;
+    // el vector output puede tener otro size... entonces miro el input
 
+    size_t actual_RNS_limb = 0;
+    for(size_t i=0; i<2*RNS_size*ringDim; i++)
+    {
+        std::cout << x_encrypt[i] << " vs " << x_encrypt_original[i];
+        actual_RNS_limb = (size_t) i/2*ringDim;
+        if(actual_RNS_limb!=RNS_limb)
+            count_nonRNS_active += hamming_distance((uint64_t)x_encrypt[i], (uint64_t)x_encrypt_original[i]);
+        else
+            count_RNS_active += hamming_distance((uint64_t)x_encrypt[i], (uint64_t)x_encrypt_original[i]);
+        std::cout << " : "<< count_RNS_active << ", " << count_nonRNS_active << std::endl;
+    }
+    return {count_nonRNS_active, count_RNS_active };
+}

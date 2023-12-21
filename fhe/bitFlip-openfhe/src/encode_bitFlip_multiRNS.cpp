@@ -96,7 +96,8 @@ int main() {
             //double res_norm2 = 0;
             double N2_bounded = 0;
             bool new_file = 1;
-            std::vector<uint64_t> res(2*RNS_size*cc->GetRingDimension(), 0);
+            uint64_t encryption_bits = scaleModSize;
+            std::vector<uint64_t> res(2*RNS_size*encryption_bits*cc->GetRingDimension(), 0);
             saveDataLog(dir_name+file_name_hd, HD_RNS_limbsNotChanged,  new_file, RNS_size);
             saveDataLog(dir_name+file_name_hd_RNS, HD_RNS_limbChanged, new_file, RNS_size);
             //saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);

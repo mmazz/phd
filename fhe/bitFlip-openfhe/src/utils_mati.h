@@ -408,21 +408,25 @@ inline void hamming_distance_position(std::vector<uint64_t>& acumulator, std::ve
 {
     size_t ringDim = x_encrypt[0].GetRingDimension();
     int count = 0;
+    uint64_t xor_res = 0;
     // el vector output puede tener otro size... entonces miro el input
     for (size_t k=0 ; k<2; k++)
     {
         auto x_encrypt_elems = x_encrypt[k].GetAllElements();
         auto x_encrypt_original_elems = x_encrypt_original[k].GetAllElements();
 
-
         ringDim = x_encrypt[k].GetRingDimension();
         for(size_t i=0; i<RNS_size; i++)
         {
-
             for(size_t j = 0; j < ringDim; j++)
             {
-                acumulator[count] += hamming_distance((uint64_t)x_encrypt_elems[i][j], (uint64_t)x_encrypt_original_elems[i][j]);
-                count++;
+                xor_res = (uint64_t)x_encrypt_elems[i][j]^(uint64_t)x_encrypt_original_elems[i][j];
+                while(xor_res)
+                {
+                    acumulator[count] += xor_res & 1;
+                    xor_res >>= 1;
+                    count++;
+                }
             }
 
         }
