@@ -407,9 +407,12 @@ inline std::tuple<uint64_t, uint64_t>hamming_distance_RNS(std::vector<DCRTPoly> 
 inline void hamming_distance_position(std::vector<uint64_t>& acumulator, std::vector<DCRTPoly> &x_encrypt, std::vector<DCRTPoly> &x_encrypt_original, size_t RNS_size, size_t coeff_bits)
 {
     size_t ringDim = x_encrypt[0].GetRingDimension();
-    int count = 0;
+    int index_bit = 0;
     size_t count_bits_perCoeff = 0;
     uint64_t xor_res = 0;
+    uint64_t coeff_ij = 0;
+    uint64_t coeff_orig_ij = 0;
+
     // el vector output puede tener otro size... entonces miro el input
     for (size_t k=0 ; k<2; k++)
     {
@@ -421,13 +424,15 @@ inline void hamming_distance_position(std::vector<uint64_t>& acumulator, std::ve
         {
             for(size_t j = 0; j < ringDim; j++)
             {
-                xor_res = (uint64_t)x_encrypt_elems[i][j]^(uint64_t)x_encrypt_original_elems[i][j];
+                coeff_bits = (uint64_t)x_encrypt_elems[i][j];
+                coeff_orig_ij = (uint64_t)x_encrypt_original_elems[i][j];
+                xor_res = coeff_ij^coeff_orig_ij;
                 count_bits_perCoeff = 0;
                 while(count_bits_perCoeff<64)
                 {
-                    acumulator[count] += xor_res & 1;
+                    acumulator[index_bit] += xor_res & 1;
                     xor_res >>= 1;
-                    count++;
+                    index_bit++;
                     count_bits_perCoeff++;
                 }
             }

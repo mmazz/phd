@@ -33,7 +33,7 @@ extra = "_multiRNS_positions_30bits"
 RNS_size = 5
 total_loops = RNS_size*num_bits*polynomial_size
 
-num_coeff = int(polynomial_size*RNS_size)
+num_coeff = int(2*polynomial_size*RNS_size)
 non_RNS = True
 RNS_proportion_limbsNotChanged = (RNS_size-1)/RNS_size
 RNS_proportion_limbChanged = 1/RNS_size
@@ -47,17 +47,41 @@ with open (dir+fileHD, 'r') as f:
   # To remove ' and create list
   # If u want list of string
   num_list = [x.replace('\'', '') for x in num]
+print(num_list[-1])
+
 num_list = num_list[:-1]
+print(len(num_list))
+print(64*polynomial_size*RNS_size*2)
+print(30*polynomial_size*RNS_size*2 +34*polynomial_size*RNS_size*2)
+bits0_29 = np.zeros(34*polynomial_size*RNS_size*2)
+bits30_63 = np.zeros(30*polynomial_size*RNS_size*2)
+count = 0
+index_0 = 0
+index_30 = 0
 
 input_av = np.array(num_list, dtype=int)/total_loops
 
 
-print(input_av)
+bitflip_split = np.reshape(input_av, (num_coeff, num_bits))
+by_coeff = bitflip_split.sum(axis=1)
+by_bits = bitflip_split.sum(axis=0)
+by_coeff_av = (by_coeff/num_coeff)
+by_bits_av = (by_bits/num_bits)
 
-plt.plot(input_av, color='green')
+
+plt.plot(by_bits_av, color='green')
 plt.xlabel('Bit changed')
 plt.ylabel('HD (\%)', color='green')
-plt.savefig("encode_HD_bitFlip"+extra+"_bybit", bbox_inches='tight')
+plt.savefig("encrypr_30_60", bbox_inches='tight')
+plt.title("Cambio de un bit en la codificacion, comparacion entre encriptaciones")
+plt.show()
+plt.clf()
+
+
+plt.plot(by_coeff_av, color='green')
+plt.xlabel('Bit changed')
+plt.ylabel('HD (\%)', color='green')
+plt.savefig("encrypr_0_30", bbox_inches='tight')
 plt.title("Cambio de un bit en la codificacion, comparacion entre encriptaciones")
 plt.show()
 plt.clf()

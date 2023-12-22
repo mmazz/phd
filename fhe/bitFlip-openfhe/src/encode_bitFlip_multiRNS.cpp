@@ -99,6 +99,7 @@ int main() {
             auto ringDim = cc->GetRingDimension();
             size_t bits_coeff = 64;
             int total_loops  = RNS_size*ringDim*bits_coeff;
+            // Quiero guardarme un acumulador de cada posicion en bit de la encriptacion
             std::vector<uint64_t> res(2*RNS_size*bits_coeff*ringDim, 0);
             saveDataLog(dir_name+file_name_hd, HD_RNS_limbsNotChanged,  new_file, RNS_size);
             saveDataLog(dir_name+file_name_hd_RNS, HD_RNS_limbChanged, new_file, RNS_size);
