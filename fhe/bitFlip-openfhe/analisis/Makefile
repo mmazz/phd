@@ -5,6 +5,6 @@ all:
 	python encode_bitFlip.py 3
 
 clean:
-	rm -rf *.png
+	rm -rf img/*.png
 
 

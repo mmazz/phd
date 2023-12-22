@@ -128,7 +128,7 @@ if(ejecute):
     plt.plot(bybits_min, color='steelblue')
     plt.xlabel('Bit changed')
     plt.ylabel('Norm2 (\%)', color='green')
-    plt.savefig("encode_N2_bitFlip"+extra+"_bybit", bbox_inches='tight')
+    plt.savefig("img/encode_N2_bitFlip"+extra+"_bybit", bbox_inches='tight')
     if(verbose):
         plt.title("Cambio de un bit en la codificacion, comparacion entre input/output")
         plt.show()
@@ -140,7 +140,7 @@ if(ejecute):
     plt.plot(bycoeff_min, color='steelblue')
     plt.xlabel('Coeff changed')
     plt.ylabel('Norm2 (\%)', color='green')
-    plt.savefig("encode_N2_bitFlip"+extra+"_bycoeff", bbox_inches='tight')
+    plt.savefig("img/encode_N2_bitFlip"+extra+"_bycoeff", bbox_inches='tight')
     if(verbose):
         plt.title("Cambio de un bit en la codificacion, comparacion entre input/output")
         plt.show()
@@ -153,7 +153,7 @@ if(ejecute):
     plt.plot(bybits_min, color='steelblue')
     plt.xlabel('Bit changed')
     plt.ylabel('HD (\%)', color='green')
-    plt.savefig("encode_HD_bitFlip"+extra+"_bybit", bbox_inches='tight')
+    plt.savefig("img/encode_HD_bitFlip"+extra+"_bybit", bbox_inches='tight')
     if(verbose):
         plt.title("Cambio de un bit en la codificacion, comparacion entre encriptaciones")
         plt.show()
@@ -167,7 +167,7 @@ if(ejecute):
         plt.axvline(polynomial_size*(i+1), ls='--', lw=2)
     plt.xlabel('Coeff changed')
     plt.ylabel('HD (\%)', color='green')
-    plt.savefig("encode_HD_bitFlip"+extra+"_bycoeff", bbox_inches='tight')
+    plt.savefig("img/encode_HD_bitFlip"+extra+"_bycoeff", bbox_inches='tight')
     if(verbose):
         plt.title("Cambio de un bit en la codificacion, comparacion entre encriptaciones")
         plt.show()
@@ -188,7 +188,7 @@ if(ejecute):
         plt.xlabel('Bit changed')
         plt.ylabel('HD (\%)', color='green')
         plt.legend()
-        plt.savefig("encode_HD_bitFlip"+extra+"_RNS_bybit", bbox_inches='tight')
+        plt.savefig("img/encode_HD_bitFlip"+extra+"_RNS_bybit", bbox_inches='tight')
         if(verbose):
             plt.title("Cambio de un bit en la codificacion, comparacion entre encriptaciones del limb modificado")
             plt.show()
@@ -207,7 +207,7 @@ if(ejecute):
         plt.xlabel('Coeff changed')
         plt.ylabel('HD (\%)', color='green')
         plt.legend()
-        plt.savefig("encode_HD_bitFlip"+extra+"_RNS_bycoeff", bbox_inches='tight')
+        plt.savefig("img/encode_HD_bitFlip"+extra+"_RNS_bycoeff", bbox_inches='tight')
         if(verbose):
             plt.title("Cambio de un bit en la codificacion, comparacion entre encriptaciones del limb modificado")
             plt.show()
@@ -228,7 +228,7 @@ if(ejecute):
             plt.xlabel('Coeff changed')
             plt.ylabel('HD (\%)', color='green')
             plt.legend()
-            plt.savefig("encode_HD_bitFlip"+extra+"_RNS_bycoeff2", bbox_inches='tight')
+            plt.savefig("img/encode_HD_bitFlip"+extra+"_RNS_bycoeff2", bbox_inches='tight')
             if(verbose):
                 plt.title("PRUEBA")
                 plt.show()
