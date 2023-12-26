@@ -28,7 +28,8 @@ int main() {
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
     std::string dir_name = "logs/log_encode/";
-    std::string file_name_hd = "encodeHD_nonRNS";
+    std::string file_name_hd = "encodeHD_nonRNS_limbsNotChanged";
+    std::string file_name_hd_RNS = "encodeHD_multiRNS_limbChanged_30bits";
   //  std::string file_name_norm2 =  "encodeN2_nonRNS";
     std::string file_name_norm2_bounded =  "encodeN2_nonRNS_bounded";
 
@@ -86,12 +87,14 @@ int main() {
 
         if(test==0)
         {
-            uint64_t res_hamming = 0;
+            uint64_t HD_RNS_limbsNotChanged = 0;
+            uint64_t HD_RNS_limbChanged = 0;
            // double res_norm2 = 0;
             double res_norm2_bounded = 0;
             bool new_file = 1;
 
-            saveDataLog(dir_name+file_name_hd, res_hamming,  new_file, RNS_size);
+            saveDataLog(dir_name+file_name_hd, HD_RNS_limbsNotChanged,  new_file, RNS_size);
+            saveDataLog(dir_name+file_name_hd_RNS, HD_RNS_limbChanged, new_file, RNS_size);
            // saveDataLog(dir_name+file_name_norm2, res_norm2,  new_file);
             saveDataLog(dir_name+file_name_norm2_bounded, res_norm2_bounded,  new_file, RNS_size);
 
@@ -106,8 +109,9 @@ int main() {
                     ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][j] = bit_flip(original, bit);
                     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
                     encryptElem = c1->GetElements();
-                    res_hamming = hamming_distance(encryptElem, encryptElem_original, RNS_size);
-                    saveDataLog(dir_name+file_name_hd, res_hamming, !new_file, RNS_size);
+                    auto [HD_RNS_limbsNotChanged, HD_RNS_limbsChanged] = hamming_distance_RNS(encryptElem, encryptElem_original, RNS_size, i);
+                    saveDataLog(dir_name+file_name_hd, HD_RNS_limbsNotChanged, !new_file, RNS_size);
+                    saveDataLog(dir_name+file_name_hd_RNS, HD_RNS_limbsChanged, !new_file, RNS_size);
 
                     cc->Decrypt(keys.secretKey, c1, &result);
                     result->SetLength(dataSize);

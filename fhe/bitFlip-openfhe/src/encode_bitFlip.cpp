@@ -12,7 +12,7 @@ int main() {
     // Step 1: Setup CryptoContext
     uint32_t multDepth = 1;
     uint32_t scaleModSize = 30;
-    uint32_t firstModSize = 60;
+    uint32_t firstModSize = 30;
     uint32_t batchSize = 1024;
     uint32_t ringDim= 2048;
     ScalingTechnique rescaleTech = FIXEDMANUAL;

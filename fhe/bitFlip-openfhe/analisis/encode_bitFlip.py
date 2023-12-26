@@ -21,9 +21,10 @@ input_size = 28*28
 max_diff_tot = np.sqrt(max_diff**2 * input_size)
 RNS_size = 1
 num_bits = 64
+num_bits_HD = 30
 polynomial_size = 2048
 # el 2 es por que estoy comparando las encriptaciones
-total_bits_HDCompare = 2*RNS_size*num_bits*polynomial_size
+total_bits_HDCompare = 2*RNS_size*num_bits_HD*polynomial_size
 num_coeff = int(polynomial_size*RNS_size)
 fileN2 = ""
 fileHD = ""
@@ -52,23 +53,24 @@ elif(sys.argv[1]==str(0)):
     fileHD = "encodeHD_limbsNotChanged.txt"
     fileHD_RNS = "encodeHD_limbChanged.txt"
     RNS_size = 2
-    total_bits_HDCompare = 2*RNS_size*num_bits*polynomial_size
+    total_bits_HDCompare = 2*RNS_size*num_bits_HD*polynomial_size
     num_coeff = int(polynomial_size*RNS_size)
     non_RNS = True
 
 elif(sys.argv[1]==str(1)):
     print("OpenFHE with no RNS")
     fileN2 = "encodeN2_nonRNS_bounded.txt"
-    fileHD = "encodeHD_nonRNS.txt"
+    fileHD = "encodeHD_nonRNS_limbsNotChanged.txt"
+    fileHD_RNS = "encodeHD_nonRNS_limbChanged.txt"
     extra = "_nonRNS"
 
 elif(sys.argv[1]==str(2)):
     print("OpenFHE with no NTT")
     fileN2 = "encodeN2_nonNTT_bounded.txt"
-    fileHD = "encodeHD_nonNTT.txt"
-    fileHD_RNS = "encodeHD_nonNTT_RNS.txt"
+    fileHD = "encodeHD_nonNTT_limbsNotChanged.txt"
+    fileHD_RNS = "encodeHD_nonNTT_limbChanged.txt"
     RNS_size = 2
-    total_bits_HDCompare = 2*RNS_size*num_bits*polynomial_size
+    total_bits_HDCompare = 2*RNS_size*num_bits_HD*polynomial_size
     num_coeff = int(polynomial_size*RNS_size)
     extra = "_nonNTT"
     non_RNS = True
@@ -77,7 +79,8 @@ elif(sys.argv[1]==str(2)):
 elif(sys.argv[1]==str(3)):
     print("OpenFHE with no Optimizations")
     fileN2 = "encodeN2_nonOps_bounded.txt"
-    fileHD = "encodeHD_nonOps.txt"
+    fileHD = "encodeHD_nonOps_limbsNotChanged.txt"
+    fileHD_RNS = "encodeHD_nonOps_limbChanged.txt"
     extra = "_nonOps"
 
 
@@ -88,7 +91,7 @@ elif(sys.argv[1]==str(4)):
     fileHD_RNS = "encodeHD_multiRNS_limbChanged.txt"
     extra = "_multiRNS"
     RNS_size = 5
-    total_bits_HDCompare = 2*RNS_size*num_bits*polynomial_size
+    total_bits_HDCompare = 2*RNS_size*num_bits_HD*polynomial_size
     num_coeff = int(polynomial_size*RNS_size)
     non_RNS = True
     RNS_proportion_limbsNotChanged = (RNS_size-1)/RNS_size

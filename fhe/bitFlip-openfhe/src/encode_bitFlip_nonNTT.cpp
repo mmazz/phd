@@ -12,7 +12,7 @@ int main() {
     // Step 1: Setup CryptoContext
     uint32_t multDepth = 1;
     uint32_t scaleModSize = 30;
-    uint32_t firstModSize = 60;
+    uint32_t firstModSize = 30;
     uint32_t batchSize = 1024;
     uint32_t ringDim= 2048;
     ScalingTechnique rescaleTech = FIXEDMANUAL;
@@ -28,8 +28,8 @@ int main() {
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
     std::string dir_name = "logs/log_encode/";
-    std::string file_name_hd = "encodeHD_nonNTT";
-    std::string file_name_hd_RNS = "encodeHD_nonNTT_RNSActive";
+    std::string file_name_hd = "encodeHD_nonNTT_limbsNotChanged";
+    std::string file_name_hd_RNS = "encodeHD_nonNTT_limbChanged";
   //  std::string file_name_norm2 =  "encodeN2_nonNTT";
     std::string file_name_norm2_bounded =  "encodeN2_nonNTT_bounded";
 

@@ -142,8 +142,6 @@ int main() {
                     count++;
                 }
             }
-            for(size_t i=0; i<res.size(); i++)
-                std::cout << res[i] << ", ";
             std::fstream logFile;
             logFile.open("/home/mmazz/phd/fhe/bitFlip-openfhe/logs/log_encode/"+file_name_hd_positions+".txt", std::ios::out);
             for(size_t i=0; i<res.size(); i++)
