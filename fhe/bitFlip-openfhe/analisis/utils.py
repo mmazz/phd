@@ -11,19 +11,16 @@ matplotlib.rcParams.update({'font.size': 20})
 plt.rc('xtick',labelsize=16)
 plt.rc('ytick',labelsize=16)
 
-def data_read(dir, file, HD, total_bits_hdCompare):
+def data_read(dir, file):
     df = pd.read_csv(dir+file, header=None,  skip_blank_lines=False)
     df = df.iloc[1:,:]
     input = df[df.columns[0]].to_numpy(dtype='float')
-    if (HD):
-        input = input/total_bits_hdCompare*100
+
     print(f"{file}: {input.mean()}")
     return input
 
 # Hago una matriz de cantidad de coeficientes por cantidad de bits por coeff
-def data_reshape(data, num_rows, num_cols, bounded, max_diff_tot):
-    if (bounded):
-        data = data*100/max_diff_tot
+def data_reshape(data, num_rows, num_cols):
     bitflip_split = np.reshape(data, (num_rows, num_cols))
     bycoeff_max = []
     bycoeff_min = []
@@ -43,5 +40,12 @@ def data_reshape(data, num_rows, num_cols, bounded, max_diff_tot):
     by_bits_av = (by_bits/num_rows)
     return by_coeff_av, by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min
 
-
+def data_N2_bounded(max_diff_tot,  by_coeff_av, by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min):
+    by_coeff_av = 100*by_coeff_av/max_diff_tot
+    by_bits_av  = 100*by_bits_av/max_diff_tot
+    bycoeff_max = 100*bycoeff_max/max_diff_tot
+    bycoeff_min = 100*bycoeff_min/max_diff_tot
+    bybits_max  = 100*bybits_max/max_diff_tot
+    bybits_min  = 100*bybits_min/max_diff_tot
+    return by_coeff_av, by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min
 
