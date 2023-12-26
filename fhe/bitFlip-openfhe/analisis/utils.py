@@ -12,10 +12,8 @@ plt.rc('xtick',labelsize=16)
 plt.rc('ytick',labelsize=16)
 
 def data_read(dir, file):
-    df = pd.read_csv(dir+file, header=None,  skip_blank_lines=False)
-    df = df.iloc[1:,:]
-    input = df[df.columns[0]].to_numpy(dtype='float')
-
+    df = pd.read_csv(dir+file, header=None,  skiprows=1, skip_blank_lines=False, dtype='float64')
+    input = df[df.columns[0]].to_numpy(dtype='int')
     print(f"{file}: {input.mean()}")
     return input
 
@@ -38,7 +36,7 @@ def data_reshape(data, num_rows, num_cols):
     by_bits = bitflip_split.sum(axis=0)
     by_coeff_av = (by_coeff/num_cols)
     by_bits_av = (by_bits/num_rows)
-    return by_coeff_av, by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min
+    return by_coeff_av, by_bits_av, np.array(bycoeff_max), np.array(bycoeff_min), np.array(bybits_max), np.array(bybits_min)
 
 def data_N2_bounded(max_diff_tot,  by_coeff_av, by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min):
     by_coeff_av = 100*by_coeff_av/max_diff_tot

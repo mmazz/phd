@@ -373,14 +373,40 @@ inline uint64_t hamming_distance(std::vector<DCRTPoly> &x_encrypt, std::vector<D
     }
     return count;
 }
+// Calcula el HD del limb de RNS que no fue modificado
+inline std::tuple<uint64_t, uint64_t>hamming_distance_RNS(DCRTPoly &x_plain, DCRTPoly &x_plain_original, size_t RNS_size, size_t RNS_limb)
+{
+    uint64_t count_RNS_limbsNotChanged = 0;
+    uint64_t count_RNS_limbChanged = 0;
 
+    // el vector output puede tener otro size... entonces miro el input
+    auto x_plain_elems = x_plain.GetAllElements();
+    auto x_plain_original_elems = x_plain_original.GetAllElements();
+    size_t ringDim = x_plain.GetRingDimension();
+    for(size_t i=0; i<RNS_size; i++)
+    {
+        if(i!=RNS_limb)
+        {
+            for(size_t j = 0; j < ringDim; j++)
+                count_RNS_limbsNotChanged += hamming_distance((uint64_t)x_plain_elems[i][j], (uint64_t)x_plain_original_elems[i][j]);
+        }
+        else
+        {
+            for(size_t j = 0; j < ringDim; j++)
+                count_RNS_limbChanged += hamming_distance((uint64_t)x_plain_elems[i][j], (uint64_t)x_plain_original_elems[i][j]);
+        }
+    }
+    return {count_RNS_limbsNotChanged, count_RNS_limbChanged };
+}
 // Calcula el HD del limb de RNS que no fue modificado
 inline std::tuple<uint64_t, uint64_t>hamming_distance_RNS(std::vector<DCRTPoly> &x_encrypt, std::vector<DCRTPoly> &x_encrypt_original, size_t RNS_size, size_t RNS_limb)
 {
     uint64_t count_RNS_limbsNotChanged = 0;
     uint64_t count_RNS_limbChanged = 0;
+    size_t polynomials = 2;
+
     // el vector output puede tener otro size... entonces miro el input
-    for (size_t k=0 ; k<2; k++)
+    for (size_t k=0 ; k<polynomials; k++)
     {
         auto x_encrypt_elems = x_encrypt[k].GetAllElements();
         auto x_encrypt_original_elems = x_encrypt_original[k].GetAllElements();
@@ -403,6 +429,42 @@ inline std::tuple<uint64_t, uint64_t>hamming_distance_RNS(std::vector<DCRTPoly> 
     }
     return {count_RNS_limbsNotChanged, count_RNS_limbChanged };
 }
+
+
+// Calcula el HD del limb de RNS que no fue modificado
+inline void hamming_distance_position(std::vector<uint64_t>& acumulator, DCRTPoly &x_plain, DCRTPoly &x_plain_original, size_t RNS_size, size_t coeff_bits)
+{
+    size_t ringDim = x_plain.GetRingDimension();
+    int index_bit = 0;
+    size_t count_bits_perCoeff = 0;
+    uint64_t xor_res = 0;
+    uint64_t coeff_ij = 0;
+    uint64_t coeff_orig_ij = 0;
+
+    auto x_plain_elems = x_plain.GetAllElements();
+    auto x_plain_original_elemsm = x_plain_original.GetAllElements();
+
+    for(size_t i=0; i<RNS_size; i++)
+    {
+        for(size_t j = 0; j < ringDim; j++)
+        {
+            coeff_bits = (uint64_t)x_plain_elems[i][j];
+            coeff_orig_ij = (uint64_t)x_plain_original_elemsm[i][j];
+            xor_res = coeff_ij^coeff_orig_ij;
+            count_bits_perCoeff = 0;
+            while(count_bits_perCoeff<64)
+            {
+                acumulator[index_bit] += xor_res & 1;
+                xor_res >>= 1;
+                index_bit++;
+                count_bits_perCoeff++;
+            }
+        }
+
+    }
+}
+
+
 // Calcula el HD del limb de RNS que no fue modificado
 inline void hamming_distance_position(std::vector<uint64_t>& acumulator, std::vector<DCRTPoly> &x_encrypt, std::vector<DCRTPoly> &x_encrypt_original, size_t RNS_size, size_t coeff_bits)
 {

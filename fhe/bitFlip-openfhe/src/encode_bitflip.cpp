@@ -97,10 +97,10 @@ int main(int argc, char* argv[]) {
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
     std::string dir_name = "logs/log_encode/";
-    std::string file_name_hd = "encodeHD_"+extra+"_limbsNotChanged";
-    std::string file_name_hd_RNS = "encodeHD_"+extra+"_limbChanged";
-    std::string file_name_hd_positions = "encodeHD_"+extra+"_positions";
-    std::string file_name_norm2_bounded =  "encodeN2_"+extra+"_bounded";
+    std::string fileHD_limbsNotChange = "encodeHD_"+extra+"_limbsNotChanged";
+    std::string fileHD_limbChange     = "encodeHD_"+extra+"_limbChanged";
+    std::string fileHD_positions      = "encodeHD_"+extra+"_positions";
+    std::string fileN2_bounded        = "encodeN2_"+extra+"_bounded";
 
     // Enable the features that you wish to use
     cc->Enable(PKE);
@@ -171,13 +171,13 @@ int main(int argc, char* argv[]) {
 
             // Quiero guardarme un acumulador de cada posicion en bit de la encriptacion
             std::vector<uint64_t> encryption_bitChange(2*RNS_size*bits_coeff*ringDim, 0);
-            saveDataLog(dir_name+file_name_hd, HD_RNS_limbsNotChanged,  new_file, RNS_size);
-            saveDataLog(dir_name+file_name_hd_RNS, HD_RNS_limbChanged, new_file, RNS_size);
-            saveDataLog(dir_name+file_name_norm2_bounded, N2_bounded,  new_file, RNS_size);
+            saveDataLog(dir_name+fileHD_limbsNotChange, HD_RNS_limbsNotChanged,  new_file, RNS_size);
+            saveDataLog(dir_name+fileHD_limbChange, HD_RNS_limbChanged, new_file, RNS_size);
+            saveDataLog(dir_name+fileN2_bounded, N2_bounded,  new_file, RNS_size);
 
             // Me quedo con la componente cero por que aca no tengo RNS y es el unico
             std::cout << "Total loops: " << total_loops << std::endl;
-            auto original_vector = ptxt1->GetElement<DCRTPoly>().GetAllElements()[0];
+            auto original_vector = ptxt1->GetElement<DCRTPoly>().GetAllElements();
             for (size_t i = 0; i < RNS_size; i++)
             {
                 for (size_t j = 0; j < ringDim; j++)
@@ -204,8 +204,8 @@ int main(int argc, char* argv[]) {
 
                         auto [HD_RNS_limbsNotChanged, HD_RNS_limbsChanged] = hamming_distance_RNS(encryptElem, encryptElem_original, RNS_size, i);
                         hamming_distance_position(encryption_bitChange, encryptElem, encryptElem_original, RNS_size, bits_coeff);
-                        saveDataLog(dir_name+file_name_hd, HD_RNS_limbsNotChanged, !new_file, RNS_size);
-                        saveDataLog(dir_name+file_name_hd_RNS, HD_RNS_limbsChanged, !new_file, RNS_size);
+                        saveDataLog(dir_name+fileHD_limbsNotChange, HD_RNS_limbsNotChanged, !new_file, RNS_size);
+                        saveDataLog(dir_name+fileHD_limbChange, HD_RNS_limbsChanged, !new_file, RNS_size);
 
                         cc->Decrypt(keys.secretKey, c1, &result);
                         result->SetLength(dataSize);
@@ -214,10 +214,10 @@ int main(int argc, char* argv[]) {
                         N2_bounded = norm2_bounded(input, resultData, dataSize, max_diff);
 
                        // saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
-                        saveDataLog(dir_name+file_name_norm2_bounded, N2_bounded, !new_file, RNS_size);
+                        saveDataLog(dir_name+fileN2_bounded, N2_bounded, !new_file, RNS_size);
                         // Cambian todos los coefficientes, tengo que resetearlo entero
                         if(nonNTT)
-                            ptxt1->GetElement<DCRTPoly>().GetAllElements()[0] = original_vector;
+                            ptxt1->GetElement<DCRTPoly>().GetAllElements() = original_vector;
                         // cambia solo uno
                         else
                             ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = original_coeff;
@@ -227,7 +227,7 @@ int main(int argc, char* argv[]) {
                 }
             }
             std::fstream logFile;
-            logFile.open("/home/mmazz/phd/fhe/bitFlip-openfhe/logs/log_encode/"+file_name_hd_positions+".txt", std::ios::out);
+            logFile.open("/home/mmazz/phd/fhe/bitFlip-openfhe/logs/log_encode/"+fileHD_positions+".txt", std::ios::out);
             for(size_t i=0; i<encryption_bitChange.size(); i++)
                 logFile << encryption_bitChange[i] << ", ";
             logFile.close();
