@@ -51,38 +51,46 @@ int main(int argc, char* argv[]) {
         // Estandard
         if(atoi(argv[1])==0)
         {
+            std::cout << std::endl << "Starting CKKS with Optimizations";
             if(argc>2)
             {
+                std::cout<< " with multiple RNS limbs";
                 multDepth = (uint32_t)atoi(argv[2])-1;
-                extra = "multiRNS_"+std::to_string(multDepth+1);
+                extra = "_multiRNS_"+std::to_string(multDepth+1);
             }
+            std::cout<< std::endl << std::endl;
         }
 
         // Sin NTT
         else if(atoi(argv[1])==1)
         {
-            extra = "nonNTT";
+            std::cout << std::endl << "Starting CKKS with no NTT";
+            extra = "_nonNTT";
             nonNTT = true;
             if(argc>2)
             {
+                std::cout<< " with multiple RNS limbs";
                 multDepth = (uint32_t)atoi(argv[2])-1;
-                extra = "nonNTT_multiRNS_"+std::to_string(multDepth+1);
+                extra = "_nonNTT_multiRNS_"+std::to_string(multDepth+1);
             }
+            std::cout << std::endl<< std::endl;
         }
         // Sin RNS
         else if(atoi(argv[1])==2)
         {
+            std::cout << std::endl << "Starting CKKS with no RNS" << std::endl<< std::endl;
             multDepth = 0;
             firstModSize = 60;
-            extra = "nonRNS_";
+            extra = "_nonRNS";
         }
         // Sin Ops
         else if(atoi(argv[1])==3)
         {
+            std::cout << std::endl << "Starting CKKS with no Optimizations" << std::endl<< std::endl;
             multDepth = 0;
             firstModSize = 60;
             nonNTT = true;
-            extra = "nonOps_";
+            extra = "_nonOps";
         }
     }
 
@@ -96,11 +104,11 @@ int main(int argc, char* argv[]) {
     parameters.SetSecurityLevel(HEStd_NotSet);
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
-    std::string dir_name = "logs/log_encode/";
-    std::string fileHD_limbsNotChange = "encodeHD_"+extra+"_limbsNotChanged";
-    std::string fileHD_limbChange     = "encodeHD_"+extra+"_limbChanged";
-    std::string fileHD_positions      = "encodeHD_"+extra+"_positions";
-    std::string fileN2_bounded        = "encodeN2_"+extra+"_bounded";
+    std::string dir_name = "./logs/log_encode/";
+    std::string fileHD_limbsNotChange = "encodeHD"+extra+"_limbsNotChanged";
+    std::string fileHD_limbChange     = "encodeHD"+extra+"_limbChanged";
+    std::string fileHD_positions      = "encodeHD"+extra+"_positions";
+    std::string fileN2_bounded        = "encodeN2"+extra+"_bounded";
 
     // Enable the features that you wish to use
     cc->Enable(PKE);
@@ -110,7 +118,7 @@ int main(int argc, char* argv[]) {
     // Input setup
     int max_diff = 255;
     size_t dataSize = 28*28;
-    std::ifstream file("data/example.txt");
+    std::ifstream file("../data/example.txt");
     std::vector<double> input(std::istream_iterator<double>{file}, std::istream_iterator<double>{});
     input.erase(input.begin()); // pop front
     // padding of zeros
@@ -120,20 +128,19 @@ int main(int argc, char* argv[]) {
     // Encoding as plaintexts
     Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(input);
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
-    auto encryptElem = c1->GetElements();
-    //DCRTPoly plainElem = ptxt1->GetElement<DCRTPoly>();
+    auto c2 = c1->Clone();
+    auto encryptElems = c1->GetElements();
+    auto encryptElems_original = c2->GetElements();
 
     // Me haga un backup
     Plaintext ptxt_original = cc->MakeCKKSPackedPlaintext(input);
-    auto c1_original = cc->Encrypt(keys.publicKey, ptxt_original);
-    auto encryptElem_original = c1_original->GetElements();
     DCRTPoly plainElem_original = ptxt_original->GetElement<DCRTPoly>();
     auto elems_original =  plainElem_original.GetAllElements();
 
     Plaintext result;
     std::vector<double> resultData(dataSize);
-    size_t RNS_size = ptxt1->GetElement<DCRTPoly>().GetAllElements().size();
 
+    size_t RNS_size = ptxt1->GetElement<DCRTPoly>().GetAllElements().size();
     std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension() << " RNS size: " << RNS_size << std::endl;
     std::cout << "NTT condition: " << nonNTT << ", RNS condition: " << multDepth << std::endl;
     // Chequeo que realmente estoy usando la cantidad de limbs de RNS que busco
@@ -167,7 +174,7 @@ int main(int argc, char* argv[]) {
             auto ringDim = cc->GetRingDimension();
             size_t bits_coeff = 64;
 
-            int total_loops  = RNS_size*ringDim*bits_coeff;
+            int total_loops  = RNS_size*ringDim;
 
             // Quiero guardarme un acumulador de cada posicion en bit de la encriptacion
             std::vector<uint64_t> encryption_bitChange(2*RNS_size*bits_coeff*ringDim, 0);
@@ -200,10 +207,10 @@ int main(int argc, char* argv[]) {
                         if(nonNTT)
                             ptxt1->GetElement<DCRTPoly>().SwitchFormat();
                         c1 = cc->Encrypt(keys.publicKey, ptxt1);
-                        encryptElem = c1->GetElements();
+                        encryptElems = c1->GetElements();
 
-                        auto [HD_RNS_limbsNotChanged, HD_RNS_limbsChanged] = hamming_distance_RNS(encryptElem, encryptElem_original, RNS_size, i);
-                        hamming_distance_position(encryption_bitChange, encryptElem, encryptElem_original, RNS_size, bits_coeff);
+                        auto [HD_RNS_limbsNotChanged, HD_RNS_limbsChanged] = hamming_distance_RNS(encryptElems, encryptElems_original, RNS_size, i);
+                        hamming_distance_position(encryption_bitChange, encryptElems, encryptElems_original, RNS_size, bits_coeff);
                         saveDataLog(dir_name+fileHD_limbsNotChange, HD_RNS_limbsNotChanged, !new_file, RNS_size);
                         saveDataLog(dir_name+fileHD_limbChange, HD_RNS_limbsChanged, !new_file, RNS_size);
 

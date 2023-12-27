@@ -50,6 +50,7 @@ SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -std=c++2a -pg -no-p
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 set(CMAKE_BUILD_TYPE Debug)
+set(GTEST_LIBRARIES gtest gmock gtest_main gmock_main pthread)
 link_directories( ${OpenFHE_LIBDIR} )
 link_directories( ${OPENMP_LIBRARIES} )
 if(BUILD_STATIC)
@@ -75,6 +76,14 @@ foreach (app ${EXAMPLES_SRC_FILES})
   add_executable ( ${exe} ${app} )
   set_target_properties(${exe} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
   #target_link_libraries( ${exe} PRIVATE OpenFHE::openfhe)
+endforeach()
+
+file (GLOB TEST_SRC_FILES CONFIGURE_DEPENDS ${CMAKE_BINARY_DIR}/test/*.cpp)
+foreach (app ${TEST_SRC_FILES})
+  get_filename_component( exe ${app} NAME_WE)
+  add_executable ( ${exe} ${app} )
+  set_target_properties(${exe} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+  target_link_libraries( ${exe} PRIVATE ${GTEST_LIBRARIES})
 endforeach()
 #
 #file (GLOB TEST_SRC_FILES CONFIGURE_DEPENDS ${CMAKE_BINARY_DIR}/test/*.cpp)

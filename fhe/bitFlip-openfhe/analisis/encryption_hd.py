@@ -16,8 +16,7 @@ La cantidad de bits que tiene la encriptacion es diferente en cada caso y por es
 
 
 dir = "../logs/log_encode/"
-fileHD = "encodeHD_multiRNS_positions_30bits.txt"
-extra = "_multiRNS_positions_30bits"
+fileHD = "encodeHD_positions.txt"
 
 max_diff = 255
 input_size = 28*28
@@ -25,7 +24,7 @@ max_diff_tot = np.sqrt(max_diff**2 * input_size)
 num_bits = 64
 polynomial_size = 2048
 # el 2 es por que estoy comparando las encriptaciones
-RNS_size = 5
+RNS_size = 2
 total_loops = RNS_size*num_bits*polynomial_size
 num_coeff = int(2*polynomial_size*RNS_size)
 non_RNS = True

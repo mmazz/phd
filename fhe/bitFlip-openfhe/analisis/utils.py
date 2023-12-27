@@ -17,6 +17,13 @@ def data_read(dir, file):
     print(f"{file}: {input.mean()}")
     return input
 
+def data_read_pos(dir, file):
+    df = pd.read_csv(dir+file, header=None, skip_blank_lines=False, dtype='float64')
+    df = df[:-1]
+    input = df[df.columns[0]].to_numpy(dtype='int')
+    print(f"{file}: {input.mean()}")
+    return input
+
 # Hago una matriz de cantidad de coeficientes por cantidad de bits por coeff
 def data_reshape(data, num_rows, num_cols):
     bitflip_split = np.reshape(data, (num_rows, num_cols))

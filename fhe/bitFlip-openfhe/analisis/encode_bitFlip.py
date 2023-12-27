@@ -42,6 +42,7 @@ multiRNS = False
 ejecute = True
 verbose = 0
 
+positions = False
 
 if(len(sys.argv)==1):
     print("Please pass the parameter to know wich type of file you are asking for")
@@ -58,6 +59,8 @@ elif(sys.argv[1]==str(0)):
     fileN2 = "encodeN2_bounded.txt"
     fileHD_limbsNotChanged = "encodeHD_limbsNotChanged.txt"
     fileHD_limbChanged = "encodeHD_limbChanged.txt"
+    fileHD_positions= "encodeHD_positions.txt"
+    positions = True
     RNS_size = 2
 
 elif(sys.argv[1]==str(1)):
@@ -223,3 +226,7 @@ if(ejecute):
             plt.show()
         plt.clf()
 
+        if(positions):
+            encoding_pos = data_read_pos(dir, fileHD_positions)
+            plt.plot(encoding_pos)
+            plt.show()
