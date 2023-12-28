@@ -2,10 +2,13 @@
 
 ## Hardcoded OpenFHE
 
-- openfhe-develpment/src/pke/lib/encoding/ckkspackedencoding.cpp: 535. Comente el if real para que nunca entre. Puse un if (logstd < 0)
+- openfhe-develpment/src/pke/lib/encoding/ckkspackedencoding.cpp: 535. Comente el if real para que nunca entre. Puse un logstd = 1, if (logstd < 0)
 - openfhe-development/src/core/include/math/distributiongenerator.h descomente el define FIXED_SEED
 - Para lo anterior funcione instalar OpenFHE con $cmake -DCMAKE_BUILD_TYPE=Debug -DWITH_OPENMP=OFF .., en la carpeta build.
 - Para asegurarse que funcione borrar el CMakeCache.txt de la carpeta donde tenemos los files nuestros.
+- src/core/include/math/distributiongenerator.h: 120,  Comente el cerr que avisa que estoy usando fixed_seed
+- src/core/include/lattice/hal/default/dcrtpoly-impl.h: 139 y 202, k=1
+
 
 ## Entendiendo OpenbFHE
 

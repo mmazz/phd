@@ -17,7 +17,6 @@
 using namespace lbcrypto;
 using namespace std;
 
-
 TEST(HD, encryption_difference)
 {
     uint32_t multDepth = 1;
@@ -67,7 +66,7 @@ TEST(HD, encryption_difference)
     }
 }
 
-TEST(HD, encode_rns_bitflip)
+TEST(HD, encode_rns_bitflip_limbNotChange)
 {
     uint32_t multDepth = 1;
     uint32_t scaleModSize = 30;
@@ -105,7 +104,7 @@ TEST(HD, encode_rns_bitflip)
 
     auto coeff0 = encryptElems_original[0].GetAllElements()[0][0];
     EXPECT_EQ(coeff0, encryptElems[0].GetAllElements()[0][0]);
-    ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][9] = bit_flip(ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][9], 29);
+    ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][0] = bit_flip(ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][0], 29);
     c1 = cc->Encrypt(keys.publicKey, ptxt1);
     encryptElems = c1->GetElements();
 
@@ -117,10 +116,60 @@ TEST(HD, encode_rns_bitflip)
     {
         for (size_t j = 0; j < ringDim; j++)
         {
-            EXPECT_NE(encryptElems[k].GetAllElements()[0][j], encryptElems_original[k].GetAllElements()[0][j]);
+            EXPECT_EQ(encryptElems[k].GetAllElements()[0][j], encryptElems_original[k].GetAllElements()[0][j]);
         }
     }
-    for(size_t k=1; k<2; k++)
+
+
+}
+TEST(HD, encode_rns_bitflip_limbsChanged)
+{
+    uint32_t multDepth = 1;
+    uint32_t scaleModSize = 30;
+    uint32_t firstModSize = 30;
+    uint32_t batchSize = 1024;
+    uint32_t ringDim= 2048;
+    ScalingTechnique rescaleTech = FIXEDMANUAL;
+    CCParams<CryptoContextCKKSRNS> parameters;
+    parameters.SetMultiplicativeDepth(multDepth);
+    parameters.SetScalingModSize(scaleModSize);
+    parameters.SetFirstModSize(firstModSize);
+    parameters.SetBatchSize(batchSize);
+    parameters.SetRingDim(ringDim);
+    parameters.SetScalingTechnique(rescaleTech);
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+    cc->Enable(PKE);
+    cc->Enable(LEVELEDSHE);
+    auto keys = cc->KeyGen();
+
+    // Input setup
+    std::ifstream file("data/example.txt");
+    std::vector<double> input(std::istream_iterator<double>{file}, std::istream_iterator<double>{});
+    input.erase(input.begin()); // pop front
+    // padding of zeros
+    for (size_t i=input.size(); i<batchSize; i++)
+        input.push_back(0);
+
+    // Encoding as plaintexts
+    Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(input);
+    auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+    auto c2 = c1->Clone();
+    auto encryptElems = c1->GetElements();
+    auto encryptElems_original= c2->GetElements();
+
+    auto coeff0 = encryptElems_original[0].GetAllElements()[0][0];
+    EXPECT_EQ(coeff0, encryptElems[0].GetAllElements()[0][0]);
+    ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][0] = bit_flip(ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][0], 29);
+    c1 = cc->Encrypt(keys.publicKey, ptxt1);
+    encryptElems = c1->GetElements();
+
+    std::cout << "start" << std::endl;
+    EXPECT_EQ(coeff0, encryptElems_original[0].GetAllElements()[0][0]);
+    EXPECT_NE(coeff0, encryptElems[0].GetAllElements()[0][0] );
+ //   // que si cambio algo del limb cero, la encriptacion tenga de limb 0 distinto y el 1 igual
+
+    for(size_t k=0; k<2; k++)
     {
         for (size_t j = 0; j < ringDim; j++)
         {
@@ -133,6 +182,7 @@ TEST(HD, encode_rns_bitflip)
 
 TEST(HD, encryption_deepCopy)
 {
+
     uint32_t multDepth = 1;
     uint32_t scaleModSize = 30;
     uint32_t firstModSize = 30;

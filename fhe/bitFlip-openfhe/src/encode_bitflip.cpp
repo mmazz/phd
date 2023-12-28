@@ -7,6 +7,7 @@
 #include "openfhe.h"
 #include "iostream"
 #include "utils_mati.h"
+
 /*
  * Modifico un bit en la codificacion y veo la norma 2 entre input/output, y veo
  * el HD entre la encriptacion original y la modificada.
@@ -19,6 +20,7 @@
  *  1 - Sin RNS
  *  3 - Sin Ops
  */
+
 using namespace lbcrypto;
 int main(int argc, char* argv[]) {
     // Step 1: Setup CryptoContext
