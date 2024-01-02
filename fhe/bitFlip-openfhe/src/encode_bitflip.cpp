@@ -23,6 +23,7 @@
 
 using namespace lbcrypto;
 int main(int argc, char* argv[]) {
+    bool test_copy = true;
     // Step 1: Setup CryptoContext
     uint32_t multDepth = 1;
     uint32_t scaleModSize = 30;
@@ -45,7 +46,7 @@ int main(int argc, char* argv[]) {
         std::cout << "  2) 1 without NTT " << std::endl;
         std::cout << "      i numbers of RNS limbs " << std::endl;
         std::cout << "  3) 2 without RNS " << std::endl;
-        std::cout << "  4) 2 without Optimizations" << std::endl << std::endl;
+        std::cout << "  4) 3 without Optimizations" << std::endl << std::endl;
         execute = false;
     }
     else if(argc>1)
@@ -94,6 +95,16 @@ int main(int argc, char* argv[]) {
             nonNTT = true;
             extra = "_nonOps";
         }
+        else{
+            std::cout << "Please select wich type of Optimizations you want" << std::endl;
+            std::cout << "  1) 0 with optimizations " << std::endl;
+            std::cout << "      i numbers of RNS limbs " << std::endl;
+            std::cout << "  2) 1 without NTT " << std::endl;
+            std::cout << "      i numbers of RNS limbs " << std::endl;
+            std::cout << "  3) 2 without RNS " << std::endl;
+            std::cout << "  4) 3 without Optimizations" << std::endl << std::endl;
+            execute = false;
+        }
     }
 
     CCParams<CryptoContextCKKSRNS> parameters;
@@ -120,7 +131,7 @@ int main(int argc, char* argv[]) {
     // Input setup
     int max_diff = 255;
     size_t dataSize = 28*28;
-    std::ifstream file("../data/example.txt");
+    std::ifstream file("data/example.txt");
     std::vector<double> input(std::istream_iterator<double>{file}, std::istream_iterator<double>{});
     input.erase(input.begin()); // pop front
     // padding of zeros
@@ -130,44 +141,50 @@ int main(int argc, char* argv[]) {
     // Encoding as plaintexts
     Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(input);
     auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
-    auto c2 = c1->Clone();
+    auto c2 = cc->Encrypt(keys.publicKey, ptxt1);
     auto encryptElems = c1->GetElements();
     auto encryptElems_original = c2->GetElements();
 
     // Me haga un backup
-    Plaintext ptxt_original = cc->MakeCKKSPackedPlaintext(input);
-    DCRTPoly plainElem_original = ptxt_original->GetElement<DCRTPoly>();
-    auto elems_original =  plainElem_original.GetAllElements();
+    DCRTPoly plainElem_original = ptxt1->GetElement<DCRTPoly>();
+    const auto elems_original =  plainElem_original.GetAllElements();
 
     Plaintext result;
     std::vector<double> resultData(dataSize);
+    std::vector<double> resultData_original(dataSize);
 
     size_t RNS_size = ptxt1->GetElement<DCRTPoly>().GetAllElements().size();
     std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension() << " RNS size: " << RNS_size << std::endl;
-    std::cout << "NTT condition: " << nonNTT << ", RNS condition: " << multDepth << std::endl;
+    std::cout << "NTT condition: " << !nonNTT << ", RNS condition: " << multDepth << std::endl;
     // Chequeo que realmente estoy usando la cantidad de limbs de RNS que busco
     if (RNS_size == (size_t)multDepth+1 && execute)
     {
+        size_t test = 0;
         auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+        // Me fijo que a priori mantengo la misma encriptacion
+        if(c1->GetElements()[0].GetAllElements()[0][0] != c2->GetElements()[0].GetAllElements()[0][0])
+            test++;
         cc->Decrypt(keys.secretKey, c1, &result);
         result->SetLength(dataSize);
-        resultData = result->GetRealPackedValue();
-        size_t test = 0;
+        resultData_original = result->GetRealPackedValue();
         size_t i = 0;
         // Chequeo que con los parametros que elegi puedo encriptar y desencriptar correctamente
         while(test==0 && i < dataSize)
         {
-            if(round(input[i])!=round(resultData[i]))
+            if(round(input[i])!=round(resultData_original[i]))
             {
-                std::cout << "Error: " <<  input[i] << " != " << resultData[i] << std::endl;
+                std::cout << "Error: " <<  input[i] << " != " << resultData_original[i] << std::endl;
                 test++;
             }
             i++;
         }
 
+
+
         // Si la prueba fue correcta sigo
         if(test==0)
         {
+            std::cout << "Correct naive decryption " << std::endl;
             uint64_t count = 0;
             uint64_t HD_RNS_limbsNotChanged = 0;
             uint64_t HD_RNS_limbChanged = 0;
@@ -184,9 +201,12 @@ int main(int argc, char* argv[]) {
             saveDataLog(dir_name+fileHD_limbChange, HD_RNS_limbChanged, new_file, RNS_size);
             saveDataLog(dir_name+fileN2_bounded, N2_bounded,  new_file, RNS_size);
 
+            Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(input);
+            auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+            const auto encryptElems_original = c1->GetElements();
             // Me quedo con la componente cero por que aca no tengo RNS y es el unico
             std::cout << "Total loops: " << total_loops << std::endl;
-            auto original_vector = ptxt1->GetElement<DCRTPoly>().GetAllElements();
+            const auto original_vector = ptxt1->GetElement<DCRTPoly>().GetAllElements();
             for (size_t i = 0; i < RNS_size; i++)
             {
                 for (size_t j = 0; j < ringDim; j++)
@@ -220,7 +240,7 @@ int main(int argc, char* argv[]) {
                         result->SetLength(dataSize);
                         resultData = result->GetRealPackedValue();
                       //  res_norm2 = norm2(input, resultData, dataSize);
-                        N2_bounded = norm2_bounded(input, resultData, dataSize, max_diff);
+                        N2_bounded = norm2_bounded(resultData_original, resultData, dataSize, max_diff);
 
                        // saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
                         saveDataLog(dir_name+fileN2_bounded, N2_bounded, !new_file, RNS_size);
@@ -231,6 +251,20 @@ int main(int argc, char* argv[]) {
                         else
                             ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = original_coeff;
 
+                        if(test_copy)
+                        {
+                            for (size_t i = 0; i < RNS_size; i++)
+                            {
+                                for (size_t j = 0; j < ringDim; j++)
+                                {
+                                    if (ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] !=original_vector[i][j])
+                                    {
+                                        std::cout << "ERROR" << std::endl;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
                     count++;
                 }

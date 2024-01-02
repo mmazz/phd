@@ -27,6 +27,7 @@ dir = "../logs/log_encode/"
 fileN2 = ""
 fileHD_limbsNotChanged = ""
 fileHD_limbChanged = ""
+fileHD_positions= ""
 extra = ""
 
 max_diff = 255
@@ -227,6 +228,8 @@ if(ejecute):
         plt.clf()
 
         if(positions):
+            total_loops = RNS_size*num_bits*polynomial_size
             encoding_pos = data_read_pos(dir, fileHD_positions)
+            encoding_pos = 100*encoding_pos/total_loops
             plt.plot(encoding_pos)
             plt.show()

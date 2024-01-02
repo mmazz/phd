@@ -17,6 +17,77 @@
 using namespace lbcrypto;
 using namespace std;
 
+TEST(HD, encode_copy)
+{
+    uint32_t multDepth = 1;
+    uint32_t scaleModSize = 30;
+    uint32_t firstModSize = 30;
+    uint32_t batchSize = 1024;
+    uint32_t ringDim= 2048;
+    ScalingTechnique rescaleTech = FIXEDMANUAL;
+    CCParams<CryptoContextCKKSRNS> parameters;
+    parameters.SetMultiplicativeDepth(multDepth);
+    parameters.SetScalingModSize(scaleModSize);
+    parameters.SetFirstModSize(firstModSize);
+    parameters.SetBatchSize(batchSize);
+    parameters.SetRingDim(ringDim);
+    parameters.SetScalingTechnique(rescaleTech);
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+    cc->Enable(PKE);
+    cc->Enable(LEVELEDSHE);
+    auto keys = cc->KeyGen();
+
+    // Input setup
+    std::ifstream file("data/example.txt");
+    std::vector<double> input(std::istream_iterator<double>{file}, std::istream_iterator<double>{});
+    input.erase(input.begin()); // pop front
+    // padding of zeros
+    for (size_t i=input.size(); i<batchSize; i++)
+        input.push_back(0);
+
+    // Encoding as plaintexts
+    Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(input);
+    auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+    auto c2 = cc->Encrypt(keys.publicKey, ptxt1);
+    auto encryptElems = c1->GetElements();
+    auto encryptElems_original= c2->GetElements();
+        // Me haga un backup
+    DCRTPoly plainElem_original = ptxt1->GetElement<DCRTPoly>();
+    DCRTPoly plainElems = ptxt1->GetElement<DCRTPoly>();
+    const auto encodeElems_original =  plainElem_original.GetAllElements();
+    auto encodeElems =  plainElems.GetAllElements();
+    encodeElems[0][10] = 123;
+    size_t RNS_size = ptxt1->GetElement<DCRTPoly>().GetAllElements().size();
+    int count = 0;
+
+    for (size_t i = 0; i < RNS_size; i++)
+    {
+        for (size_t j = 0; j < ringDim; j++)
+        {
+            if (encodeElems[i][j]!= encodeElems_original[i][j])
+                count++;
+        }
+    }
+    EXPECT_EQ(count, 1);
+    count = 0;
+    ptxt1->GetElement<DCRTPoly>().GetAllElements() = encodeElems_original;
+
+    encodeElems =  plainElems.GetAllElements();
+    for (size_t i = 0; i < RNS_size; i++)
+    {
+        for (size_t j = 0; j < ringDim; j++)
+        {
+            if (encodeElems[i][j]!= encodeElems_original[i][j])
+                count++;
+        }
+    }
+    EXPECT_EQ(count, 0);
+
+
+   }
+
+
 TEST(HD, encryption_difference)
 {
     uint32_t multDepth = 1;
@@ -54,16 +125,19 @@ TEST(HD, encryption_difference)
     auto encryptElems_original= c2->GetElements();
 
     size_t RNS_size = ptxt1->GetElement<DCRTPoly>().GetAllElements().size();
+    int count = 0;
     for(size_t k=0; k<2; k++)
     {
         for (size_t i = 0; i < RNS_size; i++)
         {
             for (size_t j = 0; j < ringDim; j++)
             {
-                EXPECT_EQ(encryptElems[k].GetAllElements()[i][j], encryptElems_original[k].GetAllElements()[i][j]);
+                if (encryptElems[k].GetAllElements()[1][j]!= encryptElems_original[k].GetAllElements()[1][j])
+                    count++;
             }
         }
     }
+    EXPECT_EQ(count, 0);
 }
 
 TEST(HD, encode_rns_bitflip_limbNotChange)
@@ -102,23 +176,27 @@ TEST(HD, encode_rns_bitflip_limbNotChange)
     auto encryptElems = c1->GetElements();
     auto encryptElems_original= c2->GetElements();
 
-    auto coeff0 = encryptElems_original[0].GetAllElements()[0][0];
-    EXPECT_EQ(coeff0, encryptElems[0].GetAllElements()[0][0]);
-    ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][0] = bit_flip(ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][0], 29);
+    int coeffIndex = 3;
+    auto coeff0 = encryptElems_original[0].GetAllElements()[0][coeffIndex];
+    EXPECT_EQ(coeff0, encryptElems[0].GetAllElements()[0][coeffIndex]);
+    ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][coeffIndex] = bit_flip(ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][coeffIndex], 29);
     c1 = cc->Encrypt(keys.publicKey, ptxt1);
     encryptElems = c1->GetElements();
 
     std::cout << "start" << std::endl;
-    EXPECT_EQ(coeff0, encryptElems_original[0].GetAllElements()[0][0]);
-    EXPECT_NE(coeff0, encryptElems[0].GetAllElements()[0][0] );
+    EXPECT_EQ(coeff0, encryptElems_original[0].GetAllElements()[0][coeffIndex]);
+    EXPECT_NE(coeff0, encryptElems[0].GetAllElements()[0][coeffIndex] );
  //   // que si cambio algo del limb cero, la encriptacion tenga de limb 0 distinto y el 1 igual
+   int count = 0;
     for(size_t k=0; k<2; k++)
     {
         for (size_t j = 0; j < ringDim; j++)
         {
-            EXPECT_EQ(encryptElems[k].GetAllElements()[0][j], encryptElems_original[k].GetAllElements()[0][j]);
+            if (encryptElems[k].GetAllElements()[1][j]!= encryptElems_original[k].GetAllElements()[1][j])
+                count++;
         }
     }
+    EXPECT_EQ(count, 0);
 
 
 }
@@ -158,24 +236,28 @@ TEST(HD, encode_rns_bitflip_limbsChanged)
     auto encryptElems = c1->GetElements();
     auto encryptElems_original= c2->GetElements();
 
-    auto coeff0 = encryptElems_original[0].GetAllElements()[0][0];
-    EXPECT_EQ(coeff0, encryptElems[0].GetAllElements()[0][0]);
-    ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][0] = bit_flip(ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][0], 29);
+    int coeffIndex = 3;
+    auto coeff0 = encryptElems_original[0].GetAllElements()[0][coeffIndex];
+    EXPECT_EQ(coeff0, encryptElems[0].GetAllElements()[0][coeffIndex]);
+    ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][coeffIndex] = bit_flip(ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][coeffIndex], 29);
     c1 = cc->Encrypt(keys.publicKey, ptxt1);
     encryptElems = c1->GetElements();
 
     std::cout << "start" << std::endl;
-    EXPECT_EQ(coeff0, encryptElems_original[0].GetAllElements()[0][0]);
-    EXPECT_NE(coeff0, encryptElems[0].GetAllElements()[0][0] );
+    EXPECT_EQ(coeff0, encryptElems_original[0].GetAllElements()[0][coeffIndex]);
+    EXPECT_NE(coeff0, encryptElems[0].GetAllElements()[0][coeffIndex] );
  //   // que si cambio algo del limb cero, la encriptacion tenga de limb 0 distinto y el 1 igual
-
+    int count = 0;
     for(size_t k=0; k<2; k++)
     {
         for (size_t j = 0; j < ringDim; j++)
         {
-            EXPECT_EQ(encryptElems[k].GetAllElements()[1][j], encryptElems_original[k].GetAllElements()[1][j]);
+            if (encryptElems[k].GetAllElements()[0][j]!= encryptElems_original[k].GetAllElements()[0][j])
+                count++;
         }
     }
+    // Deberia solo cambiar el que modifico
+    EXPECT_EQ(count, 1);
 
 }
 

@@ -269,7 +269,7 @@ inline std::tuple<uint64_t, uint64_t>hamming_distance_RNS(DCRTPoly &x_plain, DCR
     return {count_RNS_limbsNotChanged, count_RNS_limbChanged };
 }
 
-inline std::tuple<uint64_t, uint64_t>hamming_distance_RNS(std::vector<DCRTPoly> &x_encrypt, std::vector<DCRTPoly> &x_encrypt_original, size_t RNS_size, size_t RNS_limb)
+inline std::tuple<uint64_t, uint64_t>hamming_distance_RNS(std::vector<DCRTPoly> &x_encrypt, const std::vector<DCRTPoly> &x_encrypt_original, size_t RNS_size, size_t RNS_limb)
 {
     uint64_t count_RNS_limbsNotChanged = 0;
     uint64_t count_RNS_limbChanged = 0;
@@ -332,7 +332,7 @@ inline void hamming_distance_position(std::vector<uint64_t>& acumulator, DCRTPol
     }
 }
 
-inline void hamming_distance_position(std::vector<uint64_t>& acumulator, std::vector<DCRTPoly> &x_encrypt, std::vector<DCRTPoly> &x_encrypt_original, size_t RNS_size, size_t coeff_bits)
+inline void hamming_distance_position(std::vector<uint64_t>& acumulator, std::vector<DCRTPoly> &x_encrypt, const std::vector<DCRTPoly> &x_encrypt_original, size_t RNS_size, size_t coeff_bits)
 {
     size_t ringDim = x_encrypt[0].GetRingDimension();
     int index_bit = 0;

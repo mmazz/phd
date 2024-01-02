@@ -17,10 +17,13 @@ def data_read(dir, file):
     print(f"{file}: {input.mean()}")
     return input
 
+
 def data_read_pos(dir, file):
-    df = pd.read_csv(dir+file, header=None, skip_blank_lines=False, dtype='float64')
-    df = df[:-1]
-    input = df[df.columns[0]].to_numpy(dtype='int')
+    with open (dir+file, 'r') as f:
+        num = f.readline().split(', ')
+        num_list = [x.replace('\'', '') for x in num]
+    num_list = num_list[:-1]
+    input = np.array(num_list, dtype=int)
     print(f"{file}: {input.mean()}")
     return input
 

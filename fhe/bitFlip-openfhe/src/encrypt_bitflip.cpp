@@ -8,6 +8,7 @@
 #include "utils_mati.h"
 
 using namespace lbcrypto;
+
 int main(int argc, char* argv[]) {
     // Step 1: Setup CryptoContext
     uint32_t multDepth = 1;
@@ -112,7 +113,6 @@ int main(int argc, char* argv[]) {
         auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
         cc->Decrypt(keys.secretKey, c1, &result);
         result->SetLength(dataSize);
-        std::cout << result << std::endl;
         resultData = result->GetRealPackedValue();
         size_t test = 0;
         size_t i = 0;
