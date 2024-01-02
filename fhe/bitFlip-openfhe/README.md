@@ -24,6 +24,7 @@
             - m_buffer[i] = val;
     - }
 
+- src/core/lib/math/hal/intnat/mubintvecnat.cpp: para entender como hacen el mod
 
 ## Entendiendo OpenbFHE
 
