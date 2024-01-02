@@ -23,7 +23,6 @@
 
 using namespace lbcrypto;
 int main(int argc, char* argv[]) {
-    bool test_copy = true;
     // Step 1: Setup CryptoContext
     uint32_t multDepth = 1;
     uint32_t scaleModSize = 30;
@@ -251,20 +250,6 @@ int main(int argc, char* argv[]) {
                         else
                             ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = original_coeff;
 
-                        if(test_copy)
-                        {
-                            for (size_t i = 0; i < RNS_size; i++)
-                            {
-                                for (size_t j = 0; j < ringDim; j++)
-                                {
-                                    if (ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] !=original_vector[i][j])
-                                    {
-                                        std::cout << "ERROR" << std::endl;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
                     }
                     count++;
                 }
