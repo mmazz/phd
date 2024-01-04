@@ -17,6 +17,7 @@
         - src/core/include/math/binaryuniformgenerator-impl.h
         - src/core/include/math/discreteuniformgenerator-impl.h
         - src/core/include/math/ternaryuniformgenerator-impl.h
+        - src/core/include/math/nbtheory-impl.h: Aca si lo pongo hace que quede loopeando de forma infinita...
 - Para que lo anterior funcione agregue a la parte publica src/core/include/utils/prng/blake2engine.h
     - void setCounter(uint64_t val)
     - {

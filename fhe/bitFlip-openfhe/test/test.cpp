@@ -200,6 +200,76 @@ TEST(HD, encode_rns_bitflip_limbNotChange)
 
 
 }
+TEST(HD, encode_rns_bitflip_limbsChanged_nonNTT)
+{
+    uint32_t multDepth = 1;
+    uint32_t scaleModSize = 30;
+    uint32_t firstModSize = 30;
+    uint32_t batchSize = 1024;
+    uint32_t ringDim= 2048;
+    ScalingTechnique rescaleTech = FIXEDMANUAL;
+    CCParams<CryptoContextCKKSRNS> parameters;
+    parameters.SetMultiplicativeDepth(multDepth);
+    parameters.SetScalingModSize(scaleModSize);
+    parameters.SetFirstModSize(firstModSize);
+    parameters.SetBatchSize(batchSize);
+    parameters.SetRingDim(ringDim);
+    parameters.SetScalingTechnique(rescaleTech);
+    parameters.SetSecurityLevel(HEStd_NotSet);
+    CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
+    cc->Enable(PKE);
+    cc->Enable(LEVELEDSHE);
+    auto keys = cc->KeyGen();
+
+    // Input setup
+    std::ifstream file("data/example.txt");
+    std::vector<double> input(std::istream_iterator<double>{file}, std::istream_iterator<double>{});
+    input.erase(input.begin()); // pop front
+    // padding of zeros
+    for (size_t i=input.size(); i<batchSize; i++)
+        input.push_back(0);
+
+    // Encoding as plaintexts
+    Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(input);
+    auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+    auto c2 = c1->Clone();
+    auto encryptElems = c1->GetElements();
+    auto encryptElems_original= c2->GetElements();
+
+    int coeffIndex = 3;
+    ptxt1->GetElement<DCRTPoly>().SwitchFormat();
+    auto coeff0 = encryptElems_original[0].GetAllElements()[0][coeffIndex];
+    EXPECT_EQ(coeff0, encryptElems[0].GetAllElements()[0][coeffIndex]);
+    ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][coeffIndex] = bit_flip(ptxt1->GetElement<DCRTPoly>().GetAllElements()[0][coeffIndex], 29);
+    ptxt1->GetElement<DCRTPoly>().SwitchFormat();
+    c1 = cc->Encrypt(keys.publicKey, ptxt1);
+    encryptElems = c1->GetElements();
+
+    std::cout << "start" << std::endl;
+    EXPECT_EQ(coeff0, encryptElems_original[0].GetAllElements()[0][coeffIndex]);
+    EXPECT_NE(coeff0, encryptElems[0].GetAllElements()[0][coeffIndex] );
+ //   // que si cambio algo del limb cero, la encriptacion tenga de limb 0 distinto y el 1 igual
+    int count_0 = 0;
+    int count_1 = 0;
+    int k = 0;
+    for (size_t j = 0; j < ringDim; j++)
+    {
+        if (encryptElems[k].GetAllElements()[0][j]!= encryptElems_original[k].GetAllElements()[0][j])
+            count_0++;
+    }
+    k = 1;
+    for (size_t j = 0; j < ringDim; j++)
+    {
+        if (encryptElems[k].GetAllElements()[0][j]!= encryptElems_original[k].GetAllElements()[0][j])
+            count_1++;
+    }
+    // Deberia solo cambiar el que modifico
+    EXPECT_EQ(count_0, ringDim);
+    EXPECT_EQ(count_1, 0);
+
+
+}
+
 TEST(HD, encode_rns_bitflip_limbsChanged)
 {
     uint32_t multDepth = 1;
@@ -359,10 +429,10 @@ TEST(HD, encryption)
 
     size_t RNS_size = ptxt1->GetElement<DCRTPoly>().GetAllElements().size();
 
-    auto [HD_RNS_limbsNotChanged, HD_RNS_limbChanged] = hamming_distance_RNS(encryptElem, encryptElem_original, RNS_size, 0);
+    auto [HD_RNS_limbsNotChanged, HD_RNS_limbChanged, HD_RNS_limbsNotChanged1, HD_RNS_limbChanged1] = hamming_distance_RNS(encryptElem, encryptElem_original, RNS_size, 0);
     EXPECT_EQ(HD_RNS_limbsNotChanged, 0);
     EXPECT_EQ(HD_RNS_limbChanged, 0);
-    auto [HD_RNS_limbsNotChanged2, HD_RNS_limbChanged2] = hamming_distance_RNS(encryptElem, encryptElem_original, RNS_size, 1);
+    auto [HD_RNS_limbsNotChanged2, HD_RNS_limbChanged2, HD_RNS_limbsNotChanged21, HD_RNS_limbChanged21] = hamming_distance_RNS(encryptElem, encryptElem_original, RNS_size, 1);
     EXPECT_EQ(HD_RNS_limbsNotChanged2, 0);
     EXPECT_EQ(HD_RNS_limbChanged2, 0);
 
@@ -478,10 +548,10 @@ TEST(DISABLED_HD, same_encryption)
 
     c1 = cc->Encrypt(keys.publicKey, ptxt1);
     encryptElem = c1->GetElements();
-    auto [HD_RNS_limbsNotChanged0, HD_RNS_limbChanged0] = hamming_distance_RNS(encryptElem, encryptElem, RNS_size, 0);
+    auto [HD_RNS_limbsNotChanged0, HD_RNS_limbChanged0, HD_RNS_limbsNotChanged01, HD_RNS_limbChanged01] = hamming_distance_RNS(encryptElem, encryptElem, RNS_size, 0);
     EXPECT_EQ(HD_RNS_limbsNotChanged0, 0);
     EXPECT_EQ(HD_RNS_limbChanged0, 0);
-    auto [HD_RNS_limbsNotChanged, HD_RNS_limbChanged] = hamming_distance_RNS(encryptElem, encryptElem, RNS_size, 1);
+    auto [HD_RNS_limbsNotChanged, HD_RNS_limbChanged, HD_RNS_limbsNotChanged1, HD_RNS_limbChanged1] = hamming_distance_RNS(encryptElem, encryptElem, RNS_size, 1);
     EXPECT_EQ(HD_RNS_limbsNotChanged, 0);
     EXPECT_EQ(HD_RNS_limbChanged, 0);
 }
@@ -544,7 +614,7 @@ TEST(DISABLED_HD, encode)
                 ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = bit_flip(original_coeff, bit);
                 c1 = cc->Encrypt(keys.publicKey, ptxt1);
                 encryptElem = c1->GetElements();
-                auto [HD_RNS_limbsNotChanged, HD_RNS_limbsChanged] = hamming_distance_RNS(encryptElem, encryptElem_original, RNS_size, i);
+                auto [HD_RNS_limbsNotChanged, HD_RNS_limbsChanged,HD_RNS_limbsNotChanged1, HD_RNS_limbsChanged1] = hamming_distance_RNS(encryptElem, encryptElem_original, RNS_size, i);
                 EXPECT_EQ(HD_RNS_limbsNotChanged, 0);
                 ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j] = original_coeff;
             }

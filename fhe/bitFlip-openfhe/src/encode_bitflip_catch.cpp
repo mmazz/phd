@@ -4,6 +4,7 @@
 #include <string>
 #define PROFILE
 #define FIXED_SEED
+#define DECRYPT_DETECTION
 #include "openfhe.h"
 #include "iostream"
 #include "utils_mati.h"
@@ -117,13 +118,13 @@ int main(int argc, char* argv[]) {
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
     std::string dir_name = "./logs/log_encode/";
-    std::string fileHD_C0_limnsNotChange = "encodeHD"+extra+"_C0_limbsNotChanged";
-    std::string fileHD_C0_limbChange     = "encodeHD"+extra+"_C0_limbChanged";
+    std::string fileHD_C0_limnsNotChange = "catch_encodeHD"+extra+"_C0_limbsNotChanged";
+    std::string fileHD_C0_limbChange     = "catch_encodeHD"+extra+"_C0_limbChanged";
 
-    std::string fileHD_C1_limnsNotChange = "encodeHD"+extra+"_C1_limbsNotChanged";
-    std::string fileHD_C1_limbChange     = "encodeHD"+extra+"_C1_limbChanged";
-    std::string fileHD_positions      = "encodeHD"+extra+"_positions";
-    std::string fileN2_bounded        = "encodeN2"+extra+"_bounded";
+    std::string fileHD_C1_limnsNotChange = "catch_encodeHD"+extra+"_C1_limbsNotChanged";
+    std::string fileHD_C1_limbChange     = "catch_encodeHD"+extra+"_C1_limbChanged";
+    std::string fileHD_positions         = "catch_encodeHD"+extra+"_positions";
+    std::string fileN2_bounded           = "catch_encodeN2"+extra+"_bounded";
 
     // Enable the features that you wish to use
     cc->Enable(PKE);
@@ -202,12 +203,11 @@ int main(int argc, char* argv[]) {
 
             // Quiero guardarme un acumulador de cada posicion en bit de la encriptacion
             std::vector<uint64_t> encryption_bitChange(2*RNS_size*bits_coeff*ringDim, 0);
-            saveDataLog(dir_name+fileHD_C0_limnsNotChange, HD_C0_RNS_limbsNotChanged,  new_file, RNS_size);
-            saveDataLog(dir_name+fileHD_C0_limbChange, HD_C0_RNS_limbChanged, new_file, RNS_size);
-
-            saveDataLog(dir_name+fileHD_C1_limnsNotChange, HD_C1_RNS_limbsNotChanged,  new_file, RNS_size);
-            saveDataLog(dir_name+fileHD_C1_limbChange, HD_C1_RNS_limbChanged, new_file, RNS_size);
-            saveDataLog(dir_name+fileN2_bounded, N2_bounded,  new_file, RNS_size);
+            saveDataLog_SDC(dir_name+fileHD_C0_limnsNotChange, 0, 0 ,0, HD_C0_RNS_limbsNotChanged,  new_file, RNS_size);
+            saveDataLog_SDC(dir_name+fileHD_C0_limbChange    , 0, 0 ,0, HD_C0_RNS_limbChanged, new_file, RNS_size);
+            saveDataLog_SDC(dir_name+fileHD_C1_limnsNotChange, 0, 0 ,0, HD_C1_RNS_limbsNotChanged,  new_file, RNS_size);
+            saveDataLog_SDC(dir_name+fileHD_C1_limbChange    , 0, 0 ,0, HD_C1_RNS_limbChanged, new_file, RNS_size);
+            saveDataLog_SDC(dir_name+fileN2_bounded          , 0, 0 ,0, N2_bounded,  new_file, RNS_size);
 
             Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(input);
             auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
@@ -246,19 +246,28 @@ int main(int argc, char* argv[]) {
                         HD_C1_RNS_limbChanged = tuple_HD_C1_RNS_limbChanged;
 
                         hamming_distance_position(encryption_bitChange, encryptElems, encryptElems_original, RNS_size, bits_coeff);
-                        saveDataLog(dir_name+fileHD_C0_limnsNotChange, HD_C0_RNS_limbsNotChanged, !new_file, RNS_size);
-                        saveDataLog(dir_name+fileHD_C0_limbChange, HD_C0_RNS_limbChanged, !new_file, RNS_size);
-                        saveDataLog(dir_name+fileHD_C1_limnsNotChange, HD_C1_RNS_limbsNotChanged, !new_file, RNS_size);
-                        saveDataLog(dir_name+fileHD_C1_limbChange, HD_C1_RNS_limbChanged, !new_file, RNS_size);
-
-                        cc->Decrypt(keys.secretKey, c1, &result);
-                        result->SetLength(dataSize);
-                        resultData = result->GetRealPackedValue();
-                      //  res_norm2 = norm2(input, resultData, dataSize);
-                        N2_bounded = norm2_bounded(resultData_original, resultData, dataSize, max_diff);
-
-                       // saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
-                        saveDataLog(dir_name+fileN2_bounded, N2_bounded, !new_file, RNS_size);
+                        try
+                        {
+                           // std::cout << "Silent error!" << std::endl;
+                            cc->Decrypt(keys.secretKey, c1, &result);
+                            std::cout << "Silent error!" << std::endl;
+                            result->SetLength(dataSize);
+                            resultData = result->GetRealPackedValue();
+                            N2_bounded = norm2_bounded(resultData_original, resultData, dataSize, max_diff);
+                            saveDataLog_SDC(dir_name+fileHD_C0_limnsNotChange, i, j, bit, HD_C0_RNS_limbsNotChanged, !new_file, RNS_size);
+                            saveDataLog_SDC(dir_name+fileHD_C0_limbChange    , i, j, bit, HD_C0_RNS_limbChanged, !new_file, RNS_size);
+                            saveDataLog_SDC(dir_name+fileHD_C1_limnsNotChange, i, j, bit, HD_C1_RNS_limbsNotChanged, !new_file, RNS_size);
+                            saveDataLog_SDC(dir_name+fileHD_C1_limbChange    , i, j, bit, HD_C1_RNS_limbChanged, !new_file, RNS_size);
+                            saveDataLog_SDC(dir_name+fileN2_bounded          , i, j, bit, N2_bounded, !new_file, RNS_size);
+                        }
+                        catch(...)
+                        {
+                            HD_C0_RNS_limbsNotChanged = 0;
+                            HD_C0_RNS_limbChanged     = 0;
+                            HD_C1_RNS_limbsNotChanged = 0;
+                            HD_C1_RNS_limbChanged     = 0;
+                            N2_bounded                = 0;
+                        }
                         // Cambian todos los coefficientes, tengo que resetearlo entero
                         if(nonNTT)
                             ptxt1->GetElement<DCRTPoly>().GetAllElements() = original_vector;

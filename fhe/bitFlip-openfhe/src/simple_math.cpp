@@ -4,6 +4,7 @@
 #include <string>
 #define PROFILE
 #define FIXED_SEED
+#define DECRYPT_DETECTION
 #include "openfhe.h"
 #include "iostream"
 #include "utils_mati.h"
@@ -117,21 +118,21 @@ int main(int argc, char* argv[]) {
     CryptoContext<DCRTPoly> cc = GenCryptoContext(parameters);
 
     std::string dir_name = "./logs/log_encode/";
-    std::string fileHD_C0_limnsNotChange = "encodeHD"+extra+"_C0_limbsNotChanged";
-    std::string fileHD_C0_limbChange     = "encodeHD"+extra+"_C0_limbChanged";
+    std::string fileHD_C0_limnsNotChange = "catch_encodeHD"+extra+"_C0_limbsNotChanged";
+    std::string fileHD_C0_limbChange     = "catch_encodeHD"+extra+"_C0_limbChanged";
 
-    std::string fileHD_C1_limnsNotChange = "encodeHD"+extra+"_C1_limbsNotChanged";
-    std::string fileHD_C1_limbChange     = "encodeHD"+extra+"_C1_limbChanged";
-    std::string fileHD_positions      = "encodeHD"+extra+"_positions";
-    std::string fileN2_bounded        = "encodeN2"+extra+"_bounded";
+    std::string fileHD_C1_limnsNotChange = "catch_encodeHD"+extra+"_C1_limbsNotChanged";
+    std::string fileHD_C1_limbChange     = "catch_encodeHD"+extra+"_C1_limbChanged";
+    std::string fileHD_positions         = "catch_encodeHD"+extra+"_positions";
+    std::string fileN2_bounded           = "catch_encodeN2"+extra+"_bounded";
 
     // Enable the features that you wish to use
     cc->Enable(PKE);
+    cc->Enable(KEYSWITCH);
     cc->Enable(LEVELEDSHE);
     auto keys = cc->KeyGen();
-
+    cc->EvalMultKeyGen(keys.secretKey);
     // Input setup
-    int max_diff = 255;
     size_t dataSize = 28*28;
     std::ifstream file("data/example.txt");
     std::vector<double> input(std::istream_iterator<double>{file}, std::istream_iterator<double>{});
@@ -188,27 +189,12 @@ int main(int argc, char* argv[]) {
         {
             std::cout << "Correct naive decryption " << std::endl;
             uint64_t count = 0;
-            uint64_t HD_C0_RNS_limbsNotChanged = 0;
-            uint64_t HD_C0_RNS_limbChanged = 0;
-            uint64_t HD_C1_RNS_limbsNotChanged = 0;
-            uint64_t HD_C1_RNS_limbChanged = 0;
 
-            double N2_bounded = 0;
-            bool new_file = 1;
+
             auto ringDim = cc->GetRingDimension();
             size_t bits_coeff = 64;
 
             int total_loops  = RNS_size*ringDim;
-
-            // Quiero guardarme un acumulador de cada posicion en bit de la encriptacion
-            std::vector<uint64_t> encryption_bitChange(2*RNS_size*bits_coeff*ringDim, 0);
-            saveDataLog(dir_name+fileHD_C0_limnsNotChange, HD_C0_RNS_limbsNotChanged,  new_file, RNS_size);
-            saveDataLog(dir_name+fileHD_C0_limbChange, HD_C0_RNS_limbChanged, new_file, RNS_size);
-
-            saveDataLog(dir_name+fileHD_C1_limnsNotChange, HD_C1_RNS_limbsNotChanged,  new_file, RNS_size);
-            saveDataLog(dir_name+fileHD_C1_limbChange, HD_C1_RNS_limbChanged, new_file, RNS_size);
-            saveDataLog(dir_name+fileN2_bounded, N2_bounded,  new_file, RNS_size);
-
             Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(input);
             auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
             const auto encryptElems_original = c1->GetElements();
@@ -237,28 +223,21 @@ int main(int argc, char* argv[]) {
                         if(nonNTT)
                             ptxt1->GetElement<DCRTPoly>().SwitchFormat();
                         c1 = cc->Encrypt(keys.publicKey, ptxt1);
-                        encryptElems = c1->GetElements();
+                        auto cAdd = cc->EvalAdd(c1, c2);
+                        auto cMul = cc->EvalMult(cAdd, c2);
+                        cMul = cc->EvalMult(cMul, c2);
+                        cMul = cc->EvalMult(cMul, c2);
 
-                        auto [tuple_HD_C0_RNS_limbsNotChanged, tuple_HD_C0_RNS_limbChanged, tuple_HD_C1_RNS_limbsNotChanged, tuple_HD_C1_RNS_limbChanged] = hamming_distance_RNS(encryptElems, encryptElems_original, RNS_size, i);
-                        HD_C0_RNS_limbsNotChanged = tuple_HD_C0_RNS_limbsNotChanged;
-                        HD_C0_RNS_limbChanged = tuple_HD_C0_RNS_limbChanged;
-                        HD_C1_RNS_limbsNotChanged = tuple_HD_C1_RNS_limbsNotChanged;
-                        HD_C1_RNS_limbChanged = tuple_HD_C1_RNS_limbChanged;
 
-                        hamming_distance_position(encryption_bitChange, encryptElems, encryptElems_original, RNS_size, bits_coeff);
-                        saveDataLog(dir_name+fileHD_C0_limnsNotChange, HD_C0_RNS_limbsNotChanged, !new_file, RNS_size);
-                        saveDataLog(dir_name+fileHD_C0_limbChange, HD_C0_RNS_limbChanged, !new_file, RNS_size);
-                        saveDataLog(dir_name+fileHD_C1_limnsNotChange, HD_C1_RNS_limbsNotChanged, !new_file, RNS_size);
-                        saveDataLog(dir_name+fileHD_C1_limbChange, HD_C1_RNS_limbChanged, !new_file, RNS_size);
-
-                        cc->Decrypt(keys.secretKey, c1, &result);
-                        result->SetLength(dataSize);
-                        resultData = result->GetRealPackedValue();
-                      //  res_norm2 = norm2(input, resultData, dataSize);
-                        N2_bounded = norm2_bounded(resultData_original, resultData, dataSize, max_diff);
-
-                       // saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
-                        saveDataLog(dir_name+fileN2_bounded, N2_bounded, !new_file, RNS_size);
+                        try
+                        {
+                           // std::cout << "Silent error!" << std::endl;
+                            cc->Decrypt(keys.secretKey, cMul, &result);
+                            std::cout << "Silent error!" << std::endl;
+                        }
+                        catch(...)
+                        {
+                        }
                         // Cambian todos los coefficientes, tengo que resetearlo entero
                         if(nonNTT)
                             ptxt1->GetElement<DCRTPoly>().GetAllElements() = original_vector;
@@ -270,11 +249,6 @@ int main(int argc, char* argv[]) {
                     count++;
                 }
             }
-            std::fstream logFile;
-            logFile.open("/home/mmazz/phd/fhe/bitFlip-openfhe/logs/log_encode/"+fileHD_positions+".txt", std::ios::out);
-            for(size_t i=0; i<encryption_bitChange.size(); i++)
-                logFile << encryption_bitChange[i] << ", ";
-            logFile.close();
         }
         else
             std::cout << "Test fail" << std::endl;

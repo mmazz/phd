@@ -25,8 +25,11 @@ Hay 3 tipos de datos para cada caso.
 
 dir = "../logs/log_encode/"
 fileN2 = ""
-fileHD_limbsNotChanged = ""
-fileHD_limbChanged = ""
+fileHD_C0_limbsNotChanged = ""
+fileHD_C0_limbChanged = ""
+
+fileHD_C1_limbsNotChanged = ""
+fileHD_C1_limbChanged = ""
 fileHD_positions= ""
 extra = ""
 
@@ -44,6 +47,8 @@ ejecute = True
 verbose = 0
 
 positions = False
+by_bits = True
+HD_plot = True
 
 if(len(sys.argv)==1):
     print("Please pass the parameter to know wich type of file you are asking for")
@@ -58,8 +63,11 @@ if(len(sys.argv)==1):
 elif(sys.argv[1]==str(0)):
     print("OpenFHE with Optimizations")
     fileN2 = "encodeN2_bounded.txt"
-    fileHD_limbsNotChanged = "encodeHD_limbsNotChanged.txt"
-    fileHD_limbChanged = "encodeHD_limbChanged.txt"
+    fileHD_C0_limbsNotChanged = "encodeHD_C0_limbsNotChanged.txt"
+    fileHD_C0_limbChanged = "encodeHD_C0_limbChanged.txt"
+
+    fileHD_C1_limbsNotChanged = "encodeHD_C1_limbsNotChanged.txt"
+    fileHD_C1_limbChanged = "encodeHD_C1_limbChanged.txt"
     fileHD_positions= "encodeHD_positions.txt"
     positions = True
     RNS_size = 2
@@ -68,8 +76,11 @@ elif(sys.argv[1]==str(1)):
     print("OpenFHE with Optimizations multi RNS")
     RNS_size = 5
     fileN2 = "encodeN2_multiRNS_"+str(RNS_size)+"_bounded.txt"
-    fileHD_limbsNotChanged = "encodeHD_multiRNS_"+str(RNS_size)+"_limbsNotChanged.txt"
-    fileHD_limbChanged = "encodeHD_multiRNS_"+str(RNS_size)+"_limbChanged.txt"
+    fileHD_C0_limbsNotChanged = "encodeHD_multiRNS_"+str(RNS_size)+"_C0_limbsNotChanged.txt"
+    fileHD_C0_limbChanged = "encodeHD_multiRNS_"+str(RNS_size)+"_C0_limbChanged.txt"
+
+    fileHD_C1_limbsNotChanged = "encodeHD_multiRNS_"+str(RNS_size)+"_C1_limbsNotChanged.txt"
+    fileHD_C1_limbChanged = "encodeHD_multiRNS_"+str(RNS_size)+"_C1_limbChanged.txt"
     extra = "multiRNS_"
     multiRNS = True
 
@@ -77,16 +88,21 @@ elif(sys.argv[1]==str(2)):
     print("OpenFHE with no NTT")
     RNS_size = 2
     fileN2 = "encodeN2_nonNTT_bounded.txt"
-    fileHD_limbsNotChanged = "encodeHD_nonNTT_limbsNotChanged.txt"
-    fileHD_limbChanged = "encodeHD_nonNTT_limbChanged.txt"
+    fileHD_C0_limbsNotChanged = "encodeHD_nonNTT_C0_limbsNotChanged.txt"
+    fileHD_C0_limbChanged = "encodeHD_nonNTT_C0_limbChanged.txt"
+
+    fileHD_C1_limbsNotChanged = "encodeHD_nonNTT_C1_limbsNotChanged.txt"
+    fileHD_C1_limbChanged = "encodeHD_nonNTT_C1_limbChanged.txt"
     extra = "nonNTT_"
 
 elif(sys.argv[1]==str(3)):
     print("OpenFHE with no NTT multi RNS")
     RNS_size = 5
     fileN2 = "encodeN2_nonNTT_multiRNS_"+str(RNS_size)+"_bounded.txt"
-    fileHD_limbsNotChanged = "encodeHD_nonNTT_multiRNS_"+str(RNS_size)+"_limbsNotChanged.txt"
-    fileHD_limbChanged = "encodeHD_nonNTT_multiRNS_"+str(RNS_size)+"_limbChanged.txt"
+    fileHD_C0_limbsNotChanged = "encodeHD_nonNTT_multiRNS_"+str(RNS_size)+"_C0_limbsNotChanged.txt"
+    fileHD_C0_limbChanged = "encodeHD_nonNTT_multiRNS_"+str(RNS_size)+"_C0_limbChanged.txt"
+    fileHD_C1_limbsNotChanged = "encodeHD_nonNTT_multiRNS_"+str(RNS_size)+"_C1_limbsNotChanged.txt"
+    fileHD_C1_limbChanged = "encodeHD_nonNTT_multiRNS_"+str(RNS_size)+"_C1_limbChanged.txt"
     extra = "nonNTT_multiRNS_"
     multiRNS = True
 
@@ -94,16 +110,20 @@ elif(sys.argv[1]==str(3)):
 elif(sys.argv[1]==str(4)):
     print("OpenFHE with no RNS")
     fileN2 = "encodeN2_nonRNS_bounded.txt"
-    fileHD_limbsNotChanged = "encodeHD_nonRNS_limbsNotChanged.txt"
-    fileHD_limbChanged = "encodeHD_nonRNS_limbChanged.txt"
+    fileHD_C0_limbsNotChanged = "encodeHD_nonRNS_C0_limbsNotChanged.txt"
+    fileHD_C0_limbChanged = "encodeHD_nonRNS_C0_limbChanged.txt"
+    fileHD_C1_limbsNotChanged = "encodeHD_nonRNS_C1_limbsNotChanged.txt"
+    fileHD_C1_limbChanged = "encodeHD_nonRNS_C1_limbChanged.txt"
     extra = "nonRNS_"
     num_bits_coeff_encryption = 60
 
 elif(sys.argv[1]==str(5)):
     print("OpenFHE with no Optimizations")
     fileN2 = "encodeN2_nonOps_bounded.txt"
-    fileHD_limbsNotChanged = "encodeHD_nonOps_limbsNotChanged.txt"
-    fileHD_limbChanged = "encodeHD_nonOps_limbChanged.txt"
+    fileHD_C0_limbsNotChanged = "encodeHD_nonOps_C0_limbsNotChanged.txt"
+    fileHD_C0_limbChanged = "encodeHD_nonOps_C0_limbChanged.txt"
+    fileHD_C1_limbsNotChanged = "encodeHD_nonOps_C1_limbsNotChanged.txt"
+    fileHD_C1_limbChanged = "encodeHD_nonOps_C1_limbChanged.txt"
     extra = "nonOps_"
     num_bits_coeff_encryption = 60
 
@@ -123,109 +143,63 @@ if(len(sys.argv)>2):
 if(ejecute):
     RNS_proportion_limbsNotChanged = (RNS_size-1)/RNS_size
     RNS_proportion_limbChanged = 1/RNS_size
-    total_bits_encryption = 2*RNS_size*num_bits_coeff_encryption*polynomial_size
+    # Miro solo c0 o c1
+    total_bits_encryption = RNS_size*num_bits_coeff_encryption*polynomial_size
     num_coeff = int(polynomial_size*RNS_size)
 
     encodingN2 = data_read(dir, fileN2)
     N2_by_coeff_av, N2_by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min  = data_reshape(encodingN2, num_coeff, num_bits)
     N2_by_coeff_av, N2_by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min  = data_N2_bounded(max_diff_tot, N2_by_coeff_av, N2_by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min)
 
-    plt.plot(N2_by_bits_av, color='green')
-    plt.plot(bybits_max, 'firebrick', ls="--", label="max value")
-    plt.plot(bybits_min, color='steelblue', ls="--", label="min value")
-    plt.xlabel('Bit changed')
-    plt.ylabel('Norm2 (\%)', color='green')
-    plt.legend()
-    plt.savefig("img/encodeN2_"+extra+"bybit", bbox_inches='tight')
-    if(verbose):
-        plt.title("Cambio de un bit en la codificacion, comparacion entre input/output")
-        plt.show()
-    plt.clf()
-
-    plt.plot(N2_by_coeff_av, color='green')
-    plt.plot(bycoeff_max, 'firebrick', ls="--", label="max value")
-    plt.plot(bycoeff_min, color='steelblue', ls="--", label="min value")
-    if(multiRNS):
-        plt.axvline(0, color='k', ls='--', lw=2, label="Limb separation")
-        for i in range(RNS_size):
-            plt.axvline(polynomial_size*(i+1), color='k', ls='--', lw=2)
-    plt.xlabel('Coeff changed')
-    plt.ylabel('Norm2 (\%)', color='green')
-    plt.legend()
-    plt.savefig("img/encodeN2_"+extra+"bycoeff", bbox_inches='tight')
-    if(verbose):
-        plt.title("Cambio de un bit en la codificacion, comparacion entre input/output")
-        plt.show()
-    plt.clf()
+    label = ""
+    savename = extra+"bybit"
+    title = "Cambio de un bit en la codificacion, comparacion entre input/output"
+    ploter(N2_by_bits_av, bybits_max, bybits_min, verbose, label, False, by_bits, title, savename, False, RNS_size, polynomial_size)
+    savename = extra+"bycoeff"
+    ploter(N2_by_coeff_av, bycoeff_max, bycoeff_min, verbose, label, False, False, title, savename, multiRNS, RNS_size, polynomial_size)
 
 
 
-
-
-    encodingHD_RNS = data_read(dir, fileHD_limbChanged)
+    encodingHD_RNS = data_read(dir, fileHD_C0_limbChanged)
     encodingHD_RNS = 100*encodingHD_RNS/int(total_bits_encryption*RNS_proportion_limbChanged)
     HD_limbChanged_by_coeff_av, HD_limbChanged_by_bits_av, bycoeff_max_2, bycoeff_min_2, bybits_max_2, bybits_min_2  = data_reshape(encodingHD_RNS, num_coeff, num_bits)
-    plt.plot(HD_limbChanged_by_bits_av, color='green', label="limb changed")
-    plt.plot(bybits_max_2, 'firebrick', ls='--', label="max value")
-    plt.plot(bybits_min_2, color='steelblue', ls='--', label="min value")
-    plt.xlabel('Bit changed')
-    plt.ylabel('HD (\%)', color='green')
-    plt.legend()
-    plt.savefig("img/encodeHD_"+extra+"limbChanged_bybit", bbox_inches='tight')
-    if(verbose):
-        plt.title("Cambio de un bit en la codificacion, comparacion entre encriptaciones del limb modificado")
-        plt.show()
-    plt.clf()
+    label = "limb changed"
+    savename = extra+"C0_limbChanged_bybit"
+    title = f"Cambio de un bit en la codificacion, comparacion entre encriptaciones C0 del limb modificado, RNS size: {RNS_size}"
+    ploter(HD_limbChanged_by_bits_av, bybits_max_2, bybits_min_2, verbose, label, HD_plot, by_bits, title, savename, False, RNS_size, polynomial_size)
+    savename = extra+"C0_limbChanged_bycoeff"
+    ploter(HD_limbChanged_by_coeff_av, bycoeff_max_2, bycoeff_min_2, verbose, label, HD_plot, False, title, savename, False, RNS_size, polynomial_size)
 
-    plt.plot(HD_limbChanged_by_coeff_av, color='green', label="limb changed")
-    if(multiRNS):
-        plt.axvline(0, color='k', ls='--', lw=2, label="Limb separation")
-        for i in range(RNS_size):
-            plt.axvline(polynomial_size*(i+1), color='k', ls='--', lw=2)
-
-    plt.plot(bycoeff_max_2, 'firebrick', ls="--", label="max value")
-    plt.plot(bycoeff_min_2, color='steelblue', ls="--", label="min value")
-    plt.xlabel('Coeff changed')
-    plt.ylabel('HD (\%)', color='green')
-    plt.legend()
-    plt.savefig("img/encodeHD_"+extra+"limbChanged_bycoeff", bbox_inches='tight')
-    if(verbose):
-        plt.title("Cambio de un bit en la codificacion, comparacion entre encriptaciones del limb modificado")
-        plt.show()
-    plt.clf()
+    encodingHD_RNS = data_read(dir, fileHD_C1_limbChanged)
+    encodingHD_RNS = 100*encodingHD_RNS/int(total_bits_encryption*RNS_proportion_limbChanged)
+    HD_limbChanged_by_coeff_av, HD_limbChanged_by_bits_av, bycoeff_max_2, bycoeff_min_2, bybits_max_2, bybits_min_2  = data_reshape(encodingHD_RNS, num_coeff, num_bits)
+    savename = extra+"C1_limbChanged_bybit"
+    title = f"Cambio de un bit en la codificacion, comparacion entre encriptaciones C1 del limb modificado, RNS size: {RNS_size}"
+    ploter(HD_limbChanged_by_bits_av, bybits_max_2, bybits_min_2, verbose, label, HD_plot, by_bits, title, savename, False, RNS_size, polynomial_size)
+    savename = extra+"C1_limbChanged_bycoeff"
+    ploter(HD_limbChanged_by_coeff_av, bycoeff_max_2, bycoeff_min_2, verbose, label, HD_plot, False, title, savename, False, RNS_size, polynomial_size)
 
     if(RNS_size > 1):
-        encodingHD = data_read(dir, fileHD_limbsNotChanged)
+        encodingHD = data_read(dir, fileHD_C0_limbsNotChanged)
         encodingHD = 100*encodingHD/int(total_bits_encryption*RNS_proportion_limbsNotChanged)
         HD_by_coeff_av, HD_by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min  = data_reshape(encodingHD, num_coeff, num_bits)
+        label = "limbs not changed"
+        savename = extra+"C0_limbsNotChanged_bybit"
+        title = f"Cambio de un bit en la codificacion, comparacion entre encriptaciones C0 del limb modificado, RNS size: {RNS_size}"
 
-        plt.plot(HD_by_bits_av, color='green', label="limbs not changed")
-        plt.plot(bybits_max, 'firebrick', ls="--", label="max value")
-        plt.plot(bybits_min, color='steelblue', ls="--", label="min value")
-        plt.xlabel('Bit changed')
-        plt.ylabel('HD (\%)', color='green')
-        plt.legend()
-        plt.savefig("img/encodeHD_"+extra+"limbsNotChanged_bybit", bbox_inches='tight')
-        if(verbose):
-            plt.title("Cambio de un bit en la codificacion, comparacion entre encriptaciones del limbs no modificados")
-            plt.show()
-        plt.clf()
+        ploter(HD_by_bits_av, bybits_max, bybits_min, verbose, label, HD_plot, by_bits, title, savename, False, RNS_size, polynomial_size)
+        savename = extra+"C0_limbsNotChanged_bycoeff"
+        ploter(HD_by_coeff_av, bycoeff_max, bycoeff_min, verbose, label, HD_plot, False, title, savename, multiRNS, RNS_size, polynomial_size)
 
-        plt.plot(HD_by_coeff_av, color='green', label="limbs not changed")
-        plt.plot(bycoeff_max, 'firebrick', ls="--", label="max value")
-        plt.plot(bycoeff_min, color='steelblue', ls="--", label="min value")
-        if(multiRNS):
-            plt.axvline(0, color='k', ls='--', lw=2, label="Limb separation")
-            for i in range(RNS_size):
-                plt.axvline(polynomial_size*(i+1), color='k', ls='--', lw=2)
-        plt.xlabel('Coeff changed')
-        plt.ylabel('HD (\%)', color='green')
-        plt.legend()
-        plt.savefig("img/encodeHD_"+extra+"blimbsNotChanged_ycoeff", bbox_inches='tight')
-        if(verbose):
-            plt.title("Cambio de un bit en la codificacion, comparacion entre encriptaciones del limbs no modificados")
-            plt.show()
-        plt.clf()
+        encodingHD = data_read(dir, fileHD_C1_limbsNotChanged)
+        encodingHD = 100*encodingHD/int(total_bits_encryption*RNS_proportion_limbsNotChanged)
+        HD_by_coeff_av, HD_by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min  = data_reshape(encodingHD, num_coeff, num_bits)
+        savename = extra+"C1_limbsNotChanged_bybit"
+        title = f"Cambio de un bit en la codificacion, comparacion entre encriptaciones C1 del limb modificado, RNS size: {RNS_size}"
+
+        ploter(HD_by_bits_av, bybits_max, bybits_min, verbose, label, HD_plot, by_bits, title, savename, False, RNS_size, polynomial_size)
+        savename = extra+"C1_limbsNotChanged_bycoeff"
+        ploter(HD_by_coeff_av, bycoeff_max, bycoeff_min, verbose, label, HD_plot, False, title, savename, multiRNS, RNS_size, polynomial_size)
 
         if(positions):
             total_loops = RNS_size*num_bits*polynomial_size
@@ -233,3 +207,5 @@ if(ejecute):
             encoding_pos = 100*encoding_pos/total_loops
             plt.plot(encoding_pos)
             plt.show()
+
+

@@ -63,6 +63,22 @@ inline void saveDataLog(std::string file_name, double res, bool new_file, size_t
 
 }
 
+inline void saveDataLog_SDC(std::string file_name, size_t rns_loop, size_t coeff, size_t bit, double res, bool new_file, size_t rns_size)
+{
+    std::fstream logFile;
+    // Open File
+    if (new_file==1){
+        logFile.open("/home/mmazz/phd/fhe/bitFlip-openfhe/"+file_name+".txt", std::ios::out);
+        logFile << "New file: "<< rns_size << std::endl ;
+    }
+    else{
+        logFile.open("/home/mmazz/phd/fhe/bitFlip-openfhe/"+file_name+".txt", std::ios::app);
+        logFile << rns_loop << " " << coeff << " " << bit << " " << res << std::endl ;
+    }
+    // close file stream
+    logFile.close();
+
+}
 
 inline uint64_t bit_flip(uint64_t original, size_t bit){
     uint64_t mask = (1ULL << bit); // I set the bit to flip. 1ULL is for a one of 64bits
@@ -269,35 +285,57 @@ inline std::tuple<uint64_t, uint64_t>hamming_distance_RNS(DCRTPoly &x_plain, DCR
     return {count_RNS_limbsNotChanged, count_RNS_limbChanged };
 }
 
-inline std::tuple<uint64_t, uint64_t>hamming_distance_RNS(std::vector<DCRTPoly> &x_encrypt, const std::vector<DCRTPoly> &x_encrypt_original, size_t RNS_size, size_t RNS_limb)
+inline std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>hamming_distance_RNS(std::vector<DCRTPoly> &x_encrypt, const std::vector<DCRTPoly> &x_encrypt_original, size_t RNS_size, size_t RNS_limb)
 {
-    uint64_t count_RNS_limbsNotChanged = 0;
-    uint64_t count_RNS_limbChanged = 0;
-    size_t polynomials = 2;
+    uint64_t countC0_RNS_limbsNotChanged = 0;
+    uint64_t countC0_RNS_limbChanged = 0;
 
-    // el vector output puede tener otro size... entonces miro el input
-    for (size_t k=0 ; k<polynomials; k++)
+    uint64_t countC1_RNS_limbsNotChanged = 0;
+    uint64_t countC1_RNS_limbChanged = 0;
+
+
+    // el c0 o c1
+    size_t k = 0;
+    auto x_encrypt_elems = x_encrypt[k].GetAllElements();
+    auto x_encrypt_original_elems = x_encrypt_original[k].GetAllElements();
+
+
+    size_t ringDim = x_encrypt[k].GetRingDimension();
+    for(size_t i=0; i<RNS_size; i++)
     {
-        auto x_encrypt_elems = x_encrypt[k].GetAllElements();
-        auto x_encrypt_original_elems = x_encrypt_original[k].GetAllElements();
-
-
-        size_t ringDim = x_encrypt[k].GetRingDimension();
-        for(size_t i=0; i<RNS_size; i++)
+        if(i!=RNS_limb)
         {
-            if(i!=RNS_limb)
-            {
-                for(size_t j = 0; j < ringDim; j++)
-                    count_RNS_limbsNotChanged += hamming_distance((uint64_t)x_encrypt_elems[i][j], (uint64_t)x_encrypt_original_elems[i][j]);
-            }
-            else
-            {
-                for(size_t j = 0; j < ringDim; j++)
-                    count_RNS_limbChanged += hamming_distance((uint64_t)x_encrypt_elems[i][j], (uint64_t)x_encrypt_original_elems[i][j]);
-            }
+            for(size_t j = 0; j < ringDim; j++)
+                countC0_RNS_limbsNotChanged += hamming_distance((uint64_t)x_encrypt_elems[i][j], (uint64_t)x_encrypt_original_elems[i][j]);
+        }
+        else
+        {
+            for(size_t j = 0; j < ringDim; j++)
+                countC0_RNS_limbChanged += hamming_distance((uint64_t)x_encrypt_elems[i][j], (uint64_t)x_encrypt_original_elems[i][j]);
         }
     }
-    return {count_RNS_limbsNotChanged, count_RNS_limbChanged };
+
+    k = 1;
+    x_encrypt_elems = x_encrypt[k].GetAllElements();
+    x_encrypt_original_elems = x_encrypt_original[k].GetAllElements();
+
+
+    ringDim = x_encrypt[k].GetRingDimension();
+    for(size_t i=0; i<RNS_size; i++)
+    {
+        if(i!=RNS_limb)
+        {
+            for(size_t j = 0; j < ringDim; j++)
+                countC1_RNS_limbsNotChanged += hamming_distance((uint64_t)x_encrypt_elems[i][j], (uint64_t)x_encrypt_original_elems[i][j]);
+        }
+        else
+        {
+            for(size_t j = 0; j < ringDim; j++)
+                countC1_RNS_limbChanged += hamming_distance((uint64_t)x_encrypt_elems[i][j], (uint64_t)x_encrypt_original_elems[i][j]);
+        }
+    }
+
+    return {countC0_RNS_limbsNotChanged, countC0_RNS_limbChanged, countC1_RNS_limbsNotChanged, countC1_RNS_limbChanged };
 }
 
 inline void hamming_distance_position(std::vector<uint64_t>& acumulator, DCRTPoly &x_plain, DCRTPoly &x_plain_original, size_t RNS_size, size_t coeff_bits)

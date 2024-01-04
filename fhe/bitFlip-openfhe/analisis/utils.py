@@ -57,3 +57,32 @@ def data_N2_bounded(max_diff_tot,  by_coeff_av, by_bits_av, bycoeff_max, bycoeff
     bybits_min  = 100*bybits_min/max_diff_tot
     return by_coeff_av, by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min
 
+def ploter(data, data_max, data_min, verbose, label, HD_plot, by_bits, title, savename, multiRNS, RNS_size, polynomial_size):
+    if(HD_plot):
+        plt.plot(data, color='green', label=label)
+        plt.ylabel('HD (\%)', color='green')
+    else:
+        plt.plot(data, color='green')
+        plt.ylabel('Norm2 (\%)', color='green')
+    plt.plot(data_max, 'firebrick', ls='--', label="max value")
+    plt.plot(data_min, color='steelblue', ls='--', label="min value")
+    if(multiRNS):
+        plt.axvline(0, color='k', ls='--', lw=2, label="Limb separation")
+        for i in range(RNS_size):
+            plt.axvline(polynomial_size*(i+1), color='k', ls='--', lw=2)
+    if(by_bits):
+        plt.xlabel('Bit changed')
+    else:
+        plt.xlabel('Coeff changed')
+
+    plt.legend()
+    if(verbose):
+        plt.title(title)
+        plt.show()
+    else:
+        plt.title(savename)
+    if(HD_plot):
+        plt.savefig("img/encodeHD_"+savename, bbox_inches='tight')
+    else:
+        plt.savefig("img/encodeN2_"+savename, bbox_inches='tight')
+    plt.clf()

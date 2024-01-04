@@ -171,7 +171,7 @@ int main(int argc, char* argv[]) {
                     // encritpo y calculo el HD
                     c1 = cc->Encrypt(keys.publicKey, ptxt1);
                     encryptElem = c1->GetElements();
-                    auto [HD_limbsNotChanged, HD_limbsChanged] = hamming_distance_RNS(encryptElem, encryptElem_original,  RNS_size, i);
+                    auto [HD_limbsNotChanged, HD_limbsChanged, HD_limbsNotChanged1, HD_limbsChanged1] = hamming_distance_RNS(encryptElem, encryptElem_original,  RNS_size, i);
 
                     saveDataLog(dir_name+fileHD_limbsNotChange, HD_limbsNotChanged,  !new_file, RNS_size);
                     saveDataLog(dir_name+fileHD_limbChange, HD_limbChanged, !new_file, RNS_size);
