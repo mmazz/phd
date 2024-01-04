@@ -13,6 +13,10 @@
     - \#if defined(FIXED_SEED)
         -   PseudoRandomNumberGenerator::GetPRNG().setCounter(0);
     - \#endif
+    - Tambien a los siguientes archivos
+        - src/core/include/math/binaryuniformgenerator-impl.h
+        - src/core/include/math/discreteuniformgenerator-impl.h
+        - src/core/include/math/ternaryuniformgenerator-impl.h
 - Para que lo anterior funcione agregue a la parte publica src/core/include/utils/prng/blake2engine.h
     - void setCounter(uint64_t val)
     - {
@@ -26,7 +30,7 @@
 
 - src/core/lib/math/hal/intnat/mubintvecnat.cpp: para entender como hacen el mod
 
-## Entendiendo OpenbFHE
+## Entendiendo OpenFHE
 
 Dando un plain text, puedo obtener sus coeficientes conm GetAllElements().
 
@@ -40,3 +44,7 @@ auto elems = plaintext->GetElement<DCRTPoly>().GetAllElements();
 
 Queda medio como una copia, entonces si la modifico en realidad no lo estoy haciendo
 al verdadero.
+
+# Encriptacion
+
+Es muy similar pero esta vez hay que contemplar que estan los polinomios c0 y c1.
