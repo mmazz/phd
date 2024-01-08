@@ -142,8 +142,8 @@ int main(int argc, char* argv[]) {
 
     // Encoding as plaintexts
     Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(input);
-    auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
-    auto c2 = cc->Encrypt(keys.publicKey, ptxt1);
+    Ciphertext<DCRTPoly> c1 = cc->Encrypt(keys.publicKey, ptxt1);
+    Ciphertext<DCRTPoly> c2 = cc->Encrypt(keys.publicKey, ptxt1);
     auto encryptElems = c1->GetElements();
     auto encryptElems_original = c2->GetElements();
 
@@ -162,7 +162,7 @@ int main(int argc, char* argv[]) {
     if (RNS_size == (size_t)multDepth+1 && execute)
     {
         size_t test = 0;
-        auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+        Ciphertext<DCRTPoly> c1 = cc->Encrypt(keys.publicKey, ptxt1);
         // Me fijo que a priori mantengo la misma encriptacion
         if(c1->GetElements()[0].GetAllElements()[0][0] != c2->GetElements()[0].GetAllElements()[0][0])
             test++;
@@ -210,18 +210,19 @@ int main(int argc, char* argv[]) {
             saveDataLog(dir_name+fileN2_bounded, N2_bounded,  new_file, RNS_size);
 
             Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(input);
-            auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+            Ciphertext<DCRTPoly> c1 = cc->Encrypt(keys.publicKey, ptxt1);
             const auto encryptElems_original = c1->GetElements();
             // Me quedo con la componente cero por que aca no tengo RNS y es el unico
             std::cout << "Total loops: " << total_loops << std::endl;
             const auto original_vector = ptxt1->GetElement<DCRTPoly>().GetAllElements();
+            std::tuple<uint64_t, uint64_t, uint64_t, uint64_t> tuple_HD;
             for (size_t i = 0; i < RNS_size; i++)
             {
                 for (size_t j = 0; j < ringDim; j++)
                 {
                     std::cout << count << ", " << std::flush;
 
-                    auto original_coeff = ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j];
+                    Integer original_coeff = ptxt1->GetElement<DCRTPoly>().GetAllElements()[i][j];
                     for(size_t bit=0; bit<bits_coeff; bit++)
                     {
                         // Paso la codificacion al formato de coeficientes (INTT)
@@ -239,11 +240,11 @@ int main(int argc, char* argv[]) {
                         c1 = cc->Encrypt(keys.publicKey, ptxt1);
                         encryptElems = c1->GetElements();
 
-                        auto [tuple_HD_C0_RNS_limbsNotChanged, tuple_HD_C0_RNS_limbChanged, tuple_HD_C1_RNS_limbsNotChanged, tuple_HD_C1_RNS_limbChanged] = hamming_distance_RNS(encryptElems, encryptElems_original, RNS_size, i);
-                        HD_C0_RNS_limbsNotChanged = tuple_HD_C0_RNS_limbsNotChanged;
-                        HD_C0_RNS_limbChanged = tuple_HD_C0_RNS_limbChanged;
-                        HD_C1_RNS_limbsNotChanged = tuple_HD_C1_RNS_limbsNotChanged;
-                        HD_C1_RNS_limbChanged = tuple_HD_C1_RNS_limbChanged;
+                        tuple_HD = hamming_distance_RNS(encryptElems, encryptElems_original, RNS_size, i);
+                        HD_C0_RNS_limbsNotChanged = std::get<0>(tuple_HD);
+                        HD_C0_RNS_limbChanged     = std::get<1>(tuple_HD);
+                        HD_C1_RNS_limbsNotChanged = std::get<2>(tuple_HD);
+                        HD_C1_RNS_limbChanged     = std::get<3>(tuple_HD);
 
                         hamming_distance_position(encryption_bitChange, encryptElems, encryptElems_original, RNS_size, bits_coeff);
                         saveDataLog(dir_name+fileHD_C0_limnsNotChange, HD_C0_RNS_limbsNotChanged, !new_file, RNS_size);

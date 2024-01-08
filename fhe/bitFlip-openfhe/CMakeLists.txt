@@ -85,12 +85,4 @@ foreach (app ${TEST_SRC_FILES})
   set_target_properties(${exe} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
   target_link_libraries( ${exe} PRIVATE ${GTEST_LIBRARIES})
 endforeach()
-#
-#file (GLOB TEST_SRC_FILES CONFIGURE_DEPENDS ${CMAKE_BINARY_DIR}/test/*.cpp)
-#foreach (app ${TEST_SRC_FILES})
-#  get_filename_component( exe ${app} NAME_WE)
-#  add_executable ( ${exe} ${app} )
-#  set_target_properties(${exe} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
-#  target_link_libraries( ${exe} PRIVATE ${GTEST_LIBRARIES})
-#  target_link_libraries( ${exe} PRIVATE SEAL::seal)
-#endforeach()
+
