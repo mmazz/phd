@@ -211,6 +211,7 @@ int main(int argc, char* argv[]) {
 
             Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(input);
             auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+            //auto c1 = cc->Encrypt(keys.secretKey, ptxt1);
             const auto encryptElems_original = c1->GetElements();
             // Me quedo con la componente cero por que aca no tengo RNS y es el unico
             std::cout << "Total loops: " << total_loops << std::endl;
@@ -237,6 +238,7 @@ int main(int argc, char* argv[]) {
                         if(nonNTT)
                             ptxt1->GetElement<DCRTPoly>().SwitchFormat();
                         c1 = cc->Encrypt(keys.publicKey, ptxt1);
+                        //c1 = cc->Encrypt(keys.secretKey, ptxt1);
                         encryptElems = c1->GetElements();
 
                         auto [tuple_HD_C0_RNS_limbsNotChanged, tuple_HD_C0_RNS_limbChanged, tuple_HD_C1_RNS_limbsNotChanged, tuple_HD_C1_RNS_limbChanged] = hamming_distance_RNS(encryptElems, encryptElems_original, RNS_size, i);
@@ -250,7 +252,6 @@ int main(int argc, char* argv[]) {
                         {
                            // std::cout << "Silent error!" << std::endl;
                             cc->Decrypt(keys.secretKey, c1, &result);
-                            std::cout << "Silent error!" << std::endl;
                             result->SetLength(dataSize);
                             resultData = result->GetRealPackedValue();
                             N2_bounded = norm2_bounded(resultData_original, resultData, dataSize, max_diff);
@@ -259,6 +260,7 @@ int main(int argc, char* argv[]) {
                             saveDataLog_SDC(dir_name+fileHD_C1_limnsNotChange, i, j, bit, HD_C1_RNS_limbsNotChanged, !new_file, RNS_size);
                             saveDataLog_SDC(dir_name+fileHD_C1_limbChange    , i, j, bit, HD_C1_RNS_limbChanged, !new_file, RNS_size);
                             saveDataLog_SDC(dir_name+fileN2_bounded          , i, j, bit, N2_bounded, !new_file, RNS_size);
+                            std::cout << "Silent error! " << i << " " << j <<  std::endl;
                         }
                         catch(...)
                         {
