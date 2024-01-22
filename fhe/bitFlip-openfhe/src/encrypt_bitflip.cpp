@@ -110,7 +110,7 @@ int main(int argc, char* argv[]) {
     std::cout << "CKKS scheme is using ring dimension " << cc->GetRingDimension() << " RNS size: " << RNS_size << std::endl << std::endl;
     if (RNS_size == (size_t)multDepth+1 && execute)
     {
-        auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+        auto c1 = cc->Encrypt(keys.secretKey, ptxt1);
         cc->Decrypt(keys.secretKey, c1, &result);
         result->SetLength(dataSize);
         resultData = result->GetRealPackedValue();
@@ -134,7 +134,7 @@ int main(int argc, char* argv[]) {
             auto ringDim = cc->GetRingDimension();
 
             saveDataLog(dir_name+fileN2_bounded, N2_bounded,  new_file, RNS_size);
-            auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+            auto c1 = cc->Encrypt(keys.secretKey, ptxt1);
 
             int total_loops  = 2*RNS_size*ringDim*bits_coeff;
             std::cout << "Total loops: " << total_loops << std::endl;
@@ -161,19 +161,28 @@ int main(int argc, char* argv[]) {
                             c1->GetElements()[k].GetAllElements()[i][j] = bit_flip(original_coeff, bit);
                             if(nonNTT)
                                 c1->GetElements()[k].SwitchFormat();
-                            cc->Decrypt(keys.secretKey, c1, &result);
-                            result->SetLength(dataSize);
-                            resultData = result->GetRealPackedValue();
+                             try
+                             {
+                                cc->Decrypt(keys.secretKey, c1, &result);
+                                result->SetLength(dataSize);
+                                resultData = result->GetRealPackedValue();
 
-                            N2_bounded = norm2_bounded(input, resultData, dataSize, max_diff);
-                            saveDataLog(dir_name+fileN2_bounded, N2_bounded, !new_file, RNS_size);
-                            // Cambian todos los coefficientes, tengo que resetearlo entero
+                                N2_bounded = norm2_bounded(input, resultData, dataSize, max_diff);
+                                saveDataLog(dir_name+fileN2_bounded, N2_bounded, !new_file, RNS_size);
+                                // Cambian todos los coefficientes, tengo que resetearlo entero
+                                std::cout << "Silent error! "<< j<< std::endl;
+                            }
+                             catch(...)
+                             {
+
+                             }
                             if(nonNTT)
                                 c1->GetElements()[k].GetAllElements() = original_vector;
                             // cambia solo uno
                             else
                                 c1->GetElements()[k].GetAllElements()[i][j] = original_coeff;
                         }
+                        count++;
                     }
                 }
                 count++;

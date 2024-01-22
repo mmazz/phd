@@ -1,5 +1,11 @@
 #
 
+## Setup
+
+- $ clang-format -style=Microsoft --dump-config > .clang-format
+
+
+
 ## Hardcoded OpenFHE
 
 - src/pke/lib/encoding/ckkspackedencoding.cpp: 535. Comente el if real para que nunca entre. Puse un logstd = 1, if (logstd < 0)

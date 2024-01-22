@@ -143,8 +143,8 @@ int main(int argc, char* argv[]) {
 
     // Encoding as plaintexts
     Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(input);
-    auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
-    auto c2 = cc->Encrypt(keys.publicKey, ptxt1);
+    auto c1 = cc->Encrypt(keys.secretKey, ptxt1);
+    auto c2 = cc->Encrypt(keys.secretKey, ptxt1);
     auto encryptElems = c1->GetElements();
     auto encryptElems_original = c2->GetElements();
 
@@ -163,7 +163,7 @@ int main(int argc, char* argv[]) {
     if (RNS_size == (size_t)multDepth+1 && execute)
     {
         size_t test = 0;
-        auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
+        auto c1 = cc->Encrypt(keys.secretKey, ptxt1);
         // Me fijo que a priori mantengo la misma encriptacion
         if(c1->GetElements()[0].GetAllElements()[0][0] != c2->GetElements()[0].GetAllElements()[0][0])
             test++;
@@ -210,8 +210,7 @@ int main(int argc, char* argv[]) {
             saveDataLog_SDC(dir_name+fileN2_bounded          , 0, 0 ,0, N2_bounded,  new_file, RNS_size);
 
             Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(input);
-            auto c1 = cc->Encrypt(keys.publicKey, ptxt1);
-            //auto c1 = cc->Encrypt(keys.secretKey, ptxt1);
+            auto c1 = cc->Encrypt(keys.secretKey, ptxt1);
             const auto encryptElems_original = c1->GetElements();
             // Me quedo con la componente cero por que aca no tengo RNS y es el unico
             std::cout << "Total loops: " << total_loops << std::endl;
@@ -237,8 +236,7 @@ int main(int argc, char* argv[]) {
                         // Vuelvo al espacio de evaluacion (NTT)
                         if(nonNTT)
                             ptxt1->GetElement<DCRTPoly>().SwitchFormat();
-                        c1 = cc->Encrypt(keys.publicKey, ptxt1);
-                        //c1 = cc->Encrypt(keys.secretKey, ptxt1);
+                        c1 = cc->Encrypt(keys.secretKey, ptxt1);
                         encryptElems = c1->GetElements();
 
                         auto [tuple_HD_C0_RNS_limbsNotChanged, tuple_HD_C0_RNS_limbChanged, tuple_HD_C1_RNS_limbsNotChanged, tuple_HD_C1_RNS_limbChanged] = hamming_distance_RNS(encryptElems, encryptElems_original, RNS_size, i);
@@ -250,7 +248,6 @@ int main(int argc, char* argv[]) {
                         hamming_distance_position(encryption_bitChange, encryptElems, encryptElems_original, RNS_size, bits_coeff);
                         try
                         {
-                           // std::cout << "Silent error!" << std::endl;
                             cc->Decrypt(keys.secretKey, c1, &result);
                             result->SetLength(dataSize);
                             resultData = result->GetRealPackedValue();
@@ -260,7 +257,7 @@ int main(int argc, char* argv[]) {
                             saveDataLog_SDC(dir_name+fileHD_C1_limnsNotChange, i, j, bit, HD_C1_RNS_limbsNotChanged, !new_file, RNS_size);
                             saveDataLog_SDC(dir_name+fileHD_C1_limbChange    , i, j, bit, HD_C1_RNS_limbChanged, !new_file, RNS_size);
                             saveDataLog_SDC(dir_name+fileN2_bounded          , i, j, bit, N2_bounded, !new_file, RNS_size);
-                            std::cout << "Silent error! " << i << " " << j <<  std::endl;
+                            std::cout << "Silent error! "<< j<< std::endl;
                         }
                         catch(...)
                         {
