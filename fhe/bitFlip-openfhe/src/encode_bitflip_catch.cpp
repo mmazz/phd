@@ -1,11 +1,9 @@
 #include "ciphertext-fwd.h"
-#include "math/hal/intnat/transformnat.h"
 #include <cstdint>
 #include <string>
 #define PROFILE
 #define FIXED_SEED
 #define DECRYPT_DETECTION
-#include "openfhe.h"
 #include "iostream"
 #include "utils_mati.h"
 
