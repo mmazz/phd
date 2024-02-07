@@ -9,7 +9,6 @@
 #include "openfhe.h"
 #include "iostream"
 #include "../src/utils_mati.h"
-#include "../openfhe-development/src/pke/lib/encoding/ckkspackedencoding.cpp"
 
 
 
@@ -20,7 +19,7 @@ using DggType  = typename DCRTPoly::DggType;
 int main(int argc, char * argv[])
 {
 
-    uint32_t multDepth = 0;
+    uint32_t multDepth = 4;
     uint32_t scaleModSize = 30;
     uint32_t firstModSize = 60;
     uint32_t batchSize = 1024;
@@ -39,7 +38,11 @@ int main(int argc, char * argv[])
     cc->Enable(LEVELEDSHE);
     auto keys = cc->KeyGen();
     const auto cryptoParams = std::dynamic_pointer_cast<CryptoParametersRNS>(keys.publicKey->GetCryptoParameters());
+    size_t numModuli = cryptoParams->GetElementParams()->GetParams().size();
+
+    std::cout << "Modulus   numbers = " <<  numModuli << std::endl;
     const DggType& dgg =  cryptoParams->GetDiscreteGaussianGenerator();
+
     std::cout<< dgg.IsInitialized() << std::endl;
     // Input setup
     std::vector<double> input = {0,1,2,3};
@@ -54,12 +57,13 @@ int main(int argc, char * argv[])
     auto encryptElems = c1->GetElements();
     auto a1 = encryptElems[0].GetAllElements()[0][0];
     auto encryptModulus = encryptElems[0].GetModulus();
+    std::cout << std::endl;
     std::cout << "Modulus    = " <<  encryptModulus << std::endl;
     std::cout << "ptxt[0][0] = " << original_coeff << std::endl;
     std::cout << "Encrypt[0] = " << a1 << std::endl;
     std::cout << std::endl;
     std::cout << std::endl;
-    size_t bit_change = 58;
+    size_t bit_change = 64;
     NativeInteger c0 = 525107833192280017;
     for(; bit_change<64; bit_change++)
     {
@@ -82,6 +86,5 @@ int main(int argc, char * argv[])
     cc->Decrypt(keys.secretKey, c1, &result);
 
     const std::vector<std::complex<double>> complex[4] = {{0,1},{2,3},{4,5},{6,7}};
-    auto conj = lbcrypto::Conjugate(complex);
     return 0;
 }
