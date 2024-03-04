@@ -62,6 +62,8 @@ Habría que corroborarlo un poco mas
 
 Supongamos el caso mas sencillo que es tener un DFT, es decir la transformada no es mas que una
 multiplicación matricial.
+En este caso no estoy considerando ni las constantes de normalización ni la utilización de bit reversed order que
+creo que solo cambiaría el orden de las columnas de la matriz en cuestión.
 
 Es decir dado mi vector $x$, al aplicarle la matriz de Vandermonde $W$ obtengo $FFT(x)$.
 Es decir $ y = W \times x$.
@@ -80,6 +82,23 @@ La NTT también es pensada como una multiplicación matricial así que debería 
 \subsection{RNS + FFT}
 Al modificar codificación primero tendría que hacer la inversa de la FFT ( o NTT), y de ahi calcular la
 inversa de RNS.
+Es decir lo que estoy modificando son los residuos y a eso le aplico la inversa de RNS.
+
+Entonces dado mi vector $r$ modificado, lo que me queda al aplicarle IFFT es  $r' = r + W^{-1}\times e$.
+Aunque $e$ sea todo cero excepto un elemento i-esimo, al ser una multiplicación matricial,
+estaría afectando a todas las componentes de $r$.
+Cada componente $r'_i$ tendrá un error $e'_i = (W^{-1}\times e)_i$.
+
+Es decir que cada elemento:
+\begin{equation}
+    x'_i = (x_i + e'_i \text{ mod } Q) \text{ mod } Q = (x_i + (W^{-1}\times e)_i \text{ mod } Q) \text{ mod } Q
+\end{equation}
+
+Llegando a que
+\begin{equation}
+    \lVert x - x' \rVert  = \lVert  ((x_0 + (W^{-1}\times e)_0 \text{ mod } Q), ..., (x_N + (W^{-1}\times e)_N \text{ mod } Q)) \text{ mod } Q\rVert
+\end{equation}
+
 
 
 \end{document}
