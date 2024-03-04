@@ -1,0 +1,51 @@
+\documentclass[12pt, oneside]{article}
+\usepackage{amsmath, amsthm, amssymb, calrsfs, wasysym, verbatim,  color, graphics, geometry}
+\usepackage{hyperref}
+\geometry{tmargin=.75in, bmargin=.75in, lmargin=.75in, rmargin = .75in}
+\usepackage[colorinlistoftodos,color=cyan]{todonotes}
+\newcommand{\Hc}{\mathcal{H}}
+\newcommand{\Rc}{\mathcal{R}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Cdot}{\boldsymbol{\cdot}}
+
+\newtheorem{thm}{Theorem}
+\newtheorem{defn}{Definition}
+\newtheorem{conv}{Convention}
+\newtheorem{rem}{Remark}
+\newtheorem{lem}{Lemma}
+\newtheorem{cor}{Corollary}
+
+
+\title{Resume: }
+\author{Matias Mazzanti}
+\date{}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{Avances}
+
+\subsection{RNS}
+
+Sea $\bold{r}$ los residuos de un valor $x$ modulo $q = (q_1, ...,q_L)$.
+Donde ademas tenemos $Q = \prod_0^L q_i$, $Q_i = \frac{Q}{q_i}$ y ademas $\left(\frac{1}{Q_{i}}\right)mod q_i$ es la inversa multiplicativa.
+
+Entonces tenemos que:
+\begin{equation}
+    x = \left(\sum_0^L r_i\left[\left(\frac{1}{Q_{i}}\right)mod q_i\right]mod q_i \times Q_i\right) mod Q
+\end{equation}
+
+Es decir que si llamamos a todo lo que esta dento del paréntesis $R$ y a los residuos le agregamos un error $e$, en general donde e es todo cero excepto un elemento.
+Tenemos que
+\begin{equation}
+    x = R + e mod Q = \left(R mod Q + e mod Q \right) mod Q = \left( x + e mod Q \right) mod Q
+\end{equation}
+\end{document}
+% https://bit-ml.github.io/blog/post/homomorphic-encryption-toy-implementation-in-python/
+
