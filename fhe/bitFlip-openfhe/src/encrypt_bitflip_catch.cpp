@@ -9,6 +9,10 @@
 #include "openfhe.h"
 #include "utils_mati.h"
 
+// Falta hacerle refactoring como al del encode
+//
+
+
 /*
  * Modifico un bit en la codificacion y veo la norma 2 entre input/output, y veo
  * el HD entre la encriptacion original y la modificada.
@@ -225,11 +229,12 @@ int main(int argc, char *argv[])
                                 cc->Decrypt(keys.secretKey, c1, &result);
                                 result->SetLength(dataSize);
                                 resultData = result->GetRealPackedValue();
-                                std::cout<< "DONE! polinomial: "<< k << "  RNS limb: " << i << " coeff: " << j  << " bit: " << bit << std::endl;
+                                std::cout<< "Silent error! polinomial: "<< k << "  RNS limb: " << i << " coeff: " << j  << " bit: " << bit << std::endl;
 
                             }
                             catch(...)
                             {
+                                N2_bounded                = 0;
                             }
                             // Cambian todos los coefficientes, tengo que resetearlo entero
                             if(nonNTT)
@@ -238,8 +243,8 @@ int main(int argc, char *argv[])
                             else
                                 c1->GetElements()[k].GetAllElements()[i][j] = original_coeff;
                         }
-                    }
                     count++;
+                    }
                 }
             }
         }

@@ -25,6 +25,7 @@ Hay 3 tipos de datos para cada caso.
 
 dir = "../logs/log_encode/"
 fileN2 = ""
+fileN2_bounded = ""
 fileHD_C0_limbsNotChanged = ""
 fileHD_C0_limbChanged = ""
 
@@ -62,7 +63,8 @@ if(len(sys.argv)==1):
 
 elif(sys.argv[1]==str(0)):
     print("OpenFHE with Optimizations")
-    fileN2 = "encodeN2_bounded.txt"
+    fileN2 = "encodeN2.txt"
+    fileN2_bounded = "encodeN2_bounded.txt"
     fileHD_C0_limbsNotChanged = "encodeHD_C0_limbsNotChanged.txt"
     fileHD_C0_limbChanged = "encodeHD_C0_limbChanged.txt"
 
@@ -75,7 +77,7 @@ elif(sys.argv[1]==str(0)):
 elif(sys.argv[1]==str(1)):
     print("OpenFHE with Optimizations multi RNS")
     RNS_size = 5
-    fileN2 = "encodeN2_multiRNS_"+str(RNS_size)+"_bounded.txt"
+    fileN2_bounded = "encodeN2_multiRNS_"+str(RNS_size)+"_bounded.txt"
     fileHD_C0_limbsNotChanged = "encodeHD_multiRNS_"+str(RNS_size)+"_C0_limbsNotChanged.txt"
     fileHD_C0_limbChanged = "encodeHD_multiRNS_"+str(RNS_size)+"_C0_limbChanged.txt"
 
@@ -87,7 +89,7 @@ elif(sys.argv[1]==str(1)):
 elif(sys.argv[1]==str(2)):
     print("OpenFHE with no NTT")
     RNS_size = 2
-    fileN2 = "encodeN2_nonNTT_bounded.txt"
+    fileN2_bounded = "encodeN2_nonNTT_bounded.txt"
     fileHD_C0_limbsNotChanged = "encodeHD_nonNTT_C0_limbsNotChanged.txt"
     fileHD_C0_limbChanged = "encodeHD_nonNTT_C0_limbChanged.txt"
 
@@ -98,7 +100,7 @@ elif(sys.argv[1]==str(2)):
 elif(sys.argv[1]==str(3)):
     print("OpenFHE with no NTT multi RNS")
     RNS_size = 5
-    fileN2 = "encodeN2_nonNTT_multiRNS_"+str(RNS_size)+"_bounded.txt"
+    fileN2_bounded = "encodeN2_nonNTT_multiRNS_"+str(RNS_size)+"_bounded.txt"
     fileHD_C0_limbsNotChanged = "encodeHD_nonNTT_multiRNS_"+str(RNS_size)+"_C0_limbsNotChanged.txt"
     fileHD_C0_limbChanged = "encodeHD_nonNTT_multiRNS_"+str(RNS_size)+"_C0_limbChanged.txt"
     fileHD_C1_limbsNotChanged = "encodeHD_nonNTT_multiRNS_"+str(RNS_size)+"_C1_limbsNotChanged.txt"
@@ -109,7 +111,7 @@ elif(sys.argv[1]==str(3)):
 
 elif(sys.argv[1]==str(4)):
     print("OpenFHE with no RNS")
-    fileN2 = "encodeN2_nonRNS_bounded.txt"
+    fileN2_bounded = "encodeN2_nonRNS_bounded.txt"
     fileHD_C0_limbsNotChanged = "encodeHD_nonRNS_C0_limbsNotChanged.txt"
     fileHD_C0_limbChanged = "encodeHD_nonRNS_C0_limbChanged.txt"
     fileHD_C1_limbsNotChanged = "encodeHD_nonRNS_C1_limbsNotChanged.txt"
@@ -119,7 +121,7 @@ elif(sys.argv[1]==str(4)):
 
 elif(sys.argv[1]==str(5)):
     print("OpenFHE with no Optimizations")
-    fileN2 = "encodeN2_nonOps_bounded.txt"
+    fileN2_bounded = "encodeN2_nonOps_bounded.txt"
     fileHD_C0_limbsNotChanged = "encodeHD_nonOps_C0_limbsNotChanged.txt"
     fileHD_C0_limbChanged = "encodeHD_nonOps_C0_limbChanged.txt"
     fileHD_C1_limbsNotChanged = "encodeHD_nonOps_C1_limbsNotChanged.txt"
@@ -145,10 +147,20 @@ if(ejecute):
     RNS_proportion_limbChanged = 1/RNS_size
     # Miro solo c0 o c1
     total_bits_encryption = RNS_size*num_bits_coeff_encryption*polynomial_size
+
+
     num_coeff = int(polynomial_size*RNS_size)
 
     encodingN2 = data_read(dir, fileN2)
-    N2_by_coeff_av, N2_by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min  = data_reshape(encodingN2, num_coeff, num_bits)
+
+    plt.plot(encodingN2)
+    plt.ylabel('Norm2 (\%)', color='green')
+    plt.xlabel('Bit changed')
+    plt.savefig("encodingN2.png")
+    encodingN2_bounded = data_read(dir, fileN2_bounded)
+
+
+    N2_by_coeff_av, N2_by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min  = data_reshape(encodingN2_bounded, num_coeff, num_bits)
     N2_by_coeff_av, N2_by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min  = data_N2_bounded(max_diff_tot, N2_by_coeff_av, N2_by_bits_av, bycoeff_max, bycoeff_min, bybits_max, bybits_min)
 
     label = ""

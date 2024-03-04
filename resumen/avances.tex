@@ -1,6 +1,7 @@
 \documentclass[12pt, oneside]{article}
 \usepackage{amsmath, amsthm, amssymb, calrsfs, wasysym, verbatim,  color, graphics, geometry}
 \usepackage{hyperref}
+\usepackage{amsmath}
 \geometry{tmargin=.75in, bmargin=.75in, lmargin=.75in, rmargin = .75in}
 \usepackage[colorinlistoftodos,color=cyan]{todonotes}
 \newcommand{\Hc}{\mathcal{H}}
@@ -33,19 +34,54 @@
 
 \subsection{RNS}
 
-Sea $\bold{r}$ los residuos de un valor $x$ modulo $q = (q_1, ...,q_L)$.
-Donde ademas tenemos $Q = \prod_0^L q_i$, $Q_i = \frac{Q}{q_i}$ y ademas $\left(\frac{1}{Q_{i}}\right)mod q_i$ es la inversa multiplicativa.
+Sea $\bold{r} = (r_1, ..., r_L)$ los residuos de un valor $x$ modulo $q = (q_1, ...,q_L)$.
+Donde ademas tenemos $Q = \prod_0^L q_i$, $Q_i = \frac{Q}{q_i}$ y ademas $\left(\frac{1}{Q_{i}}\right)\text{ mod } q_i$ es la inversa multiplicativa.
 
 Entonces tenemos que:
 \begin{equation}
-    x = \left(\sum_0^L r_i\left[\left(\frac{1}{Q_{i}}\right)mod q_i\right]mod q_i \times Q_i\right) mod Q
+    x = \left(\sum_0^L r_i\left[\left(\frac{1}{Q_{i}}\right)\text{ mod } q_i\right]\text{ mod } q_i \times Q_i\right) \text{ mod } Q
 \end{equation}
 
 Es decir que si llamamos a todo lo que esta dento del paréntesis $R$ y a los residuos le agregamos un error $e$, en general donde e es todo cero excepto un elemento.
 Tenemos que
 \begin{equation}
-    x = R + e mod Q = \left(R mod Q + e mod Q \right) mod Q = \left( x + e mod Q \right) mod Q
+    x = \left(R + e \right) \text{ mod } Q = \left(R \text{ mod } Q + e \text{ mod } Q \right) \text{ mod } = \left( x + e \text{ mod } Q \right) \text{ mod } Q
 \end{equation}
+
+Es decir tenemos que
+$\lVert x - x' \rVert$ = $\lVert (x + e \text{ mod } Q ) \text{ mod }Q \rVert$
+
+Esto es cierto aun si tenemos un vector de $x$ , $X = (x_1, ...,x_N)$.
+Si el error solo afecta a uno de estos elementos, volvemos a tener:
+$\lVert X - X' \rVert$ = $\lVert (x_i + e \text{ mod } Q ) \text{ mod }Q \rVert$
+
+Habría que corroborarlo un poco mas
+
+
+\subsection{FFT}
+
+Supongamos el caso mas sencillo que es tener un DFT, es decir la transformada no es mas que una
+multiplicación matricial.
+
+Es decir dado mi vector $x$, al aplicarle la matriz de Vandermonde $W$ obtengo $FFT(x)$.
+Es decir $ y = W \times x$.
+Si a esta $y$ le introduzco un error $e$, tendría $z = y + e = W\times x + e$.
+Al aplicarle la matriz inversa para volver al espacio original.
+\begin{equation*}
+    x' = W^{-1}\times z = W^{-1}\times (y+e) = W^{-1}\times y + W^{-1}\times e = x + W^{-1}\times e
+\end{equation*}
+
+Es decir que al calcular el error entre $x$ y $x'$, tenemos:
+$\lVert x-x' \rVert = \lVert W^{-1} \times e \rVert$
+
+\subsection {NTT}
+La NTT también es pensada como una multiplicación matricial así que debería  ser igual que FFT.
+
+\subsection{RNS + FFT}
+Al modificar codificación primero tendría que hacer la inversa de la FFT ( o NTT), y de ahi calcular la
+inversa de RNS.
+
+
 \end{document}
 % https://bit-ml.github.io/blog/post/homomorphic-encryption-toy-implementation-in-python/
 

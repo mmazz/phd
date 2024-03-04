@@ -85,6 +85,7 @@ int main(int argc, char* argv[]) {
 
     std::string dir_name = "logs/log_encrypt/";
     std::string fileN2_bounded =  "encryptN2_bounded";
+    std::string fileN2 =  "encryptN2";
 
     // Enable the features that you wish to use
     cc->Enable(PKE);
@@ -129,6 +130,7 @@ int main(int argc, char* argv[]) {
         {
             uint64_t count = 0;
             double N2_bounded = 0;
+            double N2 = 0;
             bool new_file = 1;
             size_t bits_coeff = 64;
             auto ringDim = cc->GetRingDimension();
@@ -167,7 +169,9 @@ int main(int argc, char* argv[]) {
                                 result->SetLength(dataSize);
                                 resultData = result->GetRealPackedValue();
 
+                                N2 = norm2(input, resultData, dataSize);
                                 N2_bounded = norm2_bounded(input, resultData, dataSize, max_diff);
+                                saveDataLog(dir_name+fileN2, N2, !new_file, RNS_size);
                                 saveDataLog(dir_name+fileN2_bounded, N2_bounded, !new_file, RNS_size);
                                 // Cambian todos los coefficientes, tengo que resetearlo entero
                                 std::cout << "Silent error! "<< j<< std::endl;

@@ -1,5 +1,3 @@
-#include "ciphertext-fwd.h"
-#include "math/hal/intnat/transformnat.h"
 #include <cstdint>
 #include <string>
 #define PROFILE
@@ -124,6 +122,7 @@ int main(int argc, char* argv[]) {
     std::string fileHD_C1_limbChange     = "encodeHD"+extra+"_C1_limbChanged";
     std::string fileHD_positions      = "encodeHD"+extra+"_positions";
     std::string fileN2_bounded        = "encodeN2"+extra+"_bounded";
+    std::string fileN2 = "encodeN2"+extra;
 
     // Enable the features that you wish to use
     cc->Enable(PKE);
@@ -193,6 +192,7 @@ int main(int argc, char* argv[]) {
             uint64_t HD_C1_RNS_limbsNotChanged = 0;
             uint64_t HD_C1_RNS_limbChanged = 0;
 
+            double N2 = 0;
             double N2_bounded = 0;
             bool new_file = 1;
             auto ringDim = cc->GetRingDimension();
@@ -255,10 +255,10 @@ int main(int argc, char* argv[]) {
                         cc->Decrypt(keys.secretKey, c1, &result);
                         result->SetLength(dataSize);
                         resultData = result->GetRealPackedValue();
-                      //  res_norm2 = norm2(input, resultData, dataSize);
+                        N2 = norm2(resultData_original, resultData, dataSize);
                         N2_bounded = norm2_bounded(resultData_original, resultData, dataSize, max_diff);
 
-                       // saveDataLog(dir_name+file_name_norm2, res_norm2, !new_file);
+                        saveDataLog(dir_name+fileN2, N2, !new_file, RNS_size);
                         saveDataLog(dir_name+fileN2_bounded, N2_bounded, !new_file, RNS_size);
                         // Cambian todos los coefficientes, tengo que resetearlo entero
                         if(nonNTT)

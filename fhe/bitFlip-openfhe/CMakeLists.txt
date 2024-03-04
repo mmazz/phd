@@ -21,6 +21,8 @@ set(CMAKE_CXX_STANDARD 17)
 option( BUILD_STATIC "Set to ON to include static versions of the library" OFF)
 
 find_package(OpenFHE CONFIG REQUIRED)
+find_package(GTest CONFIG REQUIRED)
+
 if (OpenFHE_FOUND)
     message(STATUS "FOUND PACKAGE OpenFHE")
     message(STATUS "OpenFHE Version: ${BASE_OPENFHE_VERSION}")
@@ -31,10 +33,6 @@ if (OpenFHE_FOUND)
 else()
     message(FATAL_ERROR "PACKAGE OpenFHE NOT FOUND")
 endif ()
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
-SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g -O0")
-SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -g -O0")
-
 
 set( CMAKE_CXX_FLAGS ${OpenFHE_CXX_FLAGS} )
 
@@ -46,6 +44,13 @@ include_directories( ${OpenFHE_INCLUDE}/pke )
 include_directories( ${OpenFHE_INCLUDE}/binfhe )
 ### add directories for other OpenFHE modules as needed for your project
 
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -pg -no-pie -fno-builtin -pthread")
+#SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -std=c++2a -static -pg -no-pie -fno-builtin ")
+#SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -std=c++2a -pg -no-pie -fno-builtin ")
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
+set(CMAKE_BUILD_TYPE Debug)
+set(GTEST_LIBRARIES gtest gmock gtest_main gmock_main pthread)
 link_directories( ${OpenFHE_LIBDIR} )
 link_directories( ${OPENMP_LIBRARIES} )
 if(BUILD_STATIC)
@@ -56,8 +61,28 @@ else()
     link_libraries( ${OpenFHE_SHARED_LIBRARIES} )
 endif()
 
-### ADD YOUR EXECUTABLE(s) HERE
-### add_executable( EXECUTABLE-NAME SOURCES )
-###
-### EXAMPLE:
-add_executable( enc encrypt.cpp )
+
+
+
+set(GTEST_LIBRARIES gtest gmock gtest_main gmock_main pthread)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/logs)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/logs/log_encrypt)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/logs/log_encode)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/logs/log_input)
+
+file (GLOB EXAMPLES_SRC_FILES CONFIGURE_DEPENDS ${CMAKE_BINARY_DIR}/src/*.cpp)
+foreach (app ${EXAMPLES_SRC_FILES})
+  get_filename_component( exe ${app} NAME_WE)
+  add_executable ( ${exe} ${app} )
+  set_target_properties(${exe} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+  #target_link_libraries( ${exe} PRIVATE OpenFHE::openfhe)
+endforeach()
+
+file (GLOB TEST_SRC_FILES CONFIGURE_DEPENDS ${CMAKE_BINARY_DIR}/test/*.cpp)
+foreach (app ${TEST_SRC_FILES})
+  get_filename_component( exe ${app} NAME_WE)
+  add_executable ( ${exe} ${app} )
+  set_target_properties(${exe} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+  target_link_libraries( ${exe} PRIVATE ${GTEST_LIBRARIES})
+endforeach()
+

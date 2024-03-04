@@ -1,5 +1,5 @@
-#include "ciphertext-fwd.h"
 #include <cstdint>
+#include "openfhe.h"
 #include <string>
 #define PROFILE
 #define FIXED_SEED
@@ -209,7 +209,7 @@ int main(int argc, char* argv[]) {
 
             Plaintext ptxt1 = cc->MakeCKKSPackedPlaintext(input);
             auto c1 = cc->Encrypt(keys.secretKey, ptxt1);
-            const auto encryptElems_original = c1->GetElements();
+            const auto encryptElems_original = c2->GetElements();
             // Me quedo con la componente cero por que aca no tengo RNS y es el unico
             std::cout << "Total loops: " << total_loops << std::endl;
             const auto original_vector = ptxt1->GetElement<DCRTPoly>().GetAllElements();
@@ -247,6 +247,7 @@ int main(int argc, char* argv[]) {
                         try
                         {
                             cc->Decrypt(keys.secretKey, c1, &result);
+                            std::cout<< "Silent error! "<< "  RNS limb: " << i << " coeff: " << j  << " bit: " << bit << std::endl;
                             result->SetLength(dataSize);
                             resultData = result->GetRealPackedValue();
                             N2_bounded = norm2_bounded(resultData_original, resultData, dataSize, max_diff);
@@ -255,9 +256,9 @@ int main(int argc, char* argv[]) {
                             saveDataLog_SDC(dir_name+fileHD_C1_limnsNotChange, i, j, bit, HD_C1_RNS_limbsNotChanged, !new_file, RNS_size);
                             saveDataLog_SDC(dir_name+fileHD_C1_limbChange    , i, j, bit, HD_C1_RNS_limbChanged, !new_file, RNS_size);
                             saveDataLog_SDC(dir_name+fileN2_bounded          , i, j, bit, N2_bounded, !new_file, RNS_size);
-                            std::cout << "Silent error! "<< j<< std::endl;
                         }
                         catch(...)
+                        //catch(lbcrypto::math_error& e)
                         {
                             HD_C0_RNS_limbsNotChanged = 0;
                             HD_C0_RNS_limbChanged     = 0;
