@@ -35,28 +35,29 @@
 \subsection{RNS}
 
 Sea $\bold{r} = (r_1, ..., r_L)$ los residuos de un valor $x$ modulo $q = (q_1, ...,q_L)$.
-Donde ademas tenemos $Q = \prod_0^L q_i$, $Q_i = \frac{Q}{q_i}$ y ademas $\left(\frac{1}{Q_{i}}\right)\text{ mod } q_i$ es la inversa multiplicativa.
+Donde ademas tenemos $Q = \prod_0^L q_i$, $Q_i = \frac{Q}{q_i}$ y ademas $\left(\frac{1}{Q_{i}}\right)\text{ mod } q_i$ es la inversa multiplicativa de $Q_i$.
 
 Entonces tenemos que:
 \begin{equation}
-    x = \left(\sum_0^L r_i\left[\left(\frac{1}{Q_{i}}\right)\text{ mod } q_i\right]\text{ mod } q_i \times Q_i\right) \text{ mod } Q
+    x = \left(\sum_{i=0}^L r_i\left[\left(\frac{1}{Q_{i}}\right)\text{ mod } q_i\right]\text{ mod } q_i \times Q_i\right) \text{ mod } Q
 \end{equation}
 
-Es decir que si llamamos a todo lo que esta dento del paréntesis $R$ y a los residuos le agregamos un error $e$, en general donde e es todo cero excepto un elemento.
-Tenemos que
+Es decir que si le agregamos un error $e_i$ a los residuos tenemos algo del estilo:
+
 \begin{equation}
-    x = \left(R + e \right) \text{ mod } Q = \left(R \text{ mod } Q + e \text{ mod } Q \right) \text{ mod } = \left( x + e \text{ mod } Q \right) \text{ mod } Q
+    x = \left(\sum_{i=0}^L (r_i+e_i)\underbrace{\left[\left(\frac{1}{Q_{i}}\right)\text{ mod } q_i\right]}_{Q_i^{-1}}\text{ mod } q_i \times Q_i\right) \text{ mod } Q
 \end{equation}
 
-Es decir tenemos que
-$\lVert x - x' \rVert$ = $\lVert (x + e \text{ mod } Q ) \text{ mod }Q \rVert$
+\begin{equation}
+    x = \left(\sum_{i=0}^L \left[(r_i+e_i)\times Q_i^{-1}\right]\text{ mod } q_i \times Q_i\right) \text{ mod } Q
+\end{equation}
 
-Esto es cierto aun si tenemos un vector de $x$ , $X = (x_1, ...,x_N)$.
-Si el error solo afecta a uno de estos elementos, volvemos a tener:
-$\lVert X - X' \rVert$ = $\lVert (x_i + e \text{ mod } Q ) \text{ mod }Q \rVert$
-
-Habría que corroborarlo un poco mas
-
+\begin{equation}
+    \begin{split}
+        x &= \left(\sum_{i=0}^L \left[(r_i\times Q_i^{-1} +e_i\times Q_i^{-1})\right]\text{ mod } q_i \times Q_i\right) \text{ mod } Q \\
+          &= \left(\sum_{i=0}^L \left[r_i\times Q_i^{-1} \text{ mod } q_i +e_i\times Q_i^{-1}\text{ mod } q_i \right]\text{ mod } q_i \times Q_i\right) \text{ mod } Q \\
+    \end{split}
+\end{equation}
 
 \subsection{FFT}
 
@@ -88,16 +89,7 @@ Entonces dado mi vector $r$ modificado, lo que me queda al aplicarle IFFT es  $r
 Aunque $e$ sea todo cero excepto un elemento i-esimo, al ser una multiplicación matricial,
 estaría afectando a todas las componentes de $r$.
 Cada componente $r'_i$ tendrá un error $e'_i = (W^{-1}\times e)_i$.
-
-Es decir que cada elemento:
-\begin{equation}
-    x'_i = (x_i + e'_i \text{ mod } Q) \text{ mod } Q = (x_i + (W^{-1}\times e)_i \text{ mod } Q) \text{ mod } Q
-\end{equation}
-
-Llegando a que
-\begin{equation}
-    \lVert x - x' \rVert  = \lVert  ((x_0 + (W^{-1}\times e)_0 \text{ mod } Q), ..., (x_N + (W^{-1}\times e)_N \text{ mod } Q)) \text{ mod } Q\rVert
-\end{equation}
+La cuestión es como inserto este error a RNS y tener una expresión analítica que me sirva.
 
 
 
