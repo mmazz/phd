@@ -39,9 +39,9 @@
 
 ## Entendiendo OpenFHE
 
-Dando un plain text, puedo obtener sus coeficientes conm GetAllElements().
+Dando un plain text, puedo obtener sus coeficientes con GetAllElements().
 
-Esto me da un vector de polynomios.
+Esto me da un vector de polinomios.
 Cada uno del RNS.
 
 Para cambiar su contenido tengo que directamente indexar con GetAllElements()[i][j]
@@ -51,6 +51,12 @@ auto elems = plaintext->GetElement<DCRTPoly>().GetAllElements();
 
 Queda medio como una copia, entonces si la modifico en realidad no lo estoy haciendo
 al verdadero.
+
+La suma que hace a la hora de encriptar es AddModFast, que asume que ambos argumentos
+son menores que el modulo y si la suma da mayor al modulo simplemente le resta el modulo.
+Por eso hay veces que si cambio bits grandes me queda mucho mas grande que el modulo.
+
+La función que usan de conjugar es rara…. hay veces que no hace nada…
 
 # Encriptacion
 

@@ -576,6 +576,34 @@ Cuando se multiplican dos polinomios, los coeficientes del producto están dados
 por la convolución de las sucesiones originales de coeficientes, en el sentido dado
 aquí (usando extensiones con ceros como se ha mencionado).
 
+Básicamente es una forma de combinar dos funciones (o dos vectores si lo pensamos de la forma discreta).
+Como podemos sumar o multiplicar dos funciones entre si, la convolución nos da otra forma.
+Se utiliza mucho en todas partes, desde en procesamiento de imágenes, a probabilidades, a resolver ecuaciones diferenciales hasta
+multiplicación   de polinomios, que es este ultimo el uso que le vamos a dar.
+
+Otra forma de verlo en el caso discreto, es escribirlo de forma matricial y sumar las diagonales que van de izquierda a derecha.
+Es decir nos queda
+\begin{equation*}
+    (f*g)_n = \sum_{i,j / i+j=n} f_i\times g_j
+\end{equation*}
+
+Donde $n$ es cada una de esas diagonales.
+Para el caso discreto, los dos vectores no tienen porque tener el mismo tamaño.
+El caso mas sencillo de visualizar esa cuando a una imagen le aplicamos algun filtro de blur, que es pasar por cada parte
+de nuestra imagen un filtro que no es otra cosa que una pequeña matriz.
+En la practica, esa matriz tiene que ser rotada 180 grados.
+
+En general a la funcion/matriz g, se la llama el kernel.
+Ademas en general el resultado tiene un tamaño mayor al de f, pero muchas veces se lo trunca.
+
+Una forma rápida de calcular la convolución, es transformar a cada input con una FFT, hacer
+la multiplicación punto a punto y luego al resultado una IFFT.
+
+\subsubsection{Convolución circular}
+Otro caso de nuestro interés, es cuando se aplican operaciones de modulo en la convolución.
+
+
+
 \subsection{Teoria de anillos}
 Un anillo es un conjunto donde se puede sumar restar y multiplicar.
 En algunos casos se pude dividir.
