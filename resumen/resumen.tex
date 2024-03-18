@@ -601,6 +601,17 @@ la multiplicación punto a punto y luego al resultado una IFFT.
 
 \subsubsection{Convolución circular}
 Otro caso de nuestro interés, es cuando se aplican operaciones de modulo en la convolución.
+Lo deja en el espacio $(X^n-1)$.
+En el caso de la convolución nega circular que lo deja en el espacio $(X^n+1)$.
+
+Básicamente las convoluciones circulares son convoluciones lineales mod su respectivo polinomio.
+
+\subsection{FFT/NTT}
+La conexion entre una convolucion y estos dos metodos, es que se evaluan los polinomios en ciertas
+raices particulares que luego se pueden sacar provecho por algunas simetrias.
+
+Como en COOKS y otros métodos criptográficos se suele trabajar en el anillo polinomial $(X^n+1)$, es el porque del uso de
+NTT nega cíclico.
 
 
 
@@ -1020,6 +1031,21 @@ Si definimos $w_N=e^{-i2\pi/N}$, podemos escribirlo de forma matricial:
           \hat{f}_{N-1}
     \end{pmatrix}
 \end{equation*}
+
+
+\section{Fault-Tolerance Computing}
+Algo a tener en claro es la diferencia entre fallos (failures), faltas (faults) y errores.
+El primero es cuando un componente no puede realizar su función para el cual fue diseñado, debido
+a errores en el elemento o en el entorno que son causados por muchas faltas.
+Una falta es un condición física anómala.
+Que puede ser por errores de diseño, errores de manufactura, fatiga, deterioro, o disturbio externo como condiciones extremas
+ambientales, interferencia electromagnética, radiación, etc.
+Un error es una manifestación de una falta en un sistema, donde el estado lógico
+de un elemento difiere  de su valor deseado (esperado).
+Un error sólo ocurre cuando una falta está “sensibilizada”.
+El termino suave (soft) a un error se usa cuando este persiste luego de que
+la falta que origino haya desaparecido.
+En general estos errores no dañan el sistema.
 
 
 \end{document}

@@ -47,15 +47,10 @@ Donde ademas tenemos $Q = \prod_0^L q_i$, $Q_i = \frac{Q}{q_i}$ y ademas $\left(
 
 Entonces tenemos que:
 \begin{equation}
-    x = \left(\sum_{i=0}^L r_i\left[\left(\frac{1}{Q_{i}}\right)\text{ mod } q_i\right]\text{ mod } q_i \times Q_i\right) \text{ mod } Q
+    x = \left(\sum_{i=0}^L r_i\underbrace{\left[\left(\frac{1}{Q_{i}}\right)\text{ mod } q_i\right]}_{Q_i^{-1}} \text{ mod } q_i \times Q_i\right) \text{ mod } Q
 \end{equation}
 
 Es decir que si le agregamos un error $e_i$ a los residuos tenemos algo del estilo:
-
-\begin{equation}
-    x = \left(\sum_{i=0}^L (r_i+e_i)\underbrace{\left[\left(\frac{1}{Q_{i}}\right)\text{ mod } q_i\right]}_{Q_i^{-1}}\text{ mod } q_i \times Q_i\right) \text{ mod } Q
-\end{equation}
-
 \begin{equation}
     x = \left(\sum_{i=0}^L \left[(r_i+e_i)\times Q_i^{-1}\right]\text{ mod } q_i \times Q_i\right) \text{ mod } Q
 \end{equation}
