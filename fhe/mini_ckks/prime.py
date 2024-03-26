@@ -2,25 +2,48 @@ import numpy as np
 import random
 
 
-
-def Add(a,b):
-    return a + b
-
-def Mod(a,m):
-    return a % m
-
-def DividedBy(a, b):
-    return int(a/b)
-
-def RShiftEq(d, m):
-    d = d >> m
-    return d
-
 def GetMSB(x):
     """Returns the index, counting from 0, of the
     least significant set bit in `x`.
     """
     return (1 + (x ^ (x-1))) >> 1
+
+def RShiftEq(d, m):
+    d = d >> m
+    return d
+
+def RShift(d, m):
+    d = d >> m
+    return d
+
+def Add(a,b):
+    return a + b
+
+def Sub(a,b):
+    return a - b
+
+def Mul(a,b):
+    return a * b
+def Mod(a,m):
+    return a % m
+
+def ModMu(a, modulus,  mu):
+    if (a < modulus):
+        return a
+    n = GetMSB(modulus)
+    alpha = (n + 3)
+    beta = -2
+    q = mu * RShift(a, n + beta)
+    q >>= (alpha - beta)
+    z = Sub(a, q * modulus)
+    if (z >= modulus):
+        return Sub(z, modulus)
+    return z;
+
+def DividedBy(a, b):
+    return int(a/b)
+
+
 
 def RNG(p):
     return random.randint(2, p)
@@ -37,6 +60,21 @@ def SubEq(a, b, modulus, mu):
 
 def ModAdd(a, b, m):
     return (a+b) % m
+
+def ModAddMu(a, b, modulus, mu):
+    return ModMu(Add(b, a),modulus, mu);
+
+def ModMul(a, b, m):
+    return (a*b) % m
+
+def ModMulMu(a, b, modulus,mu):
+    bv = b
+    av = a
+    if (bv >= modulus):
+        bv = ModEq(bv, modulus, mu)
+    if (av >= modulus):
+        av = ModEq(av, modulus, mu);
+    return ModMu(Mul(av,bv),modulus, mu);
 
 def ModExp(a, b, m):
     return pow(a,b, m)
@@ -57,22 +95,18 @@ def ModEq(a, b, modulus, mu):
         return SubEq(a, modulus)
     return a
 
-def ModMulEq(a, b, modulo, mu):
+def ModMulEq(a, b, modulus, mu):
     bv = b
     if (bv >= modulus):
         bv = ModEq(bv, modulus, mu)
     if (a >= modulus):
         a= ModEq(a, modulus, mu)
 
-    a = bv.Mul(a).Mod(modulus, mu)
+    a = ModMu(Mul(bv,a), modulus, mu)
     return a
 
-
-
-
-m_MSB = 2
 def ComputeMu(x):
-    a = (1 << (2 * m_MSB + 3))
+    a = (1 << (2 * GetMSB(x) + 3))
     return DividedBy(a, x);
 
 def GreatestCommonDivisor(a, b):
@@ -86,11 +120,11 @@ def GreatestCommonDivisor(a, b):
 
 #std::vector<IntType>
 def GetTotientList(n):
-    result = np.array()
+    result = []
     for i in range(1, n):
         if (GreatestCommonDivisor(i, n) == 1):
             result.append(i)
-    return result
+    return np.array(result)
 
 # calcula b0 =  a**d mod p
 # si da +1 calcula b1 = b0**2 mod p y asi hasta que bi = bi-1**d mod p de -1
@@ -183,7 +217,73 @@ def PreviousPrime(q, M):
         qNew -= M
         if (qNew > q):
             print("PreviousPrime: overflow shrinking candidate")
-    return qNew;
+    return qNew
+
+def PollardRhoFactorization(n):
+    if (Mod(n,2) == 0):
+        return 2
+    divisor = 1
+    c = RNG(n)
+    x = RNG(n)
+    xx = x
+    mu = ComputeMu(n)
+    xtemp = ModMulMu(x, x, n, mu)
+    x       = ModAddMu(xtemp, c, n, mu)
+    xxtemp = ModMulMu(xx, xx, n, mu)
+    xx      = ModAddMu(xxtemp, c, n, mu)
+    xxtemp = ModMulMu(xx, xx, n, mu)
+    xx      = ModAddMu(xxtemp, c, n, mu)
+    if (x > xx):
+        divisor = GreatestCommonDivisor( x - xx, n)
+    else:
+        divisor = GreatestCommonDivisor( xx - x, n)
+
+    while (divisor == 1):
+        xtemp = ModMulMu(x, x, n, mu)
+        x       = ModAddMu(xtemp, c, n, mu)
+        xxtemp = ModMulMu(xx, xx, n, mu)
+        xx      = ModAddMu(xxtemp, c, n, mu)
+        xxtemp = ModMulMu(xx, xx, n, mu)
+        xx      = ModAddMu(xxtemp, c, n, mu)
+        if (x > xx):
+            divisor = GreatestCommonDivisor( x - xx, n)
+        else:
+            divisor = GreatestCommonDivisor( xx - x, n)
+    return divisor;
+
+
+def PrimeFactorize(n, primeFactors):
+    if ((n == 0) or (n == 1)):
+        return
+    elif (MillerRabinPrimalityTest(n)):
+        primeFactors.add(n)
+        return
+
+    divisor = PollardRhoFactorization(n)
+    PrimeFactorize(divisor, primeFactors)
+    PrimeFactorize(n / divisor, primeFactors)
+
+def FindGenerator(q):
+    qm1 = q - 1
+    qm2 = q - 2
+    primeFactors = set()
+    PrimeFactorize(qm1, primeFactors)
+    cnt = 0
+    gen = RNG(qm2) + 1
+    for it in primeFactors:
+        cnt+=1
+        gen = ModExp(gen, int(qm1 / it), q)
+        if (gen == 1):
+            break
+    while (cnt != len(primeFactors)):
+        cnt = 0
+        gen = RNG(qm2) + 1
+        for it in primeFactors:
+            cnt+=1
+            gen = ModExp(gen, int(qm1 / it), q)
+            if (gen == 1):
+                break
+    return gen
 
 def RootOfUnityIndv(M, modulo):
     if (Mod((modulo - 1), M) != 0):
@@ -191,12 +291,12 @@ def RootOfUnityIndv(M, modulo):
     gen    = FindGenerator(modulo)
     result = ModExp(gen, DividedBy((modulo - 1), M), modulo)
     if (result == 1):
-        result = RootOfUnity(m, modulo)
+        result = RootOfUnity(M, modulo)
     mu = ComputeMu(modulo)
     x = 1
     x = ModMulEq(x, result, modulo, mu)
 
-    coprimes = GetTotientList(m)
+    coprimes = GetTotientList(M)
     minRU = x
     curPowIdx = 1
     for i in range(len(coprimes)):
@@ -215,4 +315,3 @@ def RootOfUnity(M, moduli):
     for i in range(moduli.size):
         rootsOfUnity[i] = RootOfUnityIndv(m, moduli[i])
     return rootsOfUnity
-
